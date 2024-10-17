@@ -13,7 +13,7 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
-
+    "baseUrl": ".",
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
@@ -21,7 +21,7 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@/*": ["./*"]
-    }
+    },
   },
   "include": ["src"]
 }
