@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CompaCar</string>
+    <string name="title_activity_main">CompaCar</string>
+    <string name="package_name">com.compacar.compacar</string>
+    <string name="custom_url_scheme">com.compacar.compacar</string>
+</resources>
