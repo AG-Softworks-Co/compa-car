@@ -1,0 +1,58 @@
+.logoOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/Logo.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.1;
+    z-index: 0;
+  }
+  
+  .searchCard {
+    background-color: rgba(18, 18, 18, 0.8);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    padding: 24px;
+    margin: 16px 0;
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 1;
+  }
+  
+  .cardTitle {
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .searchInput {
+    margin-bottom: 16px;
+  }
+  
+  .searchInput input {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .searchInput input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .searchButton {
+    background-color: #00ff9d;
+    color: #121212;
+    font-weight: bold;
+    width: 100%;
+    margin-top: 8px;
+  }
+  
+  .searchButton:hover {
+    background-color: #00cc7d;
+  }

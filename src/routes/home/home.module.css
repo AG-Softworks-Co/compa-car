@@ -1,0 +1,100 @@
+.container {
+    padding: 16px;
+    max-width: 100%;
+    background-color: #121212;
+    color: white;
+    min-height: 100vh;
+  }
+  
+  .heroCard {
+    background-color: #043728;
+    color: white;
+    padding: 24px;
+    margin-bottom: 24px;
+    text-align: center;
+    border-radius: 12px;
+  }
+  
+  .heroTitle {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  
+  .heroSubtitle {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .ctaButton {
+    background-color: #32ff98;
+    color: #006400;
+    font-weight: 600;
+  }
+  
+  .ctaButton:hover {
+    background-color: #00cc7d;
+  }
+  
+  .sectionTitle {
+    color: #00ff9d;
+    margin-bottom: 16px;
+    font-size: 20px;
+    font-weight: 600;
+  }
+  
+  .featuresGrid {
+    margin-bottom: 24px;
+  }
+  
+  .featureCard {
+    background-color: #1e1e1e;
+    color: white;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .featureIcon {
+    color: #00ff9d;
+    margin-bottom: 8px;
+  }
+  
+  
+  .destinationCard {
+    background-color: #1e1e1e;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;  /* Controla el tamaño máximo de la tarjeta */
+    margin-right: 16px; /* Espacio entre tarjetas */
+  }
+  
+  .destinationIcon {
+    color: #00ff9d;
+    margin-bottom: 12px;
+  }
+  
+  .navPlaceholder {
+    height: 60px;
+  }
+  
+  @media (max-width: 768px) {
+    .heroTitle {
+      font-size: 24px;
+    }
+    
+    .sectionTitle {
+      font-size: 18px;
+    }
+  }
+
+  
