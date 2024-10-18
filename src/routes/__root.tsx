@@ -8,10 +8,11 @@ import {
   Button,
   Box,
   createTheme,
+  Image,
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { createRootRoute, Outlet, Link } from "@tanstack/react-router";
-import { Search, PlusCircle, Home, MessageCircle, User } from 'lucide-react';
+import { Home, Search, Car, User } from 'lucide-react';
 
 const theme = createTheme({
   fontFamily: "Inter, sans-serif",
@@ -36,9 +37,9 @@ const theme = createTheme({
 const navItems = [
   { icon: Home, label: 'Inicio', to: '/home' },
   { icon: Search, label: 'Buscar', to: '/reservar' },
-  { icon: PlusCircle, label: 'Publicar', to: '/publish' },
-  { icon: MessageCircle, label: 'Mensajes', to: '/messages' },
-  { icon: User, label: 'Perfil', to: '/profile' },
+  { icon: 'logo', label: '', to: '/publish' },
+  { icon: Car, label: 'Mis Viajes', to: '/my-trips' },
+  { icon: User, label: 'Mi Cuenta', to: '/profile' },
 ];
 
 export const Route = createRootRoute({
@@ -46,15 +47,14 @@ export const Route = createRootRoute({
     return (
       <MantineProvider theme={theme} defaultColorScheme="dark">
         <AppShell
-          padding="md"
           header={{ height: 60 }}
           footer={{ height: 60 }}
           className={styles.appShell}
         >
           <AppShell.Header className={styles.header}>
             <Group justify="space-between" className={styles.headerContent}>
-              <Text className={styles.logo}>CarpoolApp</Text>
-              <Button 
+              <Text className={styles.logo}>Cupo</Text>
+              <Button
                 className={styles.registerButton}
                 component={Link}
                 to="/register"
@@ -69,20 +69,28 @@ export const Route = createRootRoute({
           </AppShell.Main>
 
           <AppShell.Footer className={styles.footer}>
-            <Group grow className={styles.navGroup}>
-              {navItems.map((item) => (
+            <Group className={styles.navGroup}>
+              {navItems.map((item, index) => (
                 <UnstyledButton
-                  key={item.label}
+                  key={item.label || `nav-item-${index}`}
                   component={Link}
                   to={item.to}
-                  className={styles.navButton}
+                  className={`${styles.navButton} ${index === 2 ? styles.centerButton : ''}`}
                 >
-                  <Box className={styles.navIcon}>
-                    <item.icon size={20} />
-                  </Box>
-                  <Text className={styles.navLabel}>
-                    {item.label}
-                  </Text>
+                  {index === 2 ? (
+                    <Box className={styles.logoWrapper}>
+                      <Image src="/public/9.png" className={styles.logoImage} />
+                    </Box>
+                  ) : (
+                    <>
+                      <Box className={styles.navIcon}>
+                        <item.icon size={24} />
+                      </Box>
+                      <Text className={styles.navLabel}>
+                        {item.label}
+                      </Text>
+                    </>
+                  )}
                 </UnstyledButton>
               ))}
             </Group>
