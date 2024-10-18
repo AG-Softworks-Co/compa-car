@@ -13,6 +13,9 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as ReservarIndexImport } from './routes/reservar/index'
+import { Route as HomeIndexImport } from './routes/home/index'
+import { Route as AccountIndexImport } from './routes/account/index'
 
 // Create Virtual Routes
 
@@ -25,6 +28,21 @@ const IndexLazyRoute = IndexLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
+const ReservarIndexRoute = ReservarIndexImport.update({
+  path: '/reservar/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const HomeIndexRoute = HomeIndexImport.update({
+  path: '/home/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AccountIndexRoute = AccountIndexImport.update({
+  path: '/account/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -36,6 +54,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
+    '/account/': {
+      id: '/account/'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/home/': {
+      id: '/home/'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/reservar/': {
+      id: '/reservar/'
+      path: '/reservar'
+      fullPath: '/reservar'
+      preLoaderRoute: typeof ReservarIndexImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -43,32 +82,47 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
+  '/account': typeof AccountIndexRoute
+  '/home': typeof HomeIndexRoute
+  '/reservar': typeof ReservarIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
+  '/account': typeof AccountIndexRoute
+  '/home': typeof HomeIndexRoute
+  '/reservar': typeof ReservarIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
+  '/account/': typeof AccountIndexRoute
+  '/home/': typeof HomeIndexRoute
+  '/reservar/': typeof ReservarIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/account' | '/home' | '/reservar'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/account' | '/home' | '/reservar'
+  id: '__root__' | '/' | '/account/' | '/home/' | '/reservar/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
+  AccountIndexRoute: typeof AccountIndexRoute
+  HomeIndexRoute: typeof HomeIndexRoute
+  ReservarIndexRoute: typeof ReservarIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
+  AccountIndexRoute: AccountIndexRoute,
+  HomeIndexRoute: HomeIndexRoute,
+  ReservarIndexRoute: ReservarIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -83,11 +137,23 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/"
+        "/",
+        "/account/",
+        "/home/",
+        "/reservar/"
       ]
     },
     "/": {
       "filePath": "index.lazy.tsx"
+    },
+    "/account/": {
+      "filePath": "account/index.tsx"
+    },
+    "/home/": {
+      "filePath": "home/index.tsx"
+    },
+    "/reservar/": {
+      "filePath": "reservar/index.tsx"
     }
   }
 }
