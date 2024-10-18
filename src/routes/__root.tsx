@@ -79,7 +79,7 @@ export const Route = createRootRoute({
                 >
                   {index === 2 ? (
                     <Box className={styles.logoWrapper}>
-                      <Image src="/public/9.png" className={styles.logoImage} />
+                      <Image src="/9.png" className={styles.logoImage} />
                     </Box>
                   ) : (
                     <>
