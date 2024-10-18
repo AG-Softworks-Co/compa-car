@@ -46,13 +46,14 @@ export const Route = createRootRoute({
     return (
       <MantineProvider theme={theme} defaultColorScheme="dark">
         <AppShell
+          padding="md"
           header={{ height: 60 }}
           footer={{ height: 60 }}
           className={styles.appShell}
         >
           <AppShell.Header className={styles.header}>
             <Group justify="space-between" className={styles.headerContent}>
-              <Text className={styles.logo}>Cupo</Text>
+              <Text className={styles.logo}>CarpoolApp</Text>
               <Button 
                 className={styles.registerButton}
                 component={Link}

@@ -5,8 +5,7 @@ import {
   Text,
   Card,
   SimpleGrid,
-  Button,
-  Box,
+  Button
 } from '@mantine/core';
 import { Car, Globe, PiggyBank } from 'lucide-react';
 import styles from './home.module.css';
