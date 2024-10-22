@@ -1,0 +1,191 @@
+.carouselContainer {
+    position: relative;
+    height: 500px;
+    perspective: 1000px;
+    margin: 60px auto;
+    max-width: 1400px;
+  }
+  
+  .carouselTrack {
+    position: relative;
+    height: 100%;
+    transform-style: preserve-3d;
+  }
+  
+  .featureCard {
+    position: absolute;
+    width: 400px;
+    height: 300px;
+    left: 50%;
+    top: 50%;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(var(--feature-color), 0.2) !important;
+    border-radius: 24px !important;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+  }
+  
+  .cardBackground {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .cardGlow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(var(--feature-color), 0.15),
+      transparent 50%
+    );
+  }
+  
+  .featureCard:hover .cardBackground {
+    opacity: 1;
+  }
+  
+  .position-0 {
+    transform: translate(-50%, -50%) translateZ(300px);
+    opacity: 1;
+    z-index: 3;
+  }
+  
+  .position-1 {
+    transform: translate(-20%, -50%) translateZ(150px) rotateY(-20deg);
+    opacity: 0.8;
+    z-index: 2;
+  }
+  
+  .position-5 {
+    transform: translate(-80%, -50%) translateZ(150px) rotateY(20deg);
+    opacity: 0.8;
+    z-index: 2;
+  }
+  
+  .position-2, .position-4 {
+    transform: translate(-50%, -50%) translateZ(0) scale(0.8);
+    opacity: 0.6;
+    z-index: 1;
+  }
+  
+  .position-3 {
+    transform: translate(-50%, -50%) translateZ(-150px) scale(0.7);
+    opacity: 0.4;
+    z-index: 0;
+  }
+  
+  .iconWrapper {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: rgba(var(--feature-color), 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+  
+  .icon {
+    color: var(--feature-color);
+    position: relative;
+    z-index: 1;
+  }
+  
+  .iconGlow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at center,
+      rgba(var(--feature-color), 0.3),
+      transparent 70%
+    );
+    animation: pulse 2s ease-in-out infinite;
+  }
+  
+  .title {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: white;
+    margin-bottom: 1rem !important;
+    background: linear-gradient(90deg, white, var(--feature-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .description {
+    color: rgba(255, 255, 255, 0.8) !important;
+    line-height: 1.6 !important;
+    font-size: 1rem !important;
+  }
+  
+  .indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    position: absolute;
+    bottom: -40px;
+    left: 0;
+    right: 0;
+  }
+  
+  .indicator {
+    width: 30px;
+    height: 4px;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .indicator.active {
+    background: var(--feature-color);
+    width: 45px;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.3;
+    }
+  }
+  
+  @media (max-width: 1200px) {
+    .carouselContainer {
+      height: 400px;
+    }
+  
+    .featureCard {
+      width: 340px;
+      height: 260px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .carouselContainer {
+      height: 350px;
+      perspective: 800px;
+    }
+  
+    .featureCard {
+      width: 280px;
+      height: 240px;
+      padding: 1.5rem;
+    }
+  
+    .position-1, .position-5 {
+      display: none;
+    }
+  }

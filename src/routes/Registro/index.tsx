@@ -1,0 +1,118 @@
+import React from 'react'
+import { createFileRoute } from '@tanstack/react-router'
+import {
+  Box,
+  TextInput,
+  Button,
+  Container,
+  Text,
+  Checkbox,
+  Stack,
+  Group,
+  UnstyledButton,
+} from '@mantine/core'
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import styles from './index.module.css'
+
+const RegisterView: React.FC = () => {
+  const [showPassword, setShowPassword] = React.useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
+  const [acceptTerms, setAcceptTerms] = React.useState(false)
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!acceptTerms) {
+      alert('Debes aceptar los términos y condiciones para continuar')
+      return
+    }
+    console.log('Registrando usuario...')
+  }
+
+  return (
+    <Container className={styles.container}>
+      <Group justify="flex-start" mb="xl">
+        <UnstyledButton component={Link} to="/" className={styles.backButton}>
+          <ArrowLeft size={24} />
+        </UnstyledButton>
+      </Group>
+
+      <Box className={styles.logoSection}>
+        <Box className={styles.logo}>
+          <img src="/Logo.png" alt="Compaccar Logo" />
+        </Box>
+        <Text size="xl" fw={700} className={styles.title}>
+          Bienvenido a Cupo
+        </Text>
+        <Text size="sm" c="dimmed" className={styles.subtitle}>
+          Crea tu cuenta y comienza a viajar con nosotros.
+        </Text>
+      </Box>
+
+      <form onSubmit={handleSubmit}>
+        <Stack gap="md">
+          <TextInput
+            placeholder="Correo electrónico"
+            className={styles.input}
+            size="lg"
+            required
+          />
+
+          <TextInput
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Contraseña"
+            className={styles.input}
+            size="lg"
+            required
+            rightSection={
+              <UnstyledButton
+                onClick={() => setShowPassword(!showPassword)}
+                className={styles.eyeButton}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </UnstyledButton>
+            }
+          />
+
+          <TextInput
+            type={showConfirmPassword ? 'text' : 'password'}
+            placeholder="Confirma tu contraseña"
+            className={styles.input}
+            size="lg"
+            required
+            rightSection={
+              <UnstyledButton
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className={styles.eyeButton}
+              >
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </UnstyledButton>
+            }
+          />
+
+          <Checkbox
+            label="Al continuar aceptas nuestros términos, condiciones y política de tratamiento de datos personales"
+            className={styles.checkbox}
+            size="md"
+            checked={acceptTerms}
+            onChange={(event) => setAcceptTerms(event.currentTarget.checked)}
+            required
+          />
+
+          <Button
+            fullWidth
+            size="lg"
+            className={styles.continueButton}
+            type="submit"
+          >
+            Continuar
+          </Button>
+        </Stack>
+      </form>
+    </Container>
+  )
+}
+
+export const Route = createFileRoute('/Registro/')({
+  component: RegisterView,
+})

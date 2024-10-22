@@ -12,7 +12,7 @@ import {
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { createRootRoute, Outlet, Link } from "@tanstack/react-router";
-import { Home, Search, Car, User } from 'lucide-react';
+import { Search, PlusCircle, Car, User } from 'lucide-react';
 
 const theme = createTheme({
   fontFamily: "Inter, sans-serif",
@@ -35,9 +35,9 @@ const theme = createTheme({
 });
 
 const navItems = [
-  { icon: Home, label: 'Inicio', to: '/home' },
   { icon: Search, label: 'Buscar', to: '/reservar' },
-  { icon: 'logo', label: '', to: '/publish' },
+  { icon: PlusCircle, label: 'Publicar', to: '/publish' },
+  { icon: 'logo', label: '', to: '/home' },
   { icon: Car, label: 'Mis Viajes', to: '/my-trips' },
   { icon: User, label: 'Mi Cuenta', to: '/profile' },
 ];
@@ -51,6 +51,8 @@ export const Route = createRootRoute({
           footer={{ height: 60 }}
           className={styles.appShell}
         >
+          <div className={styles.backgroundEffect} />
+          
           <AppShell.Header className={styles.header}>
             <Group justify="space-between" className={styles.headerContent}>
               <Text className={styles.logo}>Cupo</Text>
@@ -59,7 +61,7 @@ export const Route = createRootRoute({
                 component={Link}
                 to="/register"
               >
-                Inscríbete aquí
+                <span>Inscríbete aquí</span>
               </Button>
             </Group>
           </AppShell.Header>
@@ -79,7 +81,7 @@ export const Route = createRootRoute({
                 >
                   {index === 2 ? (
                     <Box className={styles.logoWrapper}>
-                      <Image src="/9.png" className={styles.logoImage} />
+                      <Image src="/Logo.png" alt="Logo" className={styles.logoImage} />
                     </Box>
                   ) : (
                     <>
