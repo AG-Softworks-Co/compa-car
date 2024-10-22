@@ -111,7 +111,6 @@
 
 /* Main Content */
 .main {
-  padding-top: 60px;
   padding-bottom: 80px;
   min-height: calc(100vh - 60px);
   position: relative;
