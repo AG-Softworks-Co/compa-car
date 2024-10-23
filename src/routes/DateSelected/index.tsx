@@ -1,75 +1,73 @@
-import React, { useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
-import { 
-  Box, 
-  TextInput, 
-  Button, 
-  Title, 
-  Card, 
-  Text, 
-  Container
-} from '@mantine/core';
-import { 
-  Search,
-  Calendar, 
-  User,
-  Car
-} from 'lucide-react';
-import PassengerSelector from '../../components/ui/home/PassengerSelector'; // Importamos el nuevo componente
-import styles from './reservar.module.css';
+import React, { useState } from 'react'
+import { createFileRoute } from '@tanstack/react-router'
+import {
+  Box,
+  TextInput,
+  Button,
+  Title,
+  Card,
+  Text,
+  Container,
+} from '@mantine/core'
+import { Search, Calendar, User, Car } from 'lucide-react'
+import PassengerSelector from '../../components/ui/home/PassengerSelector' // Importamos el nuevo componente
+import styles from './index.module.css'
 
 interface SearchFormData {
-  origin: string;
-  destination: string;
-  date: string;
-  passengers: number;
+  origin: string
+  destination: string
+  date: string
+  passengers: number
 }
 
 const ReservarView: React.FC = () => {
-  const [isSearching, setIsSearching] = useState(false);
+  const [isSearching, setIsSearching] = useState(false)
   const [formData, setFormData] = useState<SearchFormData>({
     origin: '',
     destination: '',
     date: '',
-    passengers: 1
-  });
-  const [showPassengerSelector, setShowPassengerSelector] = useState(false);
+    passengers: 1,
+  })
+  const [showPassengerSelector, setShowPassengerSelector] = useState(false)
 
-  const handleInputChange = (field: keyof SearchFormData) => (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: field === 'passengers' ? Number(event.target.value) : event.target.value
-    }));
-  };
+  const handleInputChange =
+    (field: keyof SearchFormData) =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]:
+          field === 'passengers'
+            ? Number(event.target.value)
+            : event.target.value,
+      }))
+    }
 
   const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSearching(true);
+    event.preventDefault()
+    setIsSearching(true)
 
     try {
       // Simular búsqueda
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      console.log('Searching trips with data:', formData);
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+      console.log('Searching trips with data:', formData)
     } catch (error) {
-      console.error('Error searching trips:', error);
+      console.error('Error searching trips:', error)
     } finally {
-      setIsSearching(false);
+      setIsSearching(false)
     }
-  };
+  }
 
   return (
     <Container fluid className={styles.container}>
       <div className={styles.logoOverlay} />
-      
+
       <Container size="md" className={styles.content}>
         <Box className={styles.searchSection}>
           <Title className={styles.searchTitle}>
             Encuentra tu viaje ideal
             <div className={styles.titleUnderline} />
           </Title>
-          
+
           <Card className={styles.searchCard}>
             <form onSubmit={handleSearch}>
               <div className={styles.searchInputs}>
@@ -115,39 +113,50 @@ const ReservarView: React.FC = () => {
                   />
                 </div>
 
-                {/* Selector de pasajeros */} 
-                <div className={styles.inputContainer} onClick={() => setShowPassengerSelector(!showPassengerSelector)}>
-  <div className={styles.inputIcon}>
-    <User size={20} />
-  </div>
-  <TextInput
-    className={styles.input}
-    value={`${formData.passengers} ${formData.passengers > 1 ? 'Pasajeros' : 'Pasajero'}`}
-    readOnly
-    variant="unstyled"
-    required
-    rightSection={
-      <div className={styles.passengerIconWrapper}>
-        {Array.from({ length: formData.passengers }).map((_, i) => (
-          <User key={i} size={16} className={styles.passengerIcon} />
-        ))}
-      </div>
-    }
-  />
-</div>
+                {/* Selector de pasajeros */}
+                <div
+                  className={styles.inputContainer}
+                  onClick={() =>
+                    setShowPassengerSelector(!showPassengerSelector)
+                  }
+                >
+                  <div className={styles.inputIcon}>
+                    <User size={20} />
+                  </div>
+                  <TextInput
+                    className={styles.input}
+                    value={`${formData.passengers} ${formData.passengers > 1 ? 'Pasajeros' : 'Pasajero'}`}
+                    readOnly
+                    variant="unstyled"
+                    required
+                    rightSection={
+                      <div className={styles.passengerIconWrapper}>
+                        {Array.from({ length: formData.passengers }).map(
+                          (_, i) => (
+                            <User
+                              key={i}
+                              size={16}
+                              className={styles.passengerIcon}
+                            />
+                          ),
+                        )}
+                      </div>
+                    }
+                  />
+                </div>
 
                 {/* Componente PassengerSelector */}
                 {showPassengerSelector && (
-                  <PassengerSelector 
-                    value={formData.passengers} 
+                  <PassengerSelector
+                    value={formData.passengers}
                     onChange={(num) => {
-                      setFormData((prev) => ({ ...prev, passengers: num }));
-                      setShowPassengerSelector(false); // Ocultar después de seleccionar
-                    }} 
+                      setFormData((prev) => ({ ...prev, passengers: num }))
+                      setShowPassengerSelector(false) // Ocultar después de seleccionar
+                    }}
                   />
                 )}
 
-                <Button 
+                <Button
                   className={`${styles.searchButton} ${isSearching ? styles.searching : ''}`}
                   type="submit"
                   disabled={isSearching}
@@ -171,18 +180,16 @@ const ReservarView: React.FC = () => {
         </Box>
 
         <Box className={styles.resultsSection}>
-          <Title className={styles.resultsTitle}>
-            Viajes disponibles
-          </Title>
+          <Title className={styles.resultsTitle}>Viajes disponibles</Title>
           <Text className={styles.resultsSubtitle}>
             Ingresa los detalles de tu viaje para ver las opciones disponibles
           </Text>
         </Box>
       </Container>
     </Container>
-  );
-};
+  )
+}
 
-export const Route = createFileRoute('/reservar/')({
-  component: ReservarView
-});
+export const Route = createFileRoute('/DateSelected/')({
+  component: ReservarView,
+})
