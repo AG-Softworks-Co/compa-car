@@ -1,5 +1,5 @@
-import React from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import React, { useState } from 'react';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import {
   Box,
   TextInput,
@@ -10,24 +10,32 @@ import {
   Stack,
   Group,
   UnstyledButton,
-} from '@mantine/core'
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
-import styles from './index.module.css'
+} from '@mantine/core';
+import { ArrowLeft, Eye, EyeOff, Car, MapPin } from 'lucide-react';
+import styles from './index.module.css';
 
 const RegisterView: React.FC = () => {
-  const [showPassword, setShowPassword] = React.useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
-  const [acceptTerms, setAcceptTerms] = React.useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+    event.preventDefault();
     if (!acceptTerms) {
-      alert('Debes aceptar los términos y condiciones para continuar')
-      return
+      alert('Debes aceptar los términos y condiciones para continuar');
+      return;
     }
-    console.log('Registrando usuario...')
-  }
+
+    // Iniciar la animación de búsqueda
+    setIsSearching(true);
+
+    // Simular la búsqueda (animación dura 5 segundos)
+    setTimeout(() => {
+      setIsSearching(false);
+      console.log('Búsqueda completada...');
+    }, 5000);
+  };
 
   return (
     <Container className={styles.container}>
@@ -102,17 +110,31 @@ const RegisterView: React.FC = () => {
           <Button
             fullWidth
             size="lg"
-            className={styles.continueButton}
+            className={`${styles.continueButton} ${isSearching ? styles.searching : ''}`}
             type="submit"
+            disabled={isSearching}
           >
-            Continuar
+            {isSearching ? (
+              <div className={styles.searchingAnimation}>
+                <div className={styles.carContainer}>
+                  <Car className={styles.carIcon} size={24} />
+                </div>
+                <div className={styles.road}>
+                  <div className={styles.destination}>
+                    <MapPin size={24} className={styles.destinationIcon} />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              'Buscar'
+            )}
           </Button>
         </Stack>
       </form>
     </Container>
-  )
-}
+  );
+};
 
 export const Route = createFileRoute('/Registro/')({
   component: RegisterView,
-})
+});

@@ -18,7 +18,9 @@ import { Route as HomeIndexImport } from './routes/home/index'
 import { Route as AccountIndexImport } from './routes/account/index'
 import { Route as RegistroIndexImport } from './routes/Registro/index'
 import { Route as RecuperarPaswordIndexImport } from './routes/RecuperarPasword/index'
+import { Route as PerfilIndexImport } from './routes/Perfil/index'
 import { Route as LoginIndexImport } from './routes/Login/index'
+import { Route as BuscarViajeIndexImport } from './routes/BuscarViaje/index'
 
 // Create Virtual Routes
 
@@ -56,8 +58,18 @@ const RecuperarPaswordIndexRoute = RecuperarPaswordIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const PerfilIndexRoute = PerfilIndexImport.update({
+  path: '/Perfil/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const LoginIndexRoute = LoginIndexImport.update({
   path: '/Login/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const BuscarViajeIndexRoute = BuscarViajeIndexImport.update({
+  path: '/BuscarViaje/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -72,11 +84,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
+    '/BuscarViaje/': {
+      id: '/BuscarViaje/'
+      path: '/BuscarViaje'
+      fullPath: '/BuscarViaje'
+      preLoaderRoute: typeof BuscarViajeIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/Login/': {
       id: '/Login/'
       path: '/Login'
       fullPath: '/Login'
       preLoaderRoute: typeof LoginIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/Perfil/': {
+      id: '/Perfil/'
+      path: '/Perfil'
+      fullPath: '/Perfil'
+      preLoaderRoute: typeof PerfilIndexImport
       parentRoute: typeof rootRoute
     }
     '/RecuperarPasword/': {
@@ -121,7 +147,9 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
+  '/BuscarViaje': typeof BuscarViajeIndexRoute
   '/Login': typeof LoginIndexRoute
+  '/Perfil': typeof PerfilIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
   '/Registro': typeof RegistroIndexRoute
   '/account': typeof AccountIndexRoute
@@ -131,7 +159,9 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
+  '/BuscarViaje': typeof BuscarViajeIndexRoute
   '/Login': typeof LoginIndexRoute
+  '/Perfil': typeof PerfilIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
   '/Registro': typeof RegistroIndexRoute
   '/account': typeof AccountIndexRoute
@@ -142,7 +172,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
+  '/BuscarViaje/': typeof BuscarViajeIndexRoute
   '/Login/': typeof LoginIndexRoute
+  '/Perfil/': typeof PerfilIndexRoute
   '/RecuperarPasword/': typeof RecuperarPaswordIndexRoute
   '/Registro/': typeof RegistroIndexRoute
   '/account/': typeof AccountIndexRoute
@@ -154,7 +186,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/BuscarViaje'
     | '/Login'
+    | '/Perfil'
     | '/RecuperarPasword'
     | '/Registro'
     | '/account'
@@ -163,7 +197,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/BuscarViaje'
     | '/Login'
+    | '/Perfil'
     | '/RecuperarPasword'
     | '/Registro'
     | '/account'
@@ -172,7 +208,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/BuscarViaje/'
     | '/Login/'
+    | '/Perfil/'
     | '/RecuperarPasword/'
     | '/Registro/'
     | '/account/'
@@ -183,7 +221,9 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
+  BuscarViajeIndexRoute: typeof BuscarViajeIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
+  PerfilIndexRoute: typeof PerfilIndexRoute
   RecuperarPaswordIndexRoute: typeof RecuperarPaswordIndexRoute
   RegistroIndexRoute: typeof RegistroIndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
@@ -193,7 +233,9 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
+  BuscarViajeIndexRoute: BuscarViajeIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
+  PerfilIndexRoute: PerfilIndexRoute,
   RecuperarPaswordIndexRoute: RecuperarPaswordIndexRoute,
   RegistroIndexRoute: RegistroIndexRoute,
   AccountIndexRoute: AccountIndexRoute,
@@ -214,7 +256,9 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/BuscarViaje/",
         "/Login/",
+        "/Perfil/",
         "/RecuperarPasword/",
         "/Registro/",
         "/account/",
@@ -225,8 +269,14 @@ export const routeTree = rootRoute
     "/": {
       "filePath": "index.lazy.tsx"
     },
+    "/BuscarViaje/": {
+      "filePath": "BuscarViaje/index.tsx"
+    },
     "/Login/": {
       "filePath": "Login/index.tsx"
+    },
+    "/Perfil/": {
+      "filePath": "Perfil/index.tsx"
     },
     "/RecuperarPasword/": {
       "filePath": "RecuperarPasword/index.tsx"
