@@ -20,6 +20,7 @@ import { Route as RegistroIndexImport } from './routes/Registro/index'
 import { Route as RecuperarPaswordIndexImport } from './routes/RecuperarPasword/index'
 import { Route as PerfilIndexImport } from './routes/Perfil/index'
 import { Route as LoginIndexImport } from './routes/Login/index'
+import { Route as DateSelectedIndexImport } from './routes/DateSelected/index'
 import { Route as BuscarViajeIndexImport } from './routes/BuscarViaje/index'
 
 // Create Virtual Routes
@@ -68,6 +69,11 @@ const LoginIndexRoute = LoginIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const DateSelectedIndexRoute = DateSelectedIndexImport.update({
+  path: '/DateSelected/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const BuscarViajeIndexRoute = BuscarViajeIndexImport.update({
   path: '/BuscarViaje/',
   getParentRoute: () => rootRoute,
@@ -89,6 +95,13 @@ declare module '@tanstack/react-router' {
       path: '/BuscarViaje'
       fullPath: '/BuscarViaje'
       preLoaderRoute: typeof BuscarViajeIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/DateSelected/': {
+      id: '/DateSelected/'
+      path: '/DateSelected'
+      fullPath: '/DateSelected'
+      preLoaderRoute: typeof DateSelectedIndexImport
       parentRoute: typeof rootRoute
     }
     '/Login/': {
@@ -148,6 +161,7 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/BuscarViaje': typeof BuscarViajeIndexRoute
+  '/DateSelected': typeof DateSelectedIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Perfil': typeof PerfilIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
@@ -160,6 +174,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/BuscarViaje': typeof BuscarViajeIndexRoute
+  '/DateSelected': typeof DateSelectedIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Perfil': typeof PerfilIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
@@ -173,6 +188,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/BuscarViaje/': typeof BuscarViajeIndexRoute
+  '/DateSelected/': typeof DateSelectedIndexRoute
   '/Login/': typeof LoginIndexRoute
   '/Perfil/': typeof PerfilIndexRoute
   '/RecuperarPasword/': typeof RecuperarPaswordIndexRoute
@@ -187,6 +203,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/BuscarViaje'
+    | '/DateSelected'
     | '/Login'
     | '/Perfil'
     | '/RecuperarPasword'
@@ -198,6 +215,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/BuscarViaje'
+    | '/DateSelected'
     | '/Login'
     | '/Perfil'
     | '/RecuperarPasword'
@@ -209,6 +227,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/BuscarViaje/'
+    | '/DateSelected/'
     | '/Login/'
     | '/Perfil/'
     | '/RecuperarPasword/'
@@ -222,6 +241,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   BuscarViajeIndexRoute: typeof BuscarViajeIndexRoute
+  DateSelectedIndexRoute: typeof DateSelectedIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   PerfilIndexRoute: typeof PerfilIndexRoute
   RecuperarPaswordIndexRoute: typeof RecuperarPaswordIndexRoute
@@ -234,6 +254,7 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   BuscarViajeIndexRoute: BuscarViajeIndexRoute,
+  DateSelectedIndexRoute: DateSelectedIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   PerfilIndexRoute: PerfilIndexRoute,
   RecuperarPaswordIndexRoute: RecuperarPaswordIndexRoute,
@@ -257,6 +278,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/BuscarViaje/",
+        "/DateSelected/",
         "/Login/",
         "/Perfil/",
         "/RecuperarPasword/",
@@ -271,6 +293,9 @@ export const routeTree = rootRoute
     },
     "/BuscarViaje/": {
       "filePath": "BuscarViaje/index.tsx"
+    },
+    "/DateSelected/": {
+      "filePath": "DateSelected/index.tsx"
     },
     "/Login/": {
       "filePath": "Login/index.tsx"

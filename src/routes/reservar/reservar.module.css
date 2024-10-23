@@ -208,3 +208,15 @@
     height: 50px !important;
   }
 }
+.passengerIconWrapper {
+  display: flex;
+  gap: 2px; /* Ajusta el espacio entre los iconos */
+  align-items: center;
+  justify-content: flex-end; /* Mueve los iconos hacia la derecha */
+  margin-right: 15px; /* Ajusta la posición para que se vean correctamente */
+  padding-left: 5px; /* Espacio desde el borde izquierdo */
+}
+
+.passengerIcon {
+  transform: scale(0.9); /* Reduce el tamaño de los iconos ligeramente */
+}

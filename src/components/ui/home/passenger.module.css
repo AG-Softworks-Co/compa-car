@@ -41,3 +41,10 @@
 .passengerCard:hover .passengerIcon {
   transform: scale(1.2);
 }
+
+.passengerIconWrapper {
+  display: flex;
+  justify-content: space-around; /* Espaciado lateral entre los íconos */
+  gap: 8px; /* Espacio entre los íconos */
+  align-items: center; /* Alinea los íconos verticalmente */
+}
