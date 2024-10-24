@@ -1,41 +1,57 @@
-import React, { useState } from 'react';
-import { createFileRoute, Link } from '@tanstack/react-router';
+import React from 'react'
+import { createFileRoute } from '@tanstack/react-router'
 import {
   Box,
   TextInput,
   Button,
   Container,
   Text,
-  Checkbox,
-  Stack,
   Group,
   UnstyledButton,
-} from '@mantine/core';
-import { ArrowLeft, Eye, EyeOff, Car, MapPin } from 'lucide-react';
-import styles from './index.module.css';
+} from '@mantine/core'
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
+import { Link, useNavigate } from '@tanstack/react-router'
+import styles from './index.module.css'
+import { useForm } from '@mantine/form'
+import ky from 'ky'
 
 const RegisterView: React.FC = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
+  const [showPassword, setShowPassword] = React.useState(false)
+  const navigate = useNavigate()
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!acceptTerms) {
-      alert('Debes aceptar los términos y condiciones para continuar');
-      return;
+  const form = useForm({
+    mode: 'uncontrolled',
+    initialValues: {
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+  })
+
+  const handleRegister = async (values: {
+    email: string
+    password: string
+    confirmPassword: string
+  }) => {
+    if (values.password !== values.confirmPassword) {
+      alert('Las contraseñas no coinciden')
+      return
     }
 
-    // Iniciar la animación de búsqueda
-    setIsSearching(true);
-
-    // Simular la búsqueda (animación dura 5 segundos)
-    setTimeout(() => {
-      setIsSearching(false);
-      console.log('Búsqueda completada...');
-    }, 5000);
-  };
+    const res = await ky
+      .post(
+        'https://rest-sorella-production.up.railway.app/api/usuarios_compacar',
+        {
+          json: {
+            correo: values.email,
+            password: values.password,
+          },
+        },
+      )
+      .json()
+    console.log(res)
+    navigate({ to: '/Login' })
+  }
 
   return (
     <Container className={styles.container}>
@@ -47,31 +63,35 @@ const RegisterView: React.FC = () => {
 
       <Box className={styles.logoSection}>
         <Box className={styles.logo}>
-          <img src="/Logo.png" alt="Compaccar Logo" />
+          <img src="/Logo.png" alt="Cupo Logo" />
         </Box>
-        <Text size="xl" fw={700} className={styles.title}>
-          Bienvenido a Cupo
-        </Text>
-        <Text size="sm" c="dimmed" className={styles.subtitle}>
-          Crea tu cuenta y comienza a viajar con nosotros.
+        <Text className={styles.title}>Crear una cuenta</Text>
+        <Text className={styles.subtitle}>
+          Únete a nosotros y empieza a viajar.
         </Text>
       </Box>
 
-      <form onSubmit={handleSubmit}>
-        <Stack gap="md">
+      <form onSubmit={form.onSubmit(handleRegister)} className={styles.form}>
+        <Box className={styles.inputWrapper}>
+          <Text className={styles.inputLabel}>Correo electrónico</Text>
           <TextInput
-            placeholder="Correo electrónico"
+            placeholder="ejemplo@correo.com"
             className={styles.input}
             size="lg"
             required
+            {...form.getInputProps('email')}
           />
+        </Box>
 
+        <Box className={styles.inputWrapper}>
+          <Text className={styles.inputLabel}>Contraseña</Text>
           <TextInput
             type={showPassword ? 'text' : 'password'}
-            placeholder="Contraseña"
+            placeholder="Ingresa tu contraseña"
             className={styles.input}
             size="lg"
             required
+            {...form.getInputProps('password')}
             rightSection={
               <UnstyledButton
                 onClick={() => setShowPassword(!showPassword)}
@@ -81,60 +101,43 @@ const RegisterView: React.FC = () => {
               </UnstyledButton>
             }
           />
+        </Box>
 
+        <Box className={styles.inputWrapper}>
+          <Text className={styles.inputLabel}>Confirmar Contraseña</Text>
           <TextInput
-            type={showConfirmPassword ? 'text' : 'password'}
+            type={showPassword ? 'text' : 'password'}
             placeholder="Confirma tu contraseña"
             className={styles.input}
             size="lg"
             required
+            {...form.getInputProps('confirmPassword')}
             rightSection={
               <UnstyledButton
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                onClick={() => setShowPassword(!showPassword)}
                 className={styles.eyeButton}
               >
-                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </UnstyledButton>
             }
           />
+        </Box>
 
-          <Checkbox
-            label="Al continuar aceptas nuestros términos, condiciones y política de tratamiento de datos personales"
-            className={styles.checkbox}
-            size="md"
-            checked={acceptTerms}
-            onChange={(event) => setAcceptTerms(event.currentTarget.checked)}
-            required
-          />
-
-          <Button
-            fullWidth
-            size="lg"
-            className={`${styles.continueButton} ${isSearching ? styles.searching : ''}`}
-            type="submit"
-            disabled={isSearching}
-          >
-            {isSearching ? (
-              <div className={styles.searchingAnimation}>
-                <div className={styles.carContainer}>
-                  <Car className={styles.carIcon} size={24} />
-                </div>
-                <div className={styles.road}>
-                  <div className={styles.destination}>
-                    <MapPin size={24} className={styles.destinationIcon} />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              'Buscar'
-            )}
-          </Button>
-        </Stack>
+        <Button
+          fullWidth
+          size="lg"
+          className={styles.loginButton}
+          type="submit"
+        >
+          Registrarse
+        </Button>
       </form>
+
+      <Text className={styles.version}>v2.54.4 (964)</Text>
     </Container>
-  );
-};
+  )
+}
 
 export const Route = createFileRoute('/Registro/')({
   component: RegisterView,
-});
+})
