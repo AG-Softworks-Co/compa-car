@@ -1,5 +1,5 @@
-import React from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import React, { useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 import {
   Box,
   TextInput,
@@ -8,22 +8,27 @@ import {
   Text,
   Group,
   UnstyledButton,
-} from '@mantine/core';
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import { Link, useNavigate } from '@tanstack/react-router';
-import styles from './index.module.css';
-
+} from "@mantine/core";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import styles from "./index.module.css";
+import { useForm } from "@mantine/form";
+import ky from "ky";
 const LoginView: React.FC = () => {
   const [showPassword, setShowPassword] = React.useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    console.log('Iniciando sesión...');
-  };
+  const form = useForm({
+    mode: "uncontrolled",
+    initialValues: {
+      email: "",
+      password: "",
+    },
+  });
 
   const handleForgotPassword = () => {
-    navigate({ to: '/RecuperarPasword' });
+    navigate({ to: "/RecuperarPasword" });
   };
 
   return (
@@ -46,7 +51,36 @@ const LoginView: React.FC = () => {
         </Text>
       </Box>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
+      <form
+        onSubmit={form.onSubmit(async (values) => {
+          setLoading(true);
+          const res = await ky
+            .post(
+              "https://rest-sorella-production.up.railway.app/api/auth_compacar/login",
+              {
+                json: {
+                  correo: values.email,
+                  password: values.password,
+                },
+              }
+            )
+            .json<{ ok: boolean; token: string }>()
+            .catch(() => {
+              alert("Error al autenticar el usuario");
+              setLoading(false);
+            });
+          if (res?.ok) {
+            alert("Usuario autenticado correctamente");
+            localStorage.setItem("token", res.token);
+            navigate({ to: "/home" });
+            setLoading(false);
+            return;
+          }
+          alert("Usuario o contraseña incorrectos");
+          setLoading(false);
+        })}
+        className={styles.form}
+      >
         <Box className={styles.inputWrapper}>
           <Text className={styles.inputLabel}>Correo electrónico</Text>
           <TextInput
@@ -54,6 +88,7 @@ const LoginView: React.FC = () => {
             className={styles.input}
             size="lg"
             required
+            {...form.getInputProps("email")}
           />
         </Box>
 
@@ -65,6 +100,7 @@ const LoginView: React.FC = () => {
             className={styles.input}
             size="lg"
             required
+            {...form.getInputProps("password")}
             rightSection={
               <UnstyledButton
                 onClick={() => setShowPassword(!showPassword)}
@@ -77,6 +113,7 @@ const LoginView: React.FC = () => {
         </Box>
 
         <Button
+          loading={loading}
           fullWidth
           size="lg"
           className={styles.loginButton}
@@ -85,7 +122,7 @@ const LoginView: React.FC = () => {
           Ingresar
         </Button>
 
-        <UnstyledButton 
+        <UnstyledButton
           className={styles.forgotPassword}
           onClick={handleForgotPassword}
         >
@@ -98,6 +135,6 @@ const LoginView: React.FC = () => {
   );
 };
 
-export const Route = createFileRoute('/Login/')({
-  component: LoginView
+export const Route = createFileRoute("/Login/")({
+  component: LoginView,
 });

@@ -45,6 +45,7 @@
     "drizzle-orm": "^0.33.0",
     "embla-carousel-react": "^8.3.0",
     "framer-motion": "^11.11.9",
+    "ky": "^1.7.2",
     "lucide-react": "^0.447.0",
     "pocketbase": "^0.22.0-rc2",
     "react": "^18.3.1",

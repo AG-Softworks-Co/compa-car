@@ -47,19 +47,21 @@ const navItems = [
   { icon: User, label: "Mi Cuenta", to: "/profile" },
 ];
 
+const noNavBarRoutes = ["/", "/login"]
+
 export const Route = createRootRoute({
   component: () => {
     const location = useLocation();
     return (
       <MantineProvider theme={theme} defaultColorScheme="dark">
         <AppShell
-          header={{ height: location.pathname !== "/" ? 60 : 0 }}
+          header={{ height: !noNavBarRoutes.includes(location.pathname) ? 60 : 0 }}
           footer={{ height: 60 }}
           className={styles.appShell}
         >
           <div className={styles.backgroundEffect} />
 
-          {location.pathname !== "/" && (
+          {!noNavBarRoutes.includes(location.pathname) && (
             <AppShell.Header className={styles.header}>
               <Group justify="space-between" className={styles.headerContent}>
                 <Text className={styles.logo}>Cupo</Text>
@@ -78,7 +80,7 @@ export const Route = createRootRoute({
             <Outlet />
           </AppShell.Main>
 
-          {location.pathname !== "/" && (
+          {!noNavBarRoutes.includes(location.pathname) && (
             <AppShell.Footer className={styles.footer}>
               <Group className={styles.navGroup}>
                 {navItems.map((item, index) => (
