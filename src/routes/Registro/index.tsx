@@ -1,5 +1,5 @@
-import React from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import React, { useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 import {
   Box,
   TextInput,
@@ -8,50 +8,63 @@ import {
   Text,
   Group,
   UnstyledButton,
-} from '@mantine/core'
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
-import { Link, useNavigate } from '@tanstack/react-router'
-import styles from './index.module.css'
-import { useForm } from '@mantine/form'
-import ky from 'ky'
+} from "@mantine/core";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import styles from "./index.module.css";
+import { useForm } from "@mantine/form";
+import ky from "ky";
 
 const RegisterView: React.FC = () => {
-  const [showPassword, setShowPassword] = React.useState(false)
-  const navigate = useNavigate()
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm({
-    mode: 'uncontrolled',
+    mode: "uncontrolled",
     initialValues: {
-      email: '',
-      password: '',
-      confirmPassword: '',
+      email: "",
+      password: "",
+      confirmPassword: "",
     },
-  })
+  });
 
   const handleRegister = async (values: {
-    email: string
-    password: string
-    confirmPassword: string
+    email: string;
+    password: string;
+    confirmPassword: string;
   }) => {
+    setLoading(true);
     if (values.password !== values.confirmPassword) {
-      alert('Las contraseñas no coinciden')
-      return
+      alert("Las contraseñas no coinciden");
+      setLoading(false);
+      return;
     }
 
     const res = await ky
       .post(
-        'https://rest-sorella-production.up.railway.app/api/usuarios_compacar',
+        "https://rest-sorella-production.up.railway.app/api/usuarios_compacar",
         {
           json: {
             correo: values.email,
             password: values.password,
+            idrole: "USER",
+            img: "Sin imagen",
+            estado: true,
+            google: false,
           },
-        },
+        }
       )
-      .json()
-    console.log(res)
-    navigate({ to: '/Login' })
-  }
+      .json<{ ok: boolean }>();
+    if (res.ok) {
+      alert("Usuario creado correctamente");
+      navigate({ to: "/Login" });
+      setLoading(false)
+      return;
+    }
+    alert("Error al crear el usuario");
+    setLoading(false);
+  };
 
   return (
     <Container className={styles.container}>
@@ -79,19 +92,19 @@ const RegisterView: React.FC = () => {
             className={styles.input}
             size="lg"
             required
-            {...form.getInputProps('email')}
+            {...form.getInputProps("email")}
           />
         </Box>
 
         <Box className={styles.inputWrapper}>
           <Text className={styles.inputLabel}>Contraseña</Text>
           <TextInput
-            type={showPassword ? 'text' : 'password'}
+            type={showPassword ? "text" : "password"}
             placeholder="Ingresa tu contraseña"
             className={styles.input}
             size="lg"
             required
-            {...form.getInputProps('password')}
+            {...form.getInputProps("password")}
             rightSection={
               <UnstyledButton
                 onClick={() => setShowPassword(!showPassword)}
@@ -106,12 +119,12 @@ const RegisterView: React.FC = () => {
         <Box className={styles.inputWrapper}>
           <Text className={styles.inputLabel}>Confirmar Contraseña</Text>
           <TextInput
-            type={showPassword ? 'text' : 'password'}
+            type={showPassword ? "text" : "password"}
             placeholder="Confirma tu contraseña"
             className={styles.input}
             size="lg"
             required
-            {...form.getInputProps('confirmPassword')}
+            {...form.getInputProps("confirmPassword")}
             rightSection={
               <UnstyledButton
                 onClick={() => setShowPassword(!showPassword)}
@@ -124,6 +137,7 @@ const RegisterView: React.FC = () => {
         </Box>
 
         <Button
+          loading={loading}
           fullWidth
           size="lg"
           className={styles.loginButton}
@@ -135,9 +149,9 @@ const RegisterView: React.FC = () => {
 
       <Text className={styles.version}>v2.54.4 (964)</Text>
     </Container>
-  )
-}
+  );
+};
 
-export const Route = createFileRoute('/Registro/')({
+export const Route = createFileRoute("/Registro/")({
   component: RegisterView,
-})
+});

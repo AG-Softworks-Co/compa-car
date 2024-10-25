@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Box,
@@ -16,6 +16,7 @@ import { useForm } from "@mantine/form";
 import ky from "ky";
 const LoginView: React.FC = () => {
   const [showPassword, setShowPassword] = React.useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const form = useForm({
@@ -52,16 +53,31 @@ const LoginView: React.FC = () => {
 
       <form
         onSubmit={form.onSubmit(async (values) => {
-          const res = await ky.post(
-            "https://rest-sorella-production.up.railway.app/api/auth_compacar/login",
-            {
-              json: {
-                correo: values.email,
-                password: values.password,
-              },
-            }
-          ).json();
-          console.log(res);
+          setLoading(true);
+          const res = await ky
+            .post(
+              "https://rest-sorella-production.up.railway.app/api/auth_compacar/login",
+              {
+                json: {
+                  correo: values.email,
+                  password: values.password,
+                },
+              }
+            )
+            .json<{ ok: boolean; token: string }>()
+            .catch(() => {
+              alert("Error al autenticar el usuario");
+              setLoading(false);
+            });
+          if (res?.ok) {
+            alert("Usuario autenticado correctamente");
+            localStorage.setItem("token", res.token);
+            navigate({ to: "/home" });
+            setLoading(false);
+            return;
+          }
+          alert("Usuario o contraseña incorrectos");
+          setLoading(false);
         })}
         className={styles.form}
       >
@@ -97,6 +113,7 @@ const LoginView: React.FC = () => {
         </Box>
 
         <Button
+          loading={loading}
           fullWidth
           size="lg"
           className={styles.loginButton}
