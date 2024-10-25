@@ -41,13 +41,13 @@ const theme = createTheme({
 
 const navItems = [
   { icon: Search, label: "Buscar", to: "/reservar" },
-  { icon: PlusCircle, label: "Publicar", to: "/publish" },
+  { icon: PlusCircle, label: "Publicar", to: "/publicarviaje" },
   { icon: "logo", label: "", to: "/home" },
   { icon: Car, label: "Mis Viajes", to: "/my-trips" },
-  { icon: User, label: "Mi Cuenta", to: "/profile" },
+  { icon: User, label: "Mi Cuenta", to: "/perfil" },
 ];
 
-const noNavBarRoutes = ["/", "/login"]
+const noNavBarRoutes = ["/", "/Login" ,"/Registro","RecuperarPasword",]
 
 export const Route = createRootRoute({
   component: () => {

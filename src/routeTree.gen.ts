@@ -14,6 +14,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as ReservarIndexImport } from './routes/reservar/index'
+import { Route as PublicarviajeIndexImport } from './routes/publicarviaje/index'
 import { Route as PerfilIndexImport } from './routes/perfil/index'
 import { Route as HomeIndexImport } from './routes/home/index'
 import { Route as AccountIndexImport } from './routes/account/index'
@@ -21,7 +22,6 @@ import { Route as RegistroIndexImport } from './routes/Registro/index'
 import { Route as RecuperarPaswordIndexImport } from './routes/RecuperarPasword/index'
 import { Route as LoginIndexImport } from './routes/Login/index'
 import { Route as DateSelectedIndexImport } from './routes/DateSelected/index'
-import { Route as BuscarViajeIndexImport } from './routes/BuscarViaje/index'
 
 // Create Virtual Routes
 
@@ -36,6 +36,11 @@ const IndexLazyRoute = IndexLazyImport.update({
 
 const ReservarIndexRoute = ReservarIndexImport.update({
   path: '/reservar/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PublicarviajeIndexRoute = PublicarviajeIndexImport.update({
+  path: '/publicarviaje/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -74,11 +79,6 @@ const DateSelectedIndexRoute = DateSelectedIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const BuscarViajeIndexRoute = BuscarViajeIndexImport.update({
-  path: '/BuscarViaje/',
-  getParentRoute: () => rootRoute,
-} as any)
-
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -88,13 +88,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/BuscarViaje/': {
-      id: '/BuscarViaje/'
-      path: '/BuscarViaje'
-      fullPath: '/BuscarViaje'
-      preLoaderRoute: typeof BuscarViajeIndexImport
       parentRoute: typeof rootRoute
     }
     '/DateSelected/': {
@@ -146,6 +139,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfilIndexImport
       parentRoute: typeof rootRoute
     }
+    '/publicarviaje/': {
+      id: '/publicarviaje/'
+      path: '/publicarviaje'
+      fullPath: '/publicarviaje'
+      preLoaderRoute: typeof PublicarviajeIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/reservar/': {
       id: '/reservar/'
       path: '/reservar'
@@ -160,7 +160,6 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
-  '/BuscarViaje': typeof BuscarViajeIndexRoute
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Login': typeof LoginIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
@@ -168,12 +167,12 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountIndexRoute
   '/home': typeof HomeIndexRoute
   '/perfil': typeof PerfilIndexRoute
+  '/publicarviaje': typeof PublicarviajeIndexRoute
   '/reservar': typeof ReservarIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
-  '/BuscarViaje': typeof BuscarViajeIndexRoute
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Login': typeof LoginIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
@@ -181,13 +180,13 @@ export interface FileRoutesByTo {
   '/account': typeof AccountIndexRoute
   '/home': typeof HomeIndexRoute
   '/perfil': typeof PerfilIndexRoute
+  '/publicarviaje': typeof PublicarviajeIndexRoute
   '/reservar': typeof ReservarIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
-  '/BuscarViaje/': typeof BuscarViajeIndexRoute
   '/DateSelected/': typeof DateSelectedIndexRoute
   '/Login/': typeof LoginIndexRoute
   '/RecuperarPasword/': typeof RecuperarPaswordIndexRoute
@@ -195,6 +194,7 @@ export interface FileRoutesById {
   '/account/': typeof AccountIndexRoute
   '/home/': typeof HomeIndexRoute
   '/perfil/': typeof PerfilIndexRoute
+  '/publicarviaje/': typeof PublicarviajeIndexRoute
   '/reservar/': typeof ReservarIndexRoute
 }
 
@@ -202,7 +202,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/BuscarViaje'
     | '/DateSelected'
     | '/Login'
     | '/RecuperarPasword'
@@ -210,11 +209,11 @@ export interface FileRouteTypes {
     | '/account'
     | '/home'
     | '/perfil'
+    | '/publicarviaje'
     | '/reservar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/BuscarViaje'
     | '/DateSelected'
     | '/Login'
     | '/RecuperarPasword'
@@ -222,11 +221,11 @@ export interface FileRouteTypes {
     | '/account'
     | '/home'
     | '/perfil'
+    | '/publicarviaje'
     | '/reservar'
   id:
     | '__root__'
     | '/'
-    | '/BuscarViaje/'
     | '/DateSelected/'
     | '/Login/'
     | '/RecuperarPasword/'
@@ -234,13 +233,13 @@ export interface FileRouteTypes {
     | '/account/'
     | '/home/'
     | '/perfil/'
+    | '/publicarviaje/'
     | '/reservar/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
-  BuscarViajeIndexRoute: typeof BuscarViajeIndexRoute
   DateSelectedIndexRoute: typeof DateSelectedIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   RecuperarPaswordIndexRoute: typeof RecuperarPaswordIndexRoute
@@ -248,12 +247,12 @@ export interface RootRouteChildren {
   AccountIndexRoute: typeof AccountIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
   PerfilIndexRoute: typeof PerfilIndexRoute
+  PublicarviajeIndexRoute: typeof PublicarviajeIndexRoute
   ReservarIndexRoute: typeof ReservarIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
-  BuscarViajeIndexRoute: BuscarViajeIndexRoute,
   DateSelectedIndexRoute: DateSelectedIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   RecuperarPaswordIndexRoute: RecuperarPaswordIndexRoute,
@@ -261,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountIndexRoute: AccountIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
   PerfilIndexRoute: PerfilIndexRoute,
+  PublicarviajeIndexRoute: PublicarviajeIndexRoute,
   ReservarIndexRoute: ReservarIndexRoute,
 }
 
@@ -277,7 +277,6 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/BuscarViaje/",
         "/DateSelected/",
         "/Login/",
         "/RecuperarPasword/",
@@ -285,14 +284,12 @@ export const routeTree = rootRoute
         "/account/",
         "/home/",
         "/perfil/",
+        "/publicarviaje/",
         "/reservar/"
       ]
     },
     "/": {
       "filePath": "index.lazy.tsx"
-    },
-    "/BuscarViaje/": {
-      "filePath": "BuscarViaje/index.tsx"
     },
     "/DateSelected/": {
       "filePath": "DateSelected/index.tsx"
@@ -314,6 +311,9 @@ export const routeTree = rootRoute
     },
     "/perfil/": {
       "filePath": "perfil/index.tsx"
+    },
+    "/publicarviaje/": {
+      "filePath": "publicarviaje/index.tsx"
     },
     "/reservar/": {
       "filePath": "reservar/index.tsx"
