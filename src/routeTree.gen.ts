@@ -14,11 +14,11 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as ReservarIndexImport } from './routes/reservar/index'
+import { Route as PerfilIndexImport } from './routes/perfil/index'
 import { Route as HomeIndexImport } from './routes/home/index'
 import { Route as AccountIndexImport } from './routes/account/index'
 import { Route as RegistroIndexImport } from './routes/Registro/index'
 import { Route as RecuperarPaswordIndexImport } from './routes/RecuperarPasword/index'
-import { Route as PerfilIndexImport } from './routes/Perfil/index'
 import { Route as LoginIndexImport } from './routes/Login/index'
 import { Route as DateSelectedIndexImport } from './routes/DateSelected/index'
 import { Route as BuscarViajeIndexImport } from './routes/BuscarViaje/index'
@@ -39,6 +39,11 @@ const ReservarIndexRoute = ReservarIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const PerfilIndexRoute = PerfilIndexImport.update({
+  path: '/perfil/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const HomeIndexRoute = HomeIndexImport.update({
   path: '/home/',
   getParentRoute: () => rootRoute,
@@ -56,11 +61,6 @@ const RegistroIndexRoute = RegistroIndexImport.update({
 
 const RecuperarPaswordIndexRoute = RecuperarPaswordIndexImport.update({
   path: '/RecuperarPasword/',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const PerfilIndexRoute = PerfilIndexImport.update({
-  path: '/Perfil/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -111,13 +111,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginIndexImport
       parentRoute: typeof rootRoute
     }
-    '/Perfil/': {
-      id: '/Perfil/'
-      path: '/Perfil'
-      fullPath: '/Perfil'
-      preLoaderRoute: typeof PerfilIndexImport
-      parentRoute: typeof rootRoute
-    }
     '/RecuperarPasword/': {
       id: '/RecuperarPasword/'
       path: '/RecuperarPasword'
@@ -146,6 +139,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeIndexImport
       parentRoute: typeof rootRoute
     }
+    '/perfil/': {
+      id: '/perfil/'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/reservar/': {
       id: '/reservar/'
       path: '/reservar'
@@ -163,11 +163,11 @@ export interface FileRoutesByFullPath {
   '/BuscarViaje': typeof BuscarViajeIndexRoute
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Login': typeof LoginIndexRoute
-  '/Perfil': typeof PerfilIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
   '/Registro': typeof RegistroIndexRoute
   '/account': typeof AccountIndexRoute
   '/home': typeof HomeIndexRoute
+  '/perfil': typeof PerfilIndexRoute
   '/reservar': typeof ReservarIndexRoute
 }
 
@@ -176,11 +176,11 @@ export interface FileRoutesByTo {
   '/BuscarViaje': typeof BuscarViajeIndexRoute
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Login': typeof LoginIndexRoute
-  '/Perfil': typeof PerfilIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
   '/Registro': typeof RegistroIndexRoute
   '/account': typeof AccountIndexRoute
   '/home': typeof HomeIndexRoute
+  '/perfil': typeof PerfilIndexRoute
   '/reservar': typeof ReservarIndexRoute
 }
 
@@ -190,11 +190,11 @@ export interface FileRoutesById {
   '/BuscarViaje/': typeof BuscarViajeIndexRoute
   '/DateSelected/': typeof DateSelectedIndexRoute
   '/Login/': typeof LoginIndexRoute
-  '/Perfil/': typeof PerfilIndexRoute
   '/RecuperarPasword/': typeof RecuperarPaswordIndexRoute
   '/Registro/': typeof RegistroIndexRoute
   '/account/': typeof AccountIndexRoute
   '/home/': typeof HomeIndexRoute
+  '/perfil/': typeof PerfilIndexRoute
   '/reservar/': typeof ReservarIndexRoute
 }
 
@@ -205,11 +205,11 @@ export interface FileRouteTypes {
     | '/BuscarViaje'
     | '/DateSelected'
     | '/Login'
-    | '/Perfil'
     | '/RecuperarPasword'
     | '/Registro'
     | '/account'
     | '/home'
+    | '/perfil'
     | '/reservar'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -217,11 +217,11 @@ export interface FileRouteTypes {
     | '/BuscarViaje'
     | '/DateSelected'
     | '/Login'
-    | '/Perfil'
     | '/RecuperarPasword'
     | '/Registro'
     | '/account'
     | '/home'
+    | '/perfil'
     | '/reservar'
   id:
     | '__root__'
@@ -229,11 +229,11 @@ export interface FileRouteTypes {
     | '/BuscarViaje/'
     | '/DateSelected/'
     | '/Login/'
-    | '/Perfil/'
     | '/RecuperarPasword/'
     | '/Registro/'
     | '/account/'
     | '/home/'
+    | '/perfil/'
     | '/reservar/'
   fileRoutesById: FileRoutesById
 }
@@ -243,11 +243,11 @@ export interface RootRouteChildren {
   BuscarViajeIndexRoute: typeof BuscarViajeIndexRoute
   DateSelectedIndexRoute: typeof DateSelectedIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
-  PerfilIndexRoute: typeof PerfilIndexRoute
   RecuperarPaswordIndexRoute: typeof RecuperarPaswordIndexRoute
   RegistroIndexRoute: typeof RegistroIndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
+  PerfilIndexRoute: typeof PerfilIndexRoute
   ReservarIndexRoute: typeof ReservarIndexRoute
 }
 
@@ -256,11 +256,11 @@ const rootRouteChildren: RootRouteChildren = {
   BuscarViajeIndexRoute: BuscarViajeIndexRoute,
   DateSelectedIndexRoute: DateSelectedIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
-  PerfilIndexRoute: PerfilIndexRoute,
   RecuperarPaswordIndexRoute: RecuperarPaswordIndexRoute,
   RegistroIndexRoute: RegistroIndexRoute,
   AccountIndexRoute: AccountIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
+  PerfilIndexRoute: PerfilIndexRoute,
   ReservarIndexRoute: ReservarIndexRoute,
 }
 
@@ -280,11 +280,11 @@ export const routeTree = rootRoute
         "/BuscarViaje/",
         "/DateSelected/",
         "/Login/",
-        "/Perfil/",
         "/RecuperarPasword/",
         "/Registro/",
         "/account/",
         "/home/",
+        "/perfil/",
         "/reservar/"
       ]
     },
@@ -300,9 +300,6 @@ export const routeTree = rootRoute
     "/Login/": {
       "filePath": "Login/index.tsx"
     },
-    "/Perfil/": {
-      "filePath": "Perfil/index.tsx"
-    },
     "/RecuperarPasword/": {
       "filePath": "RecuperarPasword/index.tsx"
     },
@@ -314,6 +311,9 @@ export const routeTree = rootRoute
     },
     "/home/": {
       "filePath": "home/index.tsx"
+    },
+    "/perfil/": {
+      "filePath": "perfil/index.tsx"
     },
     "/reservar/": {
       "filePath": "reservar/index.tsx"
