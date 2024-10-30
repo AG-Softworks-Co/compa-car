@@ -196,7 +196,7 @@ function ReservarView() {
   return (
     <Container fluid className={styles.container}>
       <div className={styles.header}>
-        <UnstyledButton component={Link} to="/" className={styles.backButton}>
+        <UnstyledButton component={Link} to="/Home" className={styles.backButton}>
           <ArrowLeft size={24} />
         </UnstyledButton>
         <Title className={styles.headerTitle}>Reservar viaje</Title>
