@@ -203,3 +203,308 @@
     font-size: 14px !important;
   }
 }
+
+
+/* Agregar al index.module.css */
+.mapSection {
+  height: 300px;
+  margin: 20px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 242, 195, 0.2);
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+.routeDetails {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 242, 195, 0.2);
+  margin-top: 20px;
+}
+
+.tollsSection {
+  margin: 15px 0;
+  padding: 15px;
+  background: rgba(0, 242, 195, 0.05);
+  border-radius: 8px;
+}
+
+.stepItem {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stepItem:last-child {
+  border-bottom: none;
+}
+
+.stepItem :global(.mantine-Text-root) {
+  margin-top: 4px;
+}
+
+.stepsAccordion {
+  margin-top: 20px;
+}
+
+
+/* Agregar al final de index.module.css */
+.mapLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.routeDetails {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(0, 242, 195, 0.1) !important;
+  color: white !important;
+}
+
+.routeDetails [class*="badge"] {
+  background: rgba(0, 242, 195, 0.1) !important;
+  border: 1px solid rgba(0, 242, 195, 0.2) !important;
+  color: #00F2C3 !important;
+}
+
+.mapSection {
+  position: relative;
+}
+
+.map {
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Estilos para el mapa de Google */
+:global(.gm-style) {
+  border-radius: 12px;
+}
+
+:global(.gm-style-iw) {
+  background-color: #1A1B1F !important;
+  color: white !important;
+  padding: 12px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 242, 195, 0.1) !important;
+}
+
+:global(.gm-style-iw button) {
+  filter: invert(1) !important;
+}
+
+/* Nuevos estilos para el modal y rutas */
+.routeModal {
+  background-color: #0a0a0a !important;
+  border: 1px solid rgba(0, 255, 157, 0.1) !important;
+}
+
+.routeModalTitle {
+  color: white !important;
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  padding: 20px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.routeModalContent {
+  display: flex;
+  gap: 20px;
+  padding: 0 !important;
+  height: 600px;
+}
+
+.routesList {
+  flex: 0 0 350px;
+  padding: 20px;
+  overflow-y: auto;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.routeOption {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 255, 157, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.routeOption:hover {
+  background: rgba(0, 255, 157, 0.05);
+  transform: translateY(-2px);
+}
+
+.routeOptionSelected {
+  background: rgba(0, 255, 157, 0.1);
+  border-color: #00ff9d;
+}
+
+.routeInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.routeTime, .routeDistance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.routeDescription {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+.mapContainer {
+  flex: 1;
+  position: relative;
+}
+
+.mapWrapper {
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Estilos para el mapa de Google */
+:global(.gm-style) {
+  border-radius: 12px !important;
+}
+
+:global(.gm-style-iw) {
+  background-color: #1A1B1F !important;
+  color: white !important;
+  padding: 12px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 255, 157, 0.1) !important;
+}
+
+:global(.gm-style-iw button) {
+  filter: invert(1) !important;
+}
+
+:global(.gm-style-iw-d) {
+  background-color: #1A1B1F !important;
+}
+
+.confirmRouteButton {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #00ff9d !important;
+  color: black !important;
+  padding: 12px 24px !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 20px rgba(0, 255, 157, 0.2) !important;
+  transition: all 0.3s ease !important;
+}
+
+.confirmRouteButton:hover {
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 157, 0.3) !important;
+}
+
+/* Estilos para el modal y rutas */
+.routeModal {
+  background-color: #0a0a0a !important;
+}
+
+.routeModalTitle {
+  color: white !important;
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  padding: 20px !important;
+  background-color: #0a0a0a !important;
+  border-bottom: 1px solid rgba(0, 255, 157, 0.1) !important;
+}
+
+.routeModalContent {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 70px);
+  padding: 0 !important;
+  background-color: #0a0a0a !important;
+}
+
+.routeInfo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(0, 255, 157, 0.1);
+}
+
+.routeTime, .routeDistance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.mapContainer {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+}
+
+/* Estilos específicos para Google Maps */
+:global(.gm-style) {
+  font-family: inherit !important;
+}
+
+:global(.gm-style-iw) {
+  background-color: #1A1B1F !important;
+  color: white !important;
+  padding: 12px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 255, 157, 0.1) !important;
+}
+
+:global(.gm-style-iw button) {
+  filter: invert(1) !important;
+}
+
+:global(.gm-style-iw-d) {
+  background-color: #1A1B1F !important;
+}
+
+.confirmRouteButton {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #00ff9d !important;
+  color: black !important;
+  padding: 12px 32px !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 20px rgba(0, 255, 157, 0.2) !important;
+  transition: all 0.3s ease !important;
+  z-index: 1000;
+}
+
+.confirmRouteButton:hover {
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 157, 0.3) !important;
+}

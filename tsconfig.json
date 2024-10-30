@@ -6,8 +6,11 @@
   ],
   "compilerOptions": {
     "baseUrl": ".",
+    "types": ["node", "google.maps", "@types/googlemaps"],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "skipLibCheck": true
   }
 }

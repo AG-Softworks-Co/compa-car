@@ -1,0 +1,240 @@
+.container {
+  min-height: 100vh;
+  background-color: #0a0a0a;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 10% 0%, rgba(0, 255, 157, 0.03) 0%, transparent 30%),
+    radial-gradient(circle at 90% 90%, rgba(0, 255, 157, 0.03) 0%, transparent 30%);
+  pointer-events: none;
+}
+
+.searchSection {
+  position: relative;
+  z-index: 2;
+}
+
+.searchHeader {
+  padding: 16px;
+  display: flex;
+  gap: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.backButton {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: #00ff9d;
+  background: rgba(255, 255, 255, 0.03);
+  transition: all 0.3s ease;
+}
+
+.backButton:hover {
+  background: rgba(0, 255, 157, 0.1);
+  transform: translateX(-3px);
+}
+
+.searchBox {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 255, 157, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: all 0.3s ease;
+}
+
+.searchBox:focus-within {
+  border-color: #00ff9d;
+  background: rgba(0, 255, 157, 0.05);
+}
+
+.searchIcon {
+  color: rgba(0, 255, 157, 0.8);
+}
+
+.input {
+  flex: 1;
+}
+
+.input input {
+  background: transparent !important;
+  border: none !important;
+  color: white !important;
+  font-size: 16px !important;
+  padding: 0 !important;
+  height: auto !important;
+}
+
+.input input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.resultsList {
+  max-height: 60vh;
+  overflow-y: auto;
+  background: rgba(30, 31, 34, 0.95);
+  backdrop-filter: blur(10px);
+  margin: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 157, 0.3) transparent;
+}
+
+.resultsList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.resultsList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.resultsList::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 255, 157, 0.3);
+  border-radius: 3px;
+}
+
+.resultItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.resultItem:hover {
+  background: rgba(0, 255, 157, 0.05);
+}
+
+.resultItem:active {
+  transform: scale(0.99);
+}
+
+.resultIcon {
+  color: rgba(0, 255, 157, 0.8);
+  transition: transform 0.2s ease;
+}
+
+.resultItem:hover .resultIcon {
+  transform: scale(1.1);
+}
+
+.resultContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.mainText {
+  color: white;
+  font-size: 14px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.secondaryText {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mapSection {
+  height: 300px;
+  margin: 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 255, 157, 0.1);
+  position: relative;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+.confirmButton {
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: linear-gradient(45deg, #00ff9d, #00cc7a) !important;
+  border: none !important;
+  color: black !important;
+  font-weight: 600 !important;
+  padding: 0 32px !important;
+  height: 48px !important;
+  min-width: 200px !important;
+  font-size: 16px !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+  z-index: 10;
+}
+
+.confirmButton:hover {
+  transform: translateX(-50%) translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(0, 255, 157, 0.2);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: rgba(255, 255, 255, 0.8);
+  background: #0a0a0a;
+}
+
+/* Estilos del mapa de Google */
+:global(.gm-style) {
+  border-radius: 12px;
+}
+
+:global(.gm-style-iw) {
+  background-color: #1a1b1f !important;
+  color: white !important;
+  padding: 12px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 255, 157, 0.1) !important;
+}
+
+:global(.gm-style-iw button) {
+  filter: invert(1) !important;
+}
+
+@media (max-width: 768px) {
+  .searchHeader {
+    padding: 12px;
+  }
+
+  .mapSection {
+    margin: 12px;
+    height: 250px;
+  }
+
+  .confirmButton {
+    width: calc(100% - 32px) !important;
+    min-width: 0 !important;
+    bottom: 16px !important;
+  }
+}

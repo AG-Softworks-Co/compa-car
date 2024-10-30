@@ -47,7 +47,7 @@ const navItems = [
   { icon: User, label: "Mi Cuenta", to: "/perfil" },
 ];
 
-const noNavBarRoutes = ["/", "/Login" ,"/Registro","RecuperarPasword",]
+const noNavBarRoutes = ["/", "/Login" ,"/Registro","/RecuperarPasword", "/Origen", "/Destino"]
 
 export const Route = createRootRoute({
   component: () => {

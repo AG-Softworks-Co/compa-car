@@ -20,7 +20,9 @@ import { Route as HomeIndexImport } from './routes/home/index'
 import { Route as AccountIndexImport } from './routes/account/index'
 import { Route as RegistroIndexImport } from './routes/Registro/index'
 import { Route as RecuperarPaswordIndexImport } from './routes/RecuperarPasword/index'
+import { Route as OrigenIndexImport } from './routes/Origen/index'
 import { Route as LoginIndexImport } from './routes/Login/index'
+import { Route as DestinoIndexImport } from './routes/Destino/index'
 import { Route as DateSelectedIndexImport } from './routes/DateSelected/index'
 
 // Create Virtual Routes
@@ -69,8 +71,18 @@ const RecuperarPaswordIndexRoute = RecuperarPaswordIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const OrigenIndexRoute = OrigenIndexImport.update({
+  path: '/Origen/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const LoginIndexRoute = LoginIndexImport.update({
   path: '/Login/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DestinoIndexRoute = DestinoIndexImport.update({
+  path: '/Destino/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -97,11 +109,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DateSelectedIndexImport
       parentRoute: typeof rootRoute
     }
+    '/Destino/': {
+      id: '/Destino/'
+      path: '/Destino'
+      fullPath: '/Destino'
+      preLoaderRoute: typeof DestinoIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/Login/': {
       id: '/Login/'
       path: '/Login'
       fullPath: '/Login'
       preLoaderRoute: typeof LoginIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/Origen/': {
+      id: '/Origen/'
+      path: '/Origen'
+      fullPath: '/Origen'
+      preLoaderRoute: typeof OrigenIndexImport
       parentRoute: typeof rootRoute
     }
     '/RecuperarPasword/': {
@@ -161,7 +187,9 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/DateSelected': typeof DateSelectedIndexRoute
+  '/Destino': typeof DestinoIndexRoute
   '/Login': typeof LoginIndexRoute
+  '/Origen': typeof OrigenIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
   '/Registro': typeof RegistroIndexRoute
   '/account': typeof AccountIndexRoute
@@ -174,7 +202,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/DateSelected': typeof DateSelectedIndexRoute
+  '/Destino': typeof DestinoIndexRoute
   '/Login': typeof LoginIndexRoute
+  '/Origen': typeof OrigenIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
   '/Registro': typeof RegistroIndexRoute
   '/account': typeof AccountIndexRoute
@@ -188,7 +218,9 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/DateSelected/': typeof DateSelectedIndexRoute
+  '/Destino/': typeof DestinoIndexRoute
   '/Login/': typeof LoginIndexRoute
+  '/Origen/': typeof OrigenIndexRoute
   '/RecuperarPasword/': typeof RecuperarPaswordIndexRoute
   '/Registro/': typeof RegistroIndexRoute
   '/account/': typeof AccountIndexRoute
@@ -203,7 +235,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/DateSelected'
+    | '/Destino'
     | '/Login'
+    | '/Origen'
     | '/RecuperarPasword'
     | '/Registro'
     | '/account'
@@ -215,7 +249,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/DateSelected'
+    | '/Destino'
     | '/Login'
+    | '/Origen'
     | '/RecuperarPasword'
     | '/Registro'
     | '/account'
@@ -227,7 +263,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/DateSelected/'
+    | '/Destino/'
     | '/Login/'
+    | '/Origen/'
     | '/RecuperarPasword/'
     | '/Registro/'
     | '/account/'
@@ -241,7 +279,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   DateSelectedIndexRoute: typeof DateSelectedIndexRoute
+  DestinoIndexRoute: typeof DestinoIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
+  OrigenIndexRoute: typeof OrigenIndexRoute
   RecuperarPaswordIndexRoute: typeof RecuperarPaswordIndexRoute
   RegistroIndexRoute: typeof RegistroIndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
@@ -254,7 +294,9 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   DateSelectedIndexRoute: DateSelectedIndexRoute,
+  DestinoIndexRoute: DestinoIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
+  OrigenIndexRoute: OrigenIndexRoute,
   RecuperarPaswordIndexRoute: RecuperarPaswordIndexRoute,
   RegistroIndexRoute: RegistroIndexRoute,
   AccountIndexRoute: AccountIndexRoute,
@@ -278,7 +320,9 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/DateSelected/",
+        "/Destino/",
         "/Login/",
+        "/Origen/",
         "/RecuperarPasword/",
         "/Registro/",
         "/account/",
@@ -294,8 +338,14 @@ export const routeTree = rootRoute
     "/DateSelected/": {
       "filePath": "DateSelected/index.tsx"
     },
+    "/Destino/": {
+      "filePath": "Destino/index.tsx"
+    },
     "/Login/": {
       "filePath": "Login/index.tsx"
+    },
+    "/Origen/": {
+      "filePath": "Origen/index.tsx"
     },
     "/RecuperarPasword/": {
       "filePath": "RecuperarPasword/index.tsx"

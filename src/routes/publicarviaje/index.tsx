@@ -1,202 +1,332 @@
-import { createFileRoute } from '@tanstack/react-router';
+import React, { useState, useRef, useCallback } from 'react';
+import { createFileRoute, Link, useSearch } from '@tanstack/react-router';
 import {
   Container,
   Title,
   TextInput,
   Button,
-  Stepper,
   Text,
   UnstyledButton,
+  Modal,
+  
 } from '@mantine/core';
-import { 
-
-  MapPin, 
-  ArrowLeft, 
-  Calendar, 
-  Clock,
-  Users,
-  Car,
-  CircleDollarSign
-} from 'lucide-react';
-import { useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { MapPin, ArrowLeft, Clock, Navigation } from 'lucide-react';
+import { GoogleMap, DirectionsRenderer } from '@react-google-maps/api';
 import styles from './index.module.css';
 
-const PublicarViajeView = () => {
-  const [active, setActive] = useState(0);
-  const [formData, setFormData] = useState({
-    origin: '',
-    destination: '',
-    date: '',
-    time: '',
-    seats: 1,
-    price: ''
-  });
+interface SearchParams {
+  selectedAddress?: string;
+  selectedDestination?: string;
+}
 
-  const nextStep = () => setActive((current) => current + 1);
-  const prevStep = () => setActive((current) => current - 1);
+interface LocationData {
+  address: string;
+  city?: string;
+  coords: {
+    lat: number;
+    lng: number;
+  };
+}
+
+export const Route = createFileRoute('/publicarviaje/')({
+  validateSearch: (search: Record<string, unknown>): SearchParams => {
+    return {
+      selectedAddress: search.selectedAddress as string | undefined,
+      selectedDestination: search.selectedDestination as string | undefined,
+    };
+  },
+  component: ReservarView,
+});
+
+const mapOptions: google.maps.MapOptions = {
+  styles: [
+    {
+      elementType: "geometry",
+      stylers: [{ color: "#242f3e" }]
+    },
+    {
+      elementType: "labels.text.stroke",
+      stylers: [{ color: "#242f3e" }]
+    },
+    {
+      elementType: "labels.text.fill",
+      stylers: [{ color: "#746855" }]
+    },
+    {
+      featureType: "road",
+      elementType: "geometry",
+      stylers: [{ color: "#38414e" }]
+    },
+    {
+      featureType: "road",
+      elementType: "geometry.stroke",
+      stylers: [{ color: "#212a37" }]
+    },
+    {
+      featureType: "road",
+      elementType: "labels.text.fill",
+      stylers: [{ color: "#9ca5b3" }]
+    },
+    {
+      featureType: "water",
+      elementType: "geometry",
+      stylers: [{ color: "#17263c" }]
+    }
+  ],
+  zoomControl: true,
+  mapTypeControl: false,
+  streetViewControl: false,
+  fullscreenControl: true,
+  clickableIcons: false,
+};
+
+function ReservarView() {
+  const { selectedAddress = '', selectedDestination = '' } = useSearch({ from: '/publicarviaje/' });
+  
+  const [showRouteMap, setShowRouteMap] = useState(false);
+  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+  const [origin, setOrigin] = useState<LocationData | null>(null);
+  const [destination, setDestination] = useState<LocationData | null>(null);
+  const [routeDetails, setRouteDetails] = useState<{
+    distance: string;
+    duration: string;
+  } | null>(null);
+
+  const mapRef = useRef<google.maps.Map | null>(null);
+
+  // Efecto para geocodificar las direcciones
+  React.useEffect(() => {
+    if (!window.google) return;
+    
+    const geocoder = new google.maps.Geocoder();
+
+    if (selectedAddress) {
+      geocoder.geocode({ address: selectedAddress }, (results, status) => {
+        if (status === 'OK' && results?.[0]) {
+          const result = results[0];
+          const city = result.address_components.find(
+            component => component.types.includes('locality')
+          )?.long_name;
+          
+          const locationData = {
+            address: selectedAddress,
+            city,
+            coords: {
+              lat: result.geometry.location.lat(),
+              lng: result.geometry.location.lng()
+            }
+          };
+          
+          setOrigin(locationData);
+          console.log('Origen:', locationData);
+        }
+      });
+    }
+
+    if (selectedDestination) {
+      geocoder.geocode({ address: selectedDestination }, (results, status) => {
+        if (status === 'OK' && results?.[0]) {
+          const result = results[0];
+          const city = result.address_components.find(
+            component => component.types.includes('locality')
+          )?.long_name;
+          
+          const locationData = {
+            address: selectedDestination,
+            city,
+            coords: {
+              lat: result.geometry.location.lat(),
+              lng: result.geometry.location.lng()
+            }
+          };
+          
+          setDestination(locationData);
+          console.log('Destino:', locationData);
+        }
+      });
+    }
+  }, [selectedAddress, selectedDestination]);
+
+  const calculateRoute = useCallback(() => {
+    if (!origin?.coords || !destination?.coords || !window.google) return;
+
+    const directionsService = new google.maps.DirectionsService();
+    
+    const request: google.maps.DirectionsRequest = {
+      origin: origin.coords,
+      destination: destination.coords,
+      travelMode: google.maps.TravelMode.DRIVING,
+      provideRouteAlternatives: true,
+      optimizeWaypoints: true,
+      avoidHighways: false,
+      avoidTolls: false,
+    };
+    
+    directionsService.route(request, (result, status) => {
+      if (status === google.maps.DirectionsStatus.OK && result) {
+        setDirections(result);
+        if (result.routes[0].legs[0]) {
+          setRouteDetails({
+            distance: result.routes[0].legs[0].distance?.text || '',
+            duration: result.routes[0].legs[0].duration?.text || ''
+          });
+        }
+        setShowRouteMap(true);
+
+        // Log de la ruta calculada
+        console.log('Ruta calculada:', {
+          distancia: result.routes[0].legs[0].distance?.text,
+          duracion: result.routes[0].legs[0].duration?.text,
+          origen: origin,
+          destino: destination
+        });
+      }
+    });
+  }, [origin, destination]);
+
+  const onMapLoad = (map: google.maps.Map) => {
+    mapRef.current = map;
+    
+    // Ajustar el viewport para mostrar toda la ruta
+    if (directions && directions.routes[0].bounds) {
+      map.fitBounds(directions.routes[0].bounds);
+    }
+  };
 
   return (
     <Container fluid className={styles.container}>
-      {/* Header */}
       <div className={styles.header}>
-        <UnstyledButton 
-          component={Link} 
-          to="/" 
-          className={styles.backButton}
-        >
+        <UnstyledButton component={Link} to="/" className={styles.backButton}>
           <ArrowLeft size={24} />
         </UnstyledButton>
-        <Title className={styles.headerTitle}>Publicar viaje</Title>
+        <Title className={styles.headerTitle}>Reservar viaje</Title>
       </div>
 
       <Container size="sm" className={styles.content}>
-        <Stepper 
-          active={active} 
-          onStepClick={setActive}
+        <div className={styles.stepContent}>
+          <Title className={styles.stepTitle}>¿Desde dónde sales?</Title>
+          <div className={styles.searchBox}>
+            <MapPin className={styles.searchIcon} size={20} />
+            <Link
+              to="/Origen"
+              style={{
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <TextInput
+                placeholder="Escribe la dirección completa"
+                className={styles.input}
+                value={selectedAddress}
+                readOnly
+              />
+            </Link>
+          </div>
+
+          <Title className={styles.stepTitle}>¿A dónde vas?</Title>
+          <div className={styles.searchBox}>
+            <MapPin className={styles.searchIcon} size={20} />
+            <Link
+              to="/Destino"
+              search={{ originAddress: selectedAddress }}
+              style={{
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <TextInput
+                placeholder="Escribe la dirección completa"
+                className={styles.input}
+                value={selectedDestination}
+                readOnly
+              />
+            </Link>
+          </div>
+        </div>
+
+        {origin && destination && (
+          <Button 
+            onClick={calculateRoute}
+            className={styles.nextButton}
+            style={{ marginTop: '20px', width: '100%' }}
+          >
+            Ver ruta en el mapa
+          </Button>
+        )}
+
+        <Modal
+          opened={showRouteMap}
+          onClose={() => setShowRouteMap(false)}
+          title="Ruta del viaje"
+          fullScreen
+          transitionProps={{ transition: 'fade', duration: 200 }}
           classNames={{
-            root: styles.stepper,
-            step: styles.step,
-            stepIcon: styles.stepIcon,
-            stepCompletedIcon: styles.stepCompletedIcon,
-            separator: styles.separator
+            root: styles.routeModal,
+            header: styles.routeModalTitle,
+            body: styles.routeModalContent
           }}
         >
-          <Stepper.Step
-            label="Ruta"
-            description="¿A dónde vas?"
-          >
-            <div className={styles.stepContent}>
-              <Title className={styles.stepTitle}>¿Desde dónde sales?</Title>
-              <div className={styles.searchBox}>
-                <MapPin className={styles.searchIcon} size={20} />
-                <TextInput
-                  placeholder="Escribe la dirección completa"
-                  className={styles.input}
-                  value={formData.origin}
-                  onChange={(e) => setFormData({...formData, origin: e.target.value})}
-                />
+          {routeDetails && (
+            <div className={styles.routeInfo}>
+              <div className={styles.routeTime}>
+                <Clock size={20} />
+                <Text>{routeDetails.duration}</Text>
               </div>
-
-              <Title className={styles.stepTitle}>¿A dónde vas?</Title>
-              <div className={styles.searchBox}>
-                <MapPin className={styles.searchIcon} size={20} />
-                <TextInput
-                  placeholder="Escribe la dirección completa"
-                  className={styles.input}
-                  value={formData.destination}
-                  onChange={(e) => setFormData({...formData, destination: e.target.value})}
-                />
+              <div className={styles.routeDistance}>
+                <Navigation size={20} />
+                <Text>{routeDetails.distance}</Text>
               </div>
             </div>
-          </Stepper.Step>
-
-          <Stepper.Step
-            label="Detalles"
-            description="Fecha y hora"
-          >
-            <div className={styles.stepContent}>
-              <Title className={styles.stepTitle}>¿Cuándo viajas?</Title>
-              <div className={styles.searchBox}>
-                <Calendar className={styles.searchIcon} size={20} />
-                <TextInput
-                  placeholder="Selecciona la fecha"
-                  className={styles.input}
-                  value={formData.date}
-                  onChange={(e) => setFormData({...formData, date: e.target.value})}
-                />
-              </div>
-
-              <Title className={styles.stepTitle}>¿A qué hora sales?</Title>
-              <div className={styles.searchBox}>
-                <Clock className={styles.searchIcon} size={20} />
-                <TextInput
-                  placeholder="Selecciona la hora"
-                  className={styles.input}
-                  value={formData.time}
-                  onChange={(e) => setFormData({...formData, time: e.target.value})}
-                />
-              </div>
-            </div>
-          </Stepper.Step>
-
-          <Stepper.Step
-            label="Precio"
-            description="Configura tu viaje"
-          >
-            <div className={styles.stepContent}>
-              <Title className={styles.stepTitle}>Detalles del viaje</Title>
-              
-              <Text className={styles.inputLabel}>Asientos disponibles</Text>
-              <div className={styles.searchBox}>
-                <Users className={styles.searchIcon} size={20} />
-                <TextInput
-                  type="number"
-                  min={1}
-                  max={4}
-                  placeholder="¿Cuántos pasajeros?"
-                  className={styles.input}
-                  value={formData.seats}
-                  onChange={(e) => setFormData({...formData, seats: Number(e.target.value)})}
-                />
-              </div>
-
-              <Text className={styles.inputLabel}>Precio por asiento</Text>
-              <div className={styles.searchBox}>
-                <CircleDollarSign className={styles.searchIcon} size={20} />
-                <TextInput
-                  placeholder="Precio en COP"
-                  className={styles.input}
-                  value={formData.price}
-                  onChange={(e) => setFormData({...formData, price: e.target.value})}
-                />
-              </div>
-            </div>
-          </Stepper.Step>
-
-          <Stepper.Completed>
-            <div className={styles.completedStep}>
-              <Car size={64} className={styles.completedIcon} />
-              <Title className={styles.completedTitle}>¡Todo listo!</Title>
-              <Text className={styles.completedText}>
-                Tu viaje está listo para ser publicado
-              </Text>
-            </div>
-          </Stepper.Completed>
-        </Stepper>
-
-        <div className={styles.navigationButtons}>
-          {active > 0 && (
-            <Button
-              variant="default"
-              onClick={prevStep}
-              className={styles.prevButton}
-            >
-              Atrás
-            </Button>
           )}
-          {active < 3 && (
-            <Button
-              onClick={nextStep}
-              className={styles.nextButton}
+
+          <div className={styles.mapContainer}>
+            <GoogleMap
+              mapContainerStyle={{ width: '100%', height: 'calc(100vh - 130px)' }}
+              center={origin?.coords || { lat: 4.6097, lng: -74.0817 }}
+              zoom={12}
+              options={mapOptions}
+              onLoad={onMapLoad}
             >
-              Continuar
-            </Button>
-          )}
-          {active === 3 && (
-            <Button
-              className={styles.publishButton}
-              onClick={() => console.log('Publicar viaje:', formData)}
-            >
-              Publicar viaje
-            </Button>
-          )}
-        </div>
+              {directions && (
+                <DirectionsRenderer
+                  directions={directions}
+                  options={{
+                    suppressMarkers: false,
+                    polylineOptions: {
+                      strokeColor: '#00ff9d',
+                      strokeWeight: 5,
+                      strokeOpacity: 0.8
+                    },
+                    markerOptions: {
+                      icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 7,
+                        fillColor: '#00ff9d',
+                        fillOpacity: 1,
+                        strokeColor: '#FFFFFF',
+                        strokeWeight: 2,
+                      }
+                    }
+                  }}
+                />
+              )}
+            </GoogleMap>
+          </div>
+
+          <Button
+            className={styles.confirmRouteButton}
+            onClick={() => setShowRouteMap(false)}
+          >
+            Confirmar ruta
+          </Button>
+        </Modal>
       </Container>
     </Container>
   );
-};
+}
 
-export const Route = createFileRoute('/publicarviaje/')({
-  component: PublicarViajeView
-});
+export default ReservarView;
