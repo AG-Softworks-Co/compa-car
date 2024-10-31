@@ -1,4 +1,5 @@
-import React, { useState, useRef, useCallback } from 'react';
+
+import  { useState, useRef, useCallback, useEffect } from 'react';
 import { createFileRoute, Link, useSearch } from '@tanstack/react-router';
 import {
   Container,
@@ -8,24 +9,38 @@ import {
   Text,
   UnstyledButton,
   Modal,
-  
+  Stack,
+  Badge,
+  Loader,
 } from '@mantine/core';
 import { MapPin, ArrowLeft, Clock, Navigation } from 'lucide-react';
 import { GoogleMap, DirectionsRenderer } from '@react-google-maps/api';
 import styles from './index.module.css';
 
+// Interfaces
 interface SearchParams {
   selectedAddress?: string;
   selectedDestination?: string;
 }
 
+interface Coords {
+  lat: number;
+  lng: number;
+}
+
 interface LocationData {
   address: string;
   city?: string;
-  coords: {
-    lat: number;
-    lng: number;
-  };
+  coords: Coords;
+}
+
+interface RouteInfo {
+  distance: string;
+  duration: string;
+  summary: string;
+  bounds: google.maps.LatLngBounds;
+  route: google.maps.DirectionsRoute;
+  index: number;
 }
 
 export const Route = createFileRoute('/publicarviaje/')({
@@ -45,14 +60,6 @@ const mapOptions: google.maps.MapOptions = {
       stylers: [{ color: "#242f3e" }]
     },
     {
-      elementType: "labels.text.stroke",
-      stylers: [{ color: "#242f3e" }]
-    },
-    {
-      elementType: "labels.text.fill",
-      stylers: [{ color: "#746855" }]
-    },
-    {
       featureType: "road",
       elementType: "geometry",
       stylers: [{ color: "#38414e" }]
@@ -68,16 +75,25 @@ const mapOptions: google.maps.MapOptions = {
       stylers: [{ color: "#9ca5b3" }]
     },
     {
+      featureType: "road.highway",
+      elementType: "geometry",
+      stylers: [{ color: "#746855" }]
+    },
+    {
       featureType: "water",
       elementType: "geometry",
       stylers: [{ color: "#17263c" }]
     }
   ],
+  disableDefaultUI: false, // Cambiado a false para mostrar controles
   zoomControl: true,
-  mapTypeControl: false,
+  mapTypeControl: true,
+  scaleControl: true,
   streetViewControl: false,
+  rotateControl: false,
   fullscreenControl: true,
-  clickableIcons: false,
+  backgroundColor: '#242f3e',
+  gestureHandling: 'greedy',
 };
 
 function ReservarView() {
@@ -85,113 +101,238 @@ function ReservarView() {
   
   const [showRouteMap, setShowRouteMap] = useState(false);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+  const [routes, setRoutes] = useState<RouteInfo[]>([]);
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
   const [origin, setOrigin] = useState<LocationData | null>(null);
   const [destination, setDestination] = useState<LocationData | null>(null);
-  const [routeDetails, setRouteDetails] = useState<{
-    distance: string;
-    duration: string;
-  } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   const mapRef = useRef<google.maps.Map | null>(null);
+  const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
 
-  // Efecto para geocodificar las direcciones
-  React.useEffect(() => {
-    if (!window.google) return;
-    
-    const geocoder = new google.maps.Geocoder();
+  // Efecto para verificar que Google Maps esté cargado
+  useEffect(() => {
+    console.log('Estado inicial de Google Maps:', {
+      isLoaded: !!window.google?.maps,
+      selectedAddress,
+      selectedDestination
+    });
+  }, []);
 
-    if (selectedAddress) {
-      geocoder.geocode({ address: selectedAddress }, (results, status) => {
-        if (status === 'OK' && results?.[0]) {
-          const result = results[0];
-          const city = result.address_components.find(
-            component => component.types.includes('locality')
-          )?.long_name;
-          
-          const locationData = {
+  // Efecto para geocodificar direcciones
+  useEffect(() => {
+    if (!window.google?.maps || !selectedAddress || !selectedDestination) {
+      console.log('Esperando datos para geocodificar:', {
+        googleMaps: !!window.google?.maps,
+        origen: selectedAddress,
+        destino: selectedDestination
+      });
+      return;
+    }
+
+    async function geocodeAddresses() {
+      const geocoder = new google.maps.Geocoder();
+      setIsLoading(true);
+      
+      try {
+        // Geocodificar origen
+        console.log('Geocodificando origen:', selectedAddress);
+        const originResults = await geocoder.geocode({ address: selectedAddress });
+        if (originResults.results[0]) {
+          const result = originResults.results[0];
+          const originData = {
             address: selectedAddress,
-            city,
+            city: result.address_components.find(c => c.types.includes('locality'))?.long_name,
             coords: {
               lat: result.geometry.location.lat(),
               lng: result.geometry.location.lng()
             }
           };
-          
-          setOrigin(locationData);
-          console.log('Origen:', locationData);
+          console.log('Origen geocodificado:', originData);
+          setOrigin(originData);
         }
-      });
+
+        // Geocodificar destino
+        console.log('Geocodificando destino:', selectedDestination);
+        const destResults = await geocoder.geocode({ address: selectedDestination });
+        if (destResults.results[0]) {
+          const result = destResults.results[0];
+          const destData = {
+            address: selectedDestination,
+            city: result.address_components.find(c => c.types.includes('locality'))?.long_name,
+            coords: {
+              lat: result.geometry.location.lat(),
+              lng: result.geometry.location.lng()
+            }
+          };
+          console.log('Destino geocodificado:', destData);
+          setDestination(destData);
+        }
+      } catch (err) {
+        console.error('Error en geocoding:', err);
+        setError('Error obteniendo las coordenadas');
+      } finally {
+        setIsLoading(false);
+      }
     }
 
-    if (selectedDestination) {
-      geocoder.geocode({ address: selectedDestination }, (results, status) => {
-        if (status === 'OK' && results?.[0]) {
-          const result = results[0];
-          const city = result.address_components.find(
-            component => component.types.includes('locality')
-          )?.long_name;
-          
-          const locationData = {
-            address: selectedDestination,
-            city,
-            coords: {
-              lat: result.geometry.location.lat(),
-              lng: result.geometry.location.lng()
-            }
-          };
-          
-          setDestination(locationData);
-          console.log('Destino:', locationData);
-        }
-      });
-    }
+    geocodeAddresses();
   }, [selectedAddress, selectedDestination]);
 
-  const calculateRoute = useCallback(() => {
-    if (!origin?.coords || !destination?.coords || !window.google) return;
+  // Función para calcular la ruta
+  const calculateRoute = useCallback(async () => {
+    if (!origin?.coords || !destination?.coords || !window.google) {
+      console.log('Faltan datos para calcular ruta:', {
+        tieneOrigen: !!origin?.coords,
+        tieneDestino: !!destination?.coords,
+        tieneGoogleMaps: !!window.google
+      });
+      setError('No se pueden obtener las coordenadas');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    console.log('Iniciando cálculo de ruta:', {
+      origen: origin.coords,
+      destino: destination.coords
+    });
 
     const directionsService = new google.maps.DirectionsService();
     
-    const request: google.maps.DirectionsRequest = {
-      origin: origin.coords,
-      destination: destination.coords,
-      travelMode: google.maps.TravelMode.DRIVING,
-      provideRouteAlternatives: true,
-      optimizeWaypoints: true,
-      avoidHighways: false,
-      avoidTolls: false,
-    };
-    
-    directionsService.route(request, (result, status) => {
-      if (status === google.maps.DirectionsStatus.OK && result) {
-        setDirections(result);
-        if (result.routes[0].legs[0]) {
-          setRouteDetails({
-            distance: result.routes[0].legs[0].distance?.text || '',
-            duration: result.routes[0].legs[0].duration?.text || ''
-          });
-        }
-        setShowRouteMap(true);
+    try {
+      const request: google.maps.DirectionsRequest = {
+        origin: origin.coords,
+        destination: destination.coords,
+        travelMode: google.maps.TravelMode.DRIVING,
+        provideRouteAlternatives: true,
+        optimizeWaypoints: true,
+      };
 
-        // Log de la ruta calculada
-        console.log('Ruta calculada:', {
-          distancia: result.routes[0].legs[0].distance?.text,
-          duracion: result.routes[0].legs[0].duration?.text,
-          origen: origin,
-          destino: destination
+      console.log('Request de ruta:', request);
+
+      const result = await new Promise<google.maps.DirectionsResult>((resolve, reject) => {
+        directionsService.route(request, (response, status) => {
+          console.log('Respuesta DirectionsService:', {
+            status,
+            tieneRespuesta: !!response,
+            cantidadRutas: response?.routes?.length
+          });
+
+          if (status === google.maps.DirectionsStatus.OK && response) {
+            resolve(response);
+          } else {
+            reject(new Error(`Error en DirectionsService: ${status}`));
+          }
         });
+      });
+
+      console.log('Rutas obtenidas:', result.routes);
+      setDirections(result);
+
+      // Procesar todas las rutas disponibles
+      const routesInfo = result.routes.map((route, index) => {
+        const routeInfo = {
+          distance: route.legs[0].distance?.text || '',
+          duration: route.legs[0].duration?.text || '',
+          summary: route.summary || '',
+          bounds: route.bounds,
+          route: route,
+          index
+        };
+        console.log(`Ruta ${index}:`, routeInfo);
+        return routeInfo;
+      });
+
+      setRoutes(routesInfo);
+      setSelectedRouteIndex(0);
+      setShowRouteMap(true);
+
+      // Ajustar el mapa a la primera ruta
+      if (mapRef.current && result.routes[0].bounds) {
+        console.log('Ajustando vista del mapa a los bounds:', result.routes[0].bounds.toString());
+        mapRef.current.fitBounds(result.routes[0].bounds);
+        setTimeout(() => {
+          if (mapRef.current) {
+            const zoom = mapRef.current.getZoom();
+            console.log('Zoom actual:', zoom);
+            if (zoom) {
+              mapRef.current.setZoom(zoom - 0.5);
+            }
+          }
+        }, 100);
       }
-    });
+
+    } catch (err) {
+      console.error('Error calculando rutas:', err);
+      setError('Error al calcular las rutas disponibles');
+    } finally {
+      setIsLoading(false);
+    }
   }, [origin, destination]);
 
-  const onMapLoad = (map: google.maps.Map) => {
-    mapRef.current = map;
-    
-    // Ajustar el viewport para mostrar toda la ruta
-    if (directions && directions.routes[0].bounds) {
-      map.fitBounds(directions.routes[0].bounds);
+  // Función para manejar la selección de ruta
+  const handleRouteSelect = useCallback((index: number) => {
+    console.log('Seleccionando ruta:', index);
+    setSelectedRouteIndex(index);
+
+    const selectedRoute = routes[index];
+    if (selectedRoute && mapRef.current) {
+      console.log('Ajustando mapa a la ruta seleccionada');
+      mapRef.current.fitBounds(selectedRoute.bounds);
+      setTimeout(() => {
+        if (mapRef.current) {
+          const zoom = mapRef.current.getZoom();
+          if (zoom) {
+            mapRef.current.setZoom(zoom - 0.5);
+          }
+        }
+      }, 100);
     }
-  };
+  }, [routes]);
+
+  // Función para cargar el mapa
+  const onMapLoad = useCallback((map: google.maps.Map) => {
+    console.log('Mapa cargado');
+    mapRef.current = map;
+    setMapLoaded(true);
+
+    // Crear DirectionsRenderer después de que el mapa esté cargado
+    const renderer = new google.maps.DirectionsRenderer({
+      map: map,
+      suppressMarkers: false,
+      polylineOptions: {
+        strokeColor: '#00ff9d',
+        strokeWeight: 5,
+        strokeOpacity: 0.8,
+        geodesic: true,
+      },
+      markerOptions: {
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: '#00ff9d',
+          fillOpacity: 1,
+          strokeColor: '#FFFFFF',
+          strokeWeight: 2,
+          scale: 7,
+        }
+      }
+    });
+    
+    directionsRendererRef.current = renderer;
+  }, []);
+
+  // Efecto para actualizar la ruta cuando cambia el DirectionsResult
+  useEffect(() => {
+    if (directions && directionsRendererRef.current) {
+      console.log('Actualizando DirectionsRenderer');
+      directionsRendererRef.current.setDirections(directions);
+      directionsRendererRef.current.setRouteIndex(selectedRouteIndex);
+    }
+  }, [directions, selectedRouteIndex]);
 
   return (
     <Container fluid className={styles.container}>
@@ -248,10 +389,17 @@ function ReservarView() {
           </div>
         </div>
 
+        {error && (
+          <Text color="red" size="sm" mt="xs">
+            {error}
+          </Text>
+        )}
+
         {origin && destination && (
           <Button 
             onClick={calculateRoute}
             className={styles.nextButton}
+            loading={isLoading}
             style={{ marginTop: '20px', width: '100%' }}
           >
             Ver ruta en el mapa
@@ -270,56 +418,99 @@ function ReservarView() {
             body: styles.routeModalContent
           }}
         >
-          {routeDetails && (
-            <div className={styles.routeInfo}>
-              <div className={styles.routeTime}>
-                <Clock size={20} />
-                <Text>{routeDetails.duration}</Text>
-              </div>
-              <div className={styles.routeDistance}>
-                <Navigation size={20} />
-                <Text>{routeDetails.distance}</Text>
-              </div>
+          <div className={styles.routeContent}>
+            <div className={styles.routesList}>
+              <Text className={styles.routesTitle}>Rutas disponibles</Text>
+              {routes.map((route, index) => (
+                <div
+                  key={index}
+                  className={`${styles.routeOption} ${
+                    index === selectedRouteIndex ? styles.routeOptionSelected : ''
+                  }`}
+                  onClick={() => handleRouteSelect(index)}
+                >
+                  <Stack gap="xs">
+                    <div className={styles.routeInfo}>
+                      <div className={styles.routeTime}>
+                        <Clock size={16} />
+                        <Text>{route.duration}</Text>
+                      </div>
+                      <div className={styles.routeDistance}>
+                        <Navigation size={16} />
+                        <Text>{route.distance}</Text>
+                      </div>
+                    </div>
+                    <Text size="sm" color="dimmed">
+                      Vía {route.summary}
+                    </Text>
+                    {route.route.warnings?.length > 0 && (
+                      <Badge color="yellow" size="sm">
+                        {route.route.warnings[0]}
+                      </Badge>
+                    )}
+                  </Stack>
+                </div>
+              ))}
             </div>
-          )}
-
-          <div className={styles.mapContainer}>
-            <GoogleMap
-              mapContainerStyle={{ width: '100%', height: 'calc(100vh - 130px)' }}
-              center={origin?.coords || { lat: 4.6097, lng: -74.0817 }}
-              zoom={12}
-              options={mapOptions}
-              onLoad={onMapLoad}
-            >
-              {directions && (
-                <DirectionsRenderer
-                  directions={directions}
-                  options={{
-                    suppressMarkers: false,
-                    polylineOptions: {
-                      strokeColor: '#00ff9d',
-                      strokeWeight: 5,
-                      strokeOpacity: 0.8
-                    },
-                    markerOptions: {
-                      icon: {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        scale: 7,
-                        fillColor: '#00ff9d',
-                        fillOpacity: 1,
-                        strokeColor: '#FFFFFF',
-                        strokeWeight: 2,
-                      }
-                    }
-                  }}
-                />
+            <div className={styles.mapWrapper}>
+              {isLoading && (
+                <div className={styles.mapLoading}>
+                  <Loader color="#00ff9d" size="lg" />
+                </div>
               )}
-            </GoogleMap>
+              <GoogleMap
+                mapContainerStyle={{ 
+                  width: '100%', 
+                  height: '100%',
+                  minHeight: '500px'
+                }}
+                center={origin?.coords || { lat: 4.6097, lng: -74.0817 }}
+                zoom={12}
+                options={{
+                  ...mapOptions,
+                  gestureHandling: 'greedy',
+                  zoomControl: true,
+                  mapTypeControl: true,
+                  scaleControl: true,
+                  streetViewControl: false,
+                  rotateControl: false,
+                  fullscreenControl: true,
+                }}
+                onLoad={onMapLoad}
+              >
+                {directions && (
+                  <DirectionsRenderer
+                    directions={directions}
+                    routeIndex={selectedRouteIndex}
+                    options={{
+                      suppressMarkers: false,
+                      polylineOptions: {
+                        strokeColor: '#00ff9d',
+                        strokeWeight: 5,
+                        strokeOpacity: 0.8,
+                        geodesic: true,
+                      },
+                      markerOptions: {
+                        icon: {
+                          path: google.maps.SymbolPath.CIRCLE,
+                          fillColor: '#00ff9d',
+                          fillOpacity: 1,
+                          strokeColor: '#FFFFFF',
+                          strokeWeight: 2,
+                          scale: 7,
+                        }
+                      }
+                    }}
+                  />
+                )}
+              </GoogleMap>
+            </div>
           </div>
 
           <Button
             className={styles.confirmRouteButton}
             onClick={() => setShowRouteMap(false)}
+            disabled={!directions || isLoading}
           >
             Confirmar ruta
           </Button>

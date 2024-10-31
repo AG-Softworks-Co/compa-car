@@ -16,12 +16,15 @@
   pointer-events: none;
 }
 
+/* Header y navegación */
 .header {
   padding: 20px;
   display: flex;
   align-items: center;
   gap: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 10;
 }
 
 .backButton {
@@ -48,34 +51,10 @@
   margin: 0 !important;
 }
 
+/* Contenido principal */
 .content {
   padding: 24px;
   max-width: 600px !important;
-}
-
-/* Stepper styles */
-.stepper {
-  margin-bottom: 40px;
-}
-
-.step {
-  color: rgba(255, 255, 255, 0.6) !important;
-}
-
-.stepIcon {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border-color: rgba(0, 255, 157, 0.2) !important;
-  color: rgba(255, 255, 255, 0.6) !important;
-}
-
-.stepCompletedIcon {
-  background: #00ff9d !important;
-  border-color: #00ff9d !important;
-  color: black !important;
-}
-
-.separator {
-  background: rgba(255, 255, 255, 0.1) !important;
 }
 
 .stepContent {
@@ -89,6 +68,7 @@
   margin-bottom: 24px !important;
 }
 
+/* Campos de búsqueda */
 .searchBox {
   position: relative;
   margin-bottom: 24px;
@@ -124,187 +104,9 @@
   transform: translateY(-2px);
 }
 
-.inputLabel {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 16px;
-  margin-bottom: 12px;
-  font-weight: 500;
-}
-
-/* Completed step */
-.completedStep {
-  text-align: center;
-  padding: 40px 0;
-}
-
-.completedIcon {
-  color: #00ff9d;
-  margin-bottom: 24px;
-}
-
-.completedTitle {
-  font-size: 32px !important;
-  font-weight: 700 !important;
-  color: white;
-  margin-bottom: 16px !important;
-}
-
-.completedText {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 16px;
-}
-
-/* Navigation buttons */
-.navigationButtons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 16px;
-  margin-top: 40px;
-}
-
-.prevButton {
-  background: transparent !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: white !important;
-}
-
-.prevButton:hover {
-  background: rgba(255, 255, 255, 0.05) !important;
-}
-
-.nextButton, .publishButton {
-  background: #00ff9d !important;
-  color: black !important;
-  font-weight: 600 !important;
-  transition: all 0.3s ease !important;
-  min-width: 120px;
-}
-
-.nextButton:hover, .publishButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 255, 157, 0.2);
-}
-
-.publishButton {
-  background: linear-gradient(45deg, #00ff9d, #00cc7a) !important;
-}
-
-@media (max-width: 768px) {
-  .content {
-    padding: 16px;
-  }
-
-  .stepTitle {
-    font-size: 24px !important;
-  }
-
-  .input input {
-    height: 50px !important;
-    font-size: 14px !important;
-  }
-}
-
-
-/* Agregar al index.module.css */
-.mapSection {
-  height: 300px;
-  margin: 20px 0;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(0, 242, 195, 0.2);
-}
-
-.map {
-  width: 100%;
-  height: 100%;
-}
-
-.routeDetails {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 242, 195, 0.2);
-  margin-top: 20px;
-}
-
-.tollsSection {
-  margin: 15px 0;
-  padding: 15px;
-  background: rgba(0, 242, 195, 0.05);
-  border-radius: 8px;
-}
-
-.stepItem {
-  padding: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stepItem:last-child {
-  border-bottom: none;
-}
-
-.stepItem :global(.mantine-Text-root) {
-  margin-top: 4px;
-}
-
-.stepsAccordion {
-  margin-top: 20px;
-}
-
-
-/* Agregar al final de index.module.css */
-.mapLoading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.routeDetails {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid rgba(0, 242, 195, 0.1) !important;
-  color: white !important;
-}
-
-.routeDetails [class*="badge"] {
-  background: rgba(0, 242, 195, 0.1) !important;
-  border: 1px solid rgba(0, 242, 195, 0.2) !important;
-  color: #00F2C3 !important;
-}
-
-.mapSection {
-  position: relative;
-}
-
-.map {
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-}
-
-/* Estilos para el mapa de Google */
-:global(.gm-style) {
-  border-radius: 12px;
-}
-
-:global(.gm-style-iw) {
-  background-color: #1A1B1F !important;
-  color: white !important;
-  padding: 12px !important;
-  border-radius: 12px !important;
-  border: 1px solid rgba(0, 242, 195, 0.1) !important;
-}
-
-:global(.gm-style-iw button) {
-  filter: invert(1) !important;
-}
-
-/* Nuevos estilos para el modal y rutas */
+/* Modal y contenedor de rutas */
 .routeModal {
   background-color: #0a0a0a !important;
-  border: 1px solid rgba(0, 255, 157, 0.1) !important;
 }
 
 .routeModalTitle {
@@ -312,21 +114,38 @@
   font-size: 24px !important;
   font-weight: 600 !important;
   padding: 20px !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: #0a0a0a !important;
+  border-bottom: 1px solid rgba(0, 255, 157, 0.1) !important;
 }
 
 .routeModalContent {
-  display: flex;
-  gap: 20px;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
   padding: 0 !important;
-  height: 600px;
+  background-color: #0a0a0a !important;
 }
 
+.routeContent {
+  display: flex;
+  height: calc(100vh - 70px);
+  background-color: #0a0a0a;
+}
+
+/* Lista de rutas */
 .routesList {
-  flex: 0 0 350px;
+  width: 350px;
   padding: 20px;
-  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.02);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-y: auto;
+}
+
+.routesTitle {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
 }
 
 .routeOption {
@@ -349,126 +168,47 @@
   border-color: #00ff9d;
 }
 
+/* Información de ruta */
 .routeInfo {
   display: flex;
-  align-items: center;
   gap: 16px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
-.routeTime, .routeDistance {
+.routeTime,
+.routeDistance {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: white;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.routeDescription {
-  color: rgba(255, 255, 255, 0.6);
   font-size: 14px;
 }
 
-.mapContainer {
+/* Contenedor del mapa */
+.mapWrapper {
   flex: 1;
   position: relative;
-}
-
-.mapWrapper {
   height: 100%;
   border-radius: 12px;
   overflow: hidden;
+  background-color: #1a1a1a;
 }
 
-/* Estilos para el mapa de Google */
-:global(.gm-style) {
-  border-radius: 12px !important;
-}
 
-:global(.gm-style-iw) {
-  background-color: #1A1B1F !important;
-  color: white !important;
-  padding: 12px !important;
-  border-radius: 12px !important;
-  border: 1px solid rgba(0, 255, 157, 0.1) !important;
-}
-
-:global(.gm-style-iw button) {
-  filter: invert(1) !important;
-}
-
-:global(.gm-style-iw-d) {
-  background-color: #1A1B1F !important;
-}
-
-.confirmRouteButton {
+.mapLoading {
   position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #00ff9d !important;
-  color: black !important;
-  padding: 12px 24px !important;
-  border-radius: 12px !important;
-  font-weight: 600 !important;
-  box-shadow: 0 4px 20px rgba(0, 255, 157, 0.2) !important;
-  transition: all 0.3s ease !important;
-}
-
-.confirmRouteButton:hover {
-  transform: translateX(-50%) translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 157, 0.3) !important;
-}
-
-/* Estilos para el modal y rutas */
-.routeModal {
-  background-color: #0a0a0a !important;
-}
-
-.routeModalTitle {
-  color: white !important;
-  font-size: 24px !important;
-  font-weight: 600 !important;
-  padding: 20px !important;
-  background-color: #0a0a0a !important;
-  border-bottom: 1px solid rgba(0, 255, 157, 0.1) !important;
-}
-
-.routeModalContent {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
-  flex-direction: column;
-  height: calc(100vh - 70px);
-  padding: 0 !important;
-  background-color: #0a0a0a !important;
-}
-
-.routeInfo {
-  display: flex;
+  align-items: center;
   justify-content: center;
-  align-items: center;
-  gap: 24px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(0, 255, 157, 0.1);
+  background: rgba(26, 27, 31, 0.8);
+  z-index: 1000;
 }
 
-.routeTime, .routeDistance {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: white;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.mapContainer {
-  flex: 1;
-  position: relative;
-  min-height: 0;
-}
-
-/* Estilos específicos para Google Maps */
+/* Estilos del mapa de Google */
 :global(.gm-style) {
   font-family: inherit !important;
 }
@@ -481,12 +221,61 @@
   border: 1px solid rgba(0, 255, 157, 0.1) !important;
 }
 
+:global(.gm-style-iw-d) {
+  background-color: #1A1B1F !important;
+}
+
 :global(.gm-style-iw button) {
   filter: invert(1) !important;
 }
 
-:global(.gm-style-iw-d) {
-  background-color: #1A1B1F !important;
+:global(.gm-style .gm-style-iw-tc::after) {
+  background: #1A1B1F !important;
+}
+
+:global(.gm-style .gm-style-cc) {
+  display: none !important;
+}
+
+/* Controles del mapa */
+:global(.gm-fullscreen-control),
+:global(.gm-svpc),
+:global(.gmnoprint) {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-radius: 12px !important;
+  margin: 10px !important;
+  overflow: hidden !important;
+  filter: invert(1) !important;
+}
+
+:global(.gm-style .gm-style-mtc button),
+:global(.gm-style .gm-style-mtc div) {
+  background: #1A1B1F !important;
+  color: white !important;
+}
+
+/* Estilos para la ruta en el mapa */
+:global(.gm-style [style*="background-color: rgb(0, 255, 157)"]) {
+  background-color: #00ff9d !important;
+}
+
+:global(.gm-style [style*="border-color: rgb(0, 255, 157)"]) {
+  border-color: #00ff9d !important;
+}
+
+/* Botones */
+.nextButton {
+  background: #00ff9d !important;
+  color: black !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  height: 56px !important;
+  border-radius: 16px !important;
+}
+
+.nextButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 255, 157, 0.2);
 }
 
 .confirmRouteButton {
@@ -496,15 +285,99 @@
   transform: translateX(-50%);
   background: #00ff9d !important;
   color: black !important;
-  padding: 12px 32px !important;
+  padding: 16px 32px !important;
   border-radius: 12px !important;
   font-weight: 600 !important;
   box-shadow: 0 4px 20px rgba(0, 255, 157, 0.2) !important;
   transition: all 0.3s ease !important;
   z-index: 1000;
+  width: auto;
+  min-width: 200px;
 }
 
 .confirmRouteButton:hover {
   transform: translateX(-50%) translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 255, 157, 0.3) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .content {
+    padding: 16px;
+  }
+
+  .stepTitle {
+    font-size: 24px !important;
+  }
+
+  .input input {
+    height: 50px !important;
+    font-size: 14px !important;
+  }
+
+  .routeContent {
+    flex-direction: column;
+  }
+
+  .routesList {
+    width: 100%;
+    height: auto;
+    max-height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mapWrapper {
+    height: calc(60vh - 70px);
+  }
+
+  .routeInfo {
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .confirmRouteButton {
+    width: calc(100% - 48px);
+    bottom: 16px;
+  }
+}
+
+/* Estilos para las rutas en el mapa */
+
+:global([class*="map-container"]) {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 500px !important;
+}
+
+:global(.gm-style-iw) {
+  background-color: #1A1B1F !important;
+}
+
+:global(.gm-style-iw-d) {
+  overflow: hidden !important;
+  background-color: #1A1B1F !important;
+  padding: 0 !important;
+}
+
+:global(.gm-ui-hover-effect) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 50% !important;
+  margin-top: 6px !important;
+  margin-right: 6px !important;
+}
+
+/* Mejora en la visualización de las rutas */
+:global(.gm-style-iw-t::after) {
+  background: #1A1B1F !important;
+}
+
+:global(.gm-style > div:first-child > div:nth-child(3) > div:nth-child(2)) {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15)) !important;
+}
+
+/* Estilo para los marcadores de ruta */
+:global(.gm-style img[src*="marker"]) {
+  filter: hue-rotate(140deg) brightness(1.2) !important;
 }
