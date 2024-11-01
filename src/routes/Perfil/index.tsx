@@ -1,50 +1,50 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { Container, Title, Text } from '@mantine/core';
-import { 
-  User, 
-  Ticket, 
-  HelpCircle, 
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { Container, Title, Text } from '@mantine/core'
+import {
+  User,
+  Ticket,
+  HelpCircle,
   Car,
   LogOut,
-  ChevronRight 
-} from 'lucide-react';
-import styles from './index.module.css';
+  ChevronRight,
+} from 'lucide-react'
+import styles from './index.module.css'
 
 const menuItems = [
   {
     icon: User,
     title: 'Mi perfil',
     subtitle: 'Información personal y preferencias',
-    to: '/profile/details'
+    to: '/profile/details',
   },
   {
     icon: Car,
     title: 'Mi vehículo',
     subtitle: 'Gestiona la información de tu vehículo',
-    to: '/profile/vehicle'
+    to: '/profile/vehicle',
   },
   {
     icon: Ticket,
     title: 'Cupones',
     subtitle: 'Descuentos y promociones disponibles',
-    to: '/profile/coupons'
+    to: '/profile/coupons',
   },
   {
     icon: HelpCircle,
     title: 'Ayuda y soporte',
     subtitle: 'Centro de ayuda y contacto',
-    to: '/profile/help'
-  }
-];
+    to: '/profile/help',
+  },
+]
 
 const ProfileView = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const handleLogout = () => {
     // Lógica de logout aquí
-    console.log('Cerrando sesión...');
-    navigate({ to: '/' });
-  };
+    console.log('Cerrando sesión...')
+    navigate({ to: '/' })
+  }
 
   return (
     <Container fluid className={styles.container}>
@@ -64,11 +64,7 @@ const ProfileView = () => {
 
       <div className={styles.menuSection}>
         {menuItems.map((item, index) => (
-          <Link
-            key={index}
-            to={item.to}
-            className={styles.menuItem}
-          >
+          <Link key={index} to={item.to} className={styles.menuItem}>
             <div className={styles.menuItemIcon}>
               <item.icon size={24} />
             </div>
@@ -80,7 +76,7 @@ const ProfileView = () => {
           </Link>
         ))}
 
-        <button 
+        <button
           className={`${styles.menuItem} ${styles.logoutButton}`}
           onClick={handleLogout}
         >
@@ -97,9 +93,9 @@ const ProfileView = () => {
 
       <Text className={styles.version}>v2.55.8 (968)</Text>
     </Container>
-  );
-};
+  )
+}
 
-export const Route = createFileRoute('/perfil/')({
-  component: ProfileView
-});
+export const Route = createFileRoute('/Perfil/')({
+  component: ProfileView,
+})
