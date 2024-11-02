@@ -59,6 +59,7 @@
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.170.0",
+    "telefunc": "^0.1.80",
     "vaul": "^1.1.0"
   },
   "devDependencies": {

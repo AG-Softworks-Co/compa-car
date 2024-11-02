@@ -18,6 +18,9 @@ import {
   useLocation,
 } from "@tanstack/react-router";
 import { Search, PlusCircle, Car, User } from "lucide-react";
+import { config } from "telefunc/client"
+
+config.telefuncUrl = "http://localhost:3000/_telefunc"
 
 const theme = createTheme({
   fontFamily: "Inter, sans-serif",
