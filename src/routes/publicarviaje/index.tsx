@@ -43,6 +43,17 @@ interface RouteInfo {
   index: number;
 }
 
+interface SelectedRouteInfo {
+  index: number;
+  distance: string;
+  duration: string;
+  summary: string;
+  startAddress: string;
+  endAddress: string;
+  bounds: google.maps.LatLngBounds;
+  polyline: string;
+}
+
 export const Route = createFileRoute('/publicarviaje/')({
   validateSearch: (search: Record<string, unknown>): SearchParams => {
     return {
@@ -85,7 +96,7 @@ const mapOptions: google.maps.MapOptions = {
       stylers: [{ color: "#17263c" }]
     }
   ],
-  disableDefaultUI: false, // Cambiado a false para mostrar controles
+  disableDefaultUI: false,
   zoomControl: true,
   mapTypeControl: true,
   scaleControl: true,
@@ -103,23 +114,14 @@ function ReservarView() {
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [routes, setRoutes] = useState<RouteInfo[]>([]);
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
+  const [selectedRouteDetails, setSelectedRouteDetails] = useState<SelectedRouteInfo | null>(null);
   const [origin, setOrigin] = useState<LocationData | null>(null);
   const [destination, setDestination] = useState<LocationData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
 
   const mapRef = useRef<google.maps.Map | null>(null);
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
-
-  // Efecto para verificar que Google Maps esté cargado
-  useEffect(() => {
-    console.log('Estado inicial de Google Maps:', {
-      isLoaded: !!window.google?.maps,
-      selectedAddress,
-      selectedDestination
-    });
-  }, []);
 
   // Efecto para geocodificar direcciones
   useEffect(() => {
@@ -248,7 +250,25 @@ function ReservarView() {
       });
 
       setRoutes(routesInfo);
-      setSelectedRouteIndex(0);
+
+      // Seleccionar automáticamente la primera ruta
+      if (routesInfo.length > 0) {
+        const firstRoute = result.routes[0];
+        const initialSelectedRoute: SelectedRouteInfo = {
+          index: 0,
+          distance: firstRoute.legs[0].distance?.text || '',
+          duration: firstRoute.legs[0].duration?.text || '',
+          summary: firstRoute.summary || '',
+          startAddress: firstRoute.legs[0].start_address,
+          endAddress: firstRoute.legs[0].end_address,
+          bounds: firstRoute.bounds,
+          polyline: firstRoute.overview_polyline
+        };
+        setSelectedRouteDetails(initialSelectedRoute);
+        setSelectedRouteIndex(0);
+        console.log('Ruta inicial seleccionada:', initialSelectedRoute);
+      }
+
       setShowRouteMap(true);
 
       // Ajustar el mapa a la primera ruta
@@ -258,7 +278,6 @@ function ReservarView() {
         setTimeout(() => {
           if (mapRef.current) {
             const zoom = mapRef.current.getZoom();
-            console.log('Zoom actual:', zoom);
             if (zoom) {
               mapRef.current.setZoom(zoom - 0.5);
             }
@@ -276,13 +295,34 @@ function ReservarView() {
 
   // Función para manejar la selección de ruta
   const handleRouteSelect = useCallback((index: number) => {
-    console.log('Seleccionando ruta:', index);
-    setSelectedRouteIndex(index);
+    if (!directions?.routes[index]) return;
 
-    const selectedRoute = routes[index];
-    if (selectedRoute && mapRef.current) {
-      console.log('Ajustando mapa a la ruta seleccionada');
-      mapRef.current.fitBounds(selectedRoute.bounds);
+    const route = directions.routes[index];
+    const routeDetails: SelectedRouteInfo = {
+      index,
+      distance: route.legs[0].distance?.text || '',
+      duration: route.legs[0].duration?.text || '',
+      summary: route.summary || '',
+      startAddress: route.legs[0].start_address,
+      endAddress: route.legs[0].end_address,
+      bounds: route.bounds,
+      polyline: route.overview_polyline
+    };
+
+    setSelectedRouteIndex(index);
+    setSelectedRouteDetails(routeDetails);
+
+    console.log('Nueva ruta seleccionada:', {
+      indice: index,
+      resumen: routeDetails.summary,
+      distancia: routeDetails.distance,
+      duracion: routeDetails.duration,
+      direccionInicio: routeDetails.startAddress,
+      direccionFin: routeDetails.endAddress
+    });
+
+    if (mapRef.current) {
+      mapRef.current.fitBounds(route.bounds);
       setTimeout(() => {
         if (mapRef.current) {
           const zoom = mapRef.current.getZoom();
@@ -292,46 +332,45 @@ function ReservarView() {
         }
       }, 100);
     }
-  }, [routes]);
+  }, [directions]);
 
   // Función para cargar el mapa
   const onMapLoad = useCallback((map: google.maps.Map) => {
     console.log('Mapa cargado');
     mapRef.current = map;
-    setMapLoaded(true);
-
-    // Crear DirectionsRenderer después de que el mapa esté cargado
-    const renderer = new google.maps.DirectionsRenderer({
-      map: map,
-      suppressMarkers: false,
-      polylineOptions: {
-        strokeColor: '#00ff9d',
-        strokeWeight: 5,
-        strokeOpacity: 0.8,
-        geodesic: true,
-      },
-      markerOptions: {
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          fillColor: '#00ff9d',
-          fillOpacity: 1,
-          strokeColor: '#FFFFFF',
-          strokeWeight: 2,
-          scale: 7,
+  
+    // Crear el renderer una sola vez
+    if (!directionsRendererRef.current) {
+      directionsRendererRef.current = new google.maps.DirectionsRenderer({
+        map: map,
+        suppressMarkers: false,
+        polylineOptions: {
+          strokeColor: '#00ff9d',
+          strokeWeight: 5,
+          strokeOpacity: 0.8,
+          geodesic: true,
+        },
+        markerOptions: {
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillColor: '#00ff9d',
+            fillOpacity: 1,
+            strokeColor: '#FFFFFF',
+            strokeWeight: 2,
+            scale: 7,
+          }
         }
-      }
-    });
-    
-    directionsRendererRef.current = renderer;
+      });
+    }
   }, []);
 
   // Efecto para actualizar la ruta cuando cambia el DirectionsResult
   useEffect(() => {
-    if (directions && directionsRendererRef.current) {
-      console.log('Actualizando DirectionsRenderer');
-      directionsRendererRef.current.setDirections(directions);
-      directionsRendererRef.current.setRouteIndex(selectedRouteIndex);
-    }
+    if (!directions || !directionsRendererRef.current || !mapRef.current) return;
+  
+    directionsRendererRef.current.setMap(mapRef.current); // Importante: vincular al mapa
+    directionsRendererRef.current.setDirections(directions);
+    directionsRendererRef.current.setRouteIndex(selectedRouteIndex);
   }, [directions, selectedRouteIndex]);
 
   return (
@@ -406,115 +445,137 @@ function ReservarView() {
           </Button>
         )}
 
-        <Modal
-          opened={showRouteMap}
-          onClose={() => setShowRouteMap(false)}
-          title="Ruta del viaje"
-          fullScreen
-          transitionProps={{ transition: 'fade', duration: 200 }}
-          classNames={{
-            root: styles.routeModal,
-            header: styles.routeModalTitle,
-            body: styles.routeModalContent
-          }}
-        >
-          <div className={styles.routeContent}>
-            <div className={styles.routesList}>
-              <Text className={styles.routesTitle}>Rutas disponibles</Text>
-              {routes.map((route, index) => (
-                <div
-                  key={index}
-                  className={`${styles.routeOption} ${
-                    index === selectedRouteIndex ? styles.routeOptionSelected : ''
-                  }`}
-                  onClick={() => handleRouteSelect(index)}
-                >
-                  <Stack gap="xs">
-                    <div className={styles.routeInfo}>
-                      <div className={styles.routeTime}>
-                        <Clock size={16} />
-                        <Text>{route.duration}</Text>
-                      </div>
-                      <div className={styles.routeDistance}>
-                        <Navigation size={16} />
-                        <Text>{route.distance}</Text>
-                      </div>
-                    </div>
-                    <Text size="sm" color="dimmed">
-                      Vía {route.summary}
-                    </Text>
-                    {route.route.warnings?.length > 0 && (
-                      <Badge color="yellow" size="sm">
-                        {route.route.warnings[0]}
-                      </Badge>
-                    )}
-                  </Stack>
+<Modal
+  opened={showRouteMap}
+  onClose={() => setShowRouteMap(false)}
+  title="Ruta del viaje"
+  fullScreen
+  transitionProps={{ transition: 'fade', duration: 200 }}
+  classNames={{
+    root: styles.routeModal,
+    header: styles.routeModalTitle,
+    body: styles.routeModalContent
+  }}
+>
+  <div className={styles.routeContent}>
+    <div className={styles.mapSection}>
+      {isLoading && (
+        <div className={styles.mapLoading}>
+          <Loader color="#00ff9d" size="lg" />
+        </div>
+      )}
+      <GoogleMap
+        mapContainerStyle={{ 
+          width: '100%', 
+          height: '100%',
+        }}
+        center={origin?.coords || { lat: 4.6097, lng: -74.0817 }}
+        zoom={12}
+        options={mapOptions}
+        onLoad={onMapLoad}
+      >
+        {directions && (
+          <DirectionsRenderer
+            directions={directions}
+            routeIndex={selectedRouteIndex}
+            options={{
+              suppressMarkers: false,
+              polylineOptions: {
+                strokeColor: '#00ff9d',
+                strokeWeight: 5,
+                strokeOpacity: 0.8,
+                geodesic: true,
+              },
+              markerOptions: {
+                icon: {
+                  path: google.maps.SymbolPath.CIRCLE,
+                  fillColor: '#00ff9d',
+                  fillOpacity: 1,
+                  strokeColor: '#FFFFFF',
+                  strokeWeight: 2,
+                  scale: 7,
+                }
+              }
+            }}
+          />
+        )}
+      </GoogleMap>
+    </div>
+
+    <div className={styles.routesSection}>
+      <div className={styles.routesList}>
+        <Text className={styles.routesTitle}>Rutas disponibles</Text>
+        {routes.map((route, index) => (
+          <div
+            key={index}
+            className={`${styles.routeOption} ${
+              index === selectedRouteIndex ? styles.routeOptionSelected : ''
+            }`}
+            onClick={() => handleRouteSelect(index)}
+          >
+            <Stack gap="xs">
+              <div className={styles.routeInfo}>
+                <div className={styles.routeTime}>
+                  <Clock size={16} />
+                  <Text>{route.duration}</Text>
                 </div>
-              ))}
-            </div>
-            <div className={styles.mapWrapper}>
-              {isLoading && (
-                <div className={styles.mapLoading}>
-                  <Loader color="#00ff9d" size="lg" />
+                <div className={styles.routeDistance}>
+                  <Navigation size={16} />
+                  <Text>{route.distance}</Text>
                 </div>
+              </div>
+              <Text size="sm" color="dimmed">
+                Vía {route.summary}
+              </Text>
+              {route.route.warnings?.length > 0 && (
+                <Badge color="yellow" size="sm">
+                  {route.route.warnings[0]}
+                </Badge>
               )}
-              <GoogleMap
-                mapContainerStyle={{ 
-                  width: '100%', 
-                  height: '100%',
-                  minHeight: '500px'
-                }}
-                center={origin?.coords || { lat: 4.6097, lng: -74.0817 }}
-                zoom={12}
-                options={{
-                  ...mapOptions,
-                  gestureHandling: 'greedy',
-                  zoomControl: true,
-                  mapTypeControl: true,
-                  scaleControl: true,
-                  streetViewControl: false,
-                  rotateControl: false,
-                  fullscreenControl: true,
-                }}
-                onLoad={onMapLoad}
-              >
-                {directions && (
-                  <DirectionsRenderer
-                    directions={directions}
-                    routeIndex={selectedRouteIndex}
-                    options={{
-                      suppressMarkers: false,
-                      polylineOptions: {
-                        strokeColor: '#00ff9d',
-                        strokeWeight: 5,
-                        strokeOpacity: 0.8,
-                        geodesic: true,
-                      },
-                      markerOptions: {
-                        icon: {
-                          path: google.maps.SymbolPath.CIRCLE,
-                          fillColor: '#00ff9d',
-                          fillOpacity: 1,
-                          strokeColor: '#FFFFFF',
-                          strokeWeight: 2,
-                          scale: 7,
-                        }
-                      }
-                    }}
-                  />
-                )}
-              </GoogleMap>
+            </Stack>
+          </div>
+        ))}
+      </div>
+
+      {selectedRouteDetails && (
+        <div className={styles.routeActions}>
+          <div className={styles.routeDetailInfo}>
+            <div className={styles.routeDetailItem}>
+              <Clock size={18} />
+              <Text size="lg" fw={500}>{selectedRouteDetails.duration}</Text>
+            </div>
+            <div className={styles.routeDetailItem}>
+              <Navigation size={18} />
+              <Text size="lg" fw={500}>{selectedRouteDetails.distance}</Text>
             </div>
           </div>
-
-          <Button
-            className={styles.confirmRouteButton}
-            onClick={() => setShowRouteMap(false)}
-            disabled={!directions || isLoading}
-          >
-            Confirmar ruta
-          </Button>
-        </Modal>
+          <Stack gap="md" style={{ width: '100%' }}>
+            <Button
+              className={styles.selectRouteButton}
+              onClick={() => {
+                console.log('Ruta seleccionada para continuar:', {
+                  indice: selectedRouteDetails.index,
+                  resumen: selectedRouteDetails.summary,
+                  distancia: selectedRouteDetails.distance,
+                  duracion: selectedRouteDetails.duration,
+                  direccionInicio: selectedRouteDetails.startAddress,
+                  direccionFin: selectedRouteDetails.endAddress
+                });
+                // Aquí puedes agregar la lógica para continuar al siguiente paso
+                setShowRouteMap(false);
+              }}
+              fullWidth
+              size="lg"
+              leftSection={<MapPin size={18} />}
+            >
+              Siguiente
+            </Button>
+          </Stack>
+        </div>
+      )}
+    </div>
+  </div>
+</Modal>
       </Container>
     </Container>
   );

@@ -1,3 +1,4 @@
+/* Base Styles */
 .container {
   min-height: 100vh;
   background-color: #0a0a0a;
@@ -16,7 +17,7 @@
   pointer-events: none;
 }
 
-/* Header y navegación */
+/* Header Styles */
 .header {
   padding: 20px;
   display: flex;
@@ -51,7 +52,7 @@
   margin: 0 !important;
 }
 
-/* Contenido principal */
+/* Main Content */
 .content {
   padding: 24px;
   max-width: 600px !important;
@@ -68,7 +69,7 @@
   margin-bottom: 24px !important;
 }
 
-/* Campos de búsqueda */
+/* Search Box */
 .searchBox {
   position: relative;
   margin-bottom: 24px;
@@ -104,7 +105,7 @@
   transform: translateY(-2px);
 }
 
-/* Modal y contenedor de rutas */
+/* Modal and Route Content */
 .routeModal {
   background-color: #0a0a0a !important;
 }
@@ -128,16 +129,44 @@
 
 .routeContent {
   display: flex;
+  flex-direction: column;
   height: calc(100vh - 70px);
   background-color: #0a0a0a;
 }
 
-/* Lista de rutas */
+/* Map Section */
+.mapSection {
+  flex: 2;
+  position: relative;
+  min-height: 400px;
+  background-color: #1a1a1a;
+}
+
+.mapLoading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(26, 27, 31, 0.8);
+  z-index: 1000;
+}
+
+/* Routes Section */
+.routesSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(26, 27, 31, 0.95);
+}
+
 .routesList {
-  width: 350px;
+  flex: 1;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
   overflow-y: auto;
 }
 
@@ -168,7 +197,7 @@
   border-color: #00ff9d;
 }
 
-/* Información de ruta */
+/* Route Info */
 .routeInfo {
   display: flex;
   gap: 16px;
@@ -179,91 +208,33 @@
 .routeDistance {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: white;
   font-size: 14px;
 }
 
-/* Contenedor del mapa */
-.mapWrapper {
-  flex: 1;
-  position: relative;
-  height: 100%;
-  border-radius: 12px;
-  overflow: hidden;
-  background-color: #1a1a1a;
+/* Route Actions */
+.routeActions {
+  padding: 20px;
+  background: rgba(26, 27, 31, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.routeDetailInfo {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 16px;
+}
 
-.mapLoading {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+.routeDetailItem {
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: rgba(26, 27, 31, 0.8);
-  z-index: 1000;
+  gap: 8px;
+  color: white;
 }
 
-/* Estilos del mapa de Google */
-:global(.gm-style) {
-  font-family: inherit !important;
-}
-
-:global(.gm-style-iw) {
-  background-color: #1A1B1F !important;
-  color: white !important;
-  padding: 12px !important;
-  border-radius: 12px !important;
-  border: 1px solid rgba(0, 255, 157, 0.1) !important;
-}
-
-:global(.gm-style-iw-d) {
-  background-color: #1A1B1F !important;
-}
-
-:global(.gm-style-iw button) {
-  filter: invert(1) !important;
-}
-
-:global(.gm-style .gm-style-iw-tc::after) {
-  background: #1A1B1F !important;
-}
-
-:global(.gm-style .gm-style-cc) {
-  display: none !important;
-}
-
-/* Controles del mapa */
-:global(.gm-fullscreen-control),
-:global(.gm-svpc),
-:global(.gmnoprint) {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border-radius: 12px !important;
-  margin: 10px !important;
-  overflow: hidden !important;
-  filter: invert(1) !important;
-}
-
-:global(.gm-style .gm-style-mtc button),
-:global(.gm-style .gm-style-mtc div) {
-  background: #1A1B1F !important;
-  color: white !important;
-}
-
-/* Estilos para la ruta en el mapa */
-:global(.gm-style [style*="background-color: rgb(0, 255, 157)"]) {
-  background-color: #00ff9d !important;
-}
-
-:global(.gm-style [style*="border-color: rgb(0, 255, 157)"]) {
-  border-color: #00ff9d !important;
-}
-
-/* Botones */
+/* Buttons */
 .nextButton {
   background: #00ff9d !important;
   color: black !important;
@@ -278,29 +249,84 @@
   box-shadow: 0 8px 20px rgba(0, 255, 157, 0.2);
 }
 
-.confirmRouteButton {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
+.selectRouteButton {
   background: #00ff9d !important;
   color: black !important;
-  padding: 16px 32px !important;
-  border-radius: 12px !important;
   font-weight: 600 !important;
-  box-shadow: 0 4px 20px rgba(0, 255, 157, 0.2) !important;
+  height: 48px;
   transition: all 0.3s ease !important;
-  z-index: 1000;
-  width: auto;
-  min-width: 200px;
+  border-radius: 12px !important;
 }
 
-.confirmRouteButton:hover {
-  transform: translateX(-50%) translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 255, 157, 0.3) !important;
+.selectRouteButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 255, 157, 0.2);
 }
 
-/* Responsive */
+/* Google Maps Styles */
+:global(.gm-style) {
+  font-family: inherit !important;
+}
+
+:global(.gm-style-iw) {
+  background-color: #1A1B1F !important;
+  color: white !important;
+  padding: 12px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 255, 157, 0.1) !important;
+}
+
+:global(.gm-style-iw-d) {
+  background-color: #1A1B1F !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
+:global(.gm-style-iw button) {
+  filter: invert(1) !important;
+}
+
+:global(.gm-style .gm-style-iw-tc::after) {
+  background: #1A1B1F !important;
+}
+
+:global(.gm-style .gm-style-cc) {
+  display: none !important;
+}
+
+:global(.gm-fullscreen-control),
+:global(.gm-svpc),
+:global(.gmnoprint) {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-radius: 12px !important;
+  margin: 10px !important;
+  overflow: hidden !important;
+  filter: invert(1) !important;
+}
+
+:global(.gm-ui-hover-effect) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 50% !important;
+  margin-top: 6px !important;
+  margin-right: 6px !important;
+}
+
+:global(.gm-style > div:first-child > div:nth-child(3) > div:nth-child(2)) {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15)) !important;
+}
+
+:global(.gm-style img[src*="marker"]) {
+  filter: hue-rotate(140deg) brightness(1.2) !important;
+}
+
+/* Map Container */
+:global([class*="map-container"]) {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 400px !important;
+}
+
+/* Responsive Styles */
 @media (max-width: 768px) {
   .content {
     padding: 16px;
@@ -315,69 +341,26 @@
     font-size: 14px !important;
   }
 
-  .routeContent {
-    flex-direction: column;
+  .mapSection {
+    min-height: 300px;
+  }
+
+  .routesSection {
+    max-height: 50vh;
   }
 
   .routesList {
-    width: 100%;
-    height: auto;
-    max-height: 40vh;
-    border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    max-height: calc(50vh - 180px);
   }
 
-  .mapWrapper {
-    height: calc(60vh - 70px);
-  }
-
-  .routeInfo {
+  .routeDetailInfo {
     flex-direction: column;
-    padding: 12px;
+    align-items: center;
     gap: 12px;
+    margin-bottom: 12px;
   }
 
-  .confirmRouteButton {
-    width: calc(100% - 48px);
-    bottom: 16px;
+  .selectRouteButton {
+    height: 56px;
   }
-}
-
-/* Estilos para las rutas en el mapa */
-
-:global([class*="map-container"]) {
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 500px !important;
-}
-
-:global(.gm-style-iw) {
-  background-color: #1A1B1F !important;
-}
-
-:global(.gm-style-iw-d) {
-  overflow: hidden !important;
-  background-color: #1A1B1F !important;
-  padding: 0 !important;
-}
-
-:global(.gm-ui-hover-effect) {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-radius: 50% !important;
-  margin-top: 6px !important;
-  margin-right: 6px !important;
-}
-
-/* Mejora en la visualización de las rutas */
-:global(.gm-style-iw-t::after) {
-  background: #1A1B1F !important;
-}
-
-:global(.gm-style > div:first-child > div:nth-child(3) > div:nth-child(2)) {
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15)) !important;
-}
-
-/* Estilo para los marcadores de ruta */
-:global(.gm-style img[src*="marker"]) {
-  filter: hue-rotate(140deg) brightness(1.2) !important;
 }
