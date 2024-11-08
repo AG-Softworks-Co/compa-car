@@ -93,7 +93,7 @@ const VehicleRegistration: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleBack = () => {
-    navigate({ to: '/Perfil' });
+    navigate({ to: '/perfil' });
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -171,7 +171,7 @@ const VehicleRegistration: React.FC = () => {
       // Aquí iría la lógica para enviar los datos
       // await submitVehicleData(formData);
       console.log('Form Data:', formData);
-      navigate({ to: '/Perfil' });
+      navigate({ to: '/perfil' });
     } catch (error) {
       console.error('Error al enviar datos:', error);
       setErrors(prev => ({
