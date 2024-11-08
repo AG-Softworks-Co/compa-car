@@ -1,0 +1,333 @@
+/* index.module.css */
+.container {
+    min-height: 100vh;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #1A1B1F;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    max-width: 100% !important;
+  }
+  
+  .container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    background: linear-gradient(to bottom,
+      rgba(0, 242, 195, 0.05),
+      transparent
+    );
+    pointer-events: none;
+  }
+  
+  .searchSection {
+    padding: 16px;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .searchHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 8px;
+    border: 1px solid rgba(0, 242, 195, 0.1);
+    margin-bottom: 16px;
+  }
+  
+  .backButton {
+    color: #00F2C3;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    text-decoration: none;
+  }
+  
+  .backButton:hover {
+    background: rgba(0, 242, 195, 0.1);
+    transform: translateX(-2px);
+  }
+  
+  .searchBox {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: transparent;
+  }
+  
+  .searchIcon {
+    color: rgba(0, 242, 195, 0.8);
+    flex-shrink: 0;
+  }
+  
+  .input {
+    flex: 1;
+  }
+  
+  .input input {
+    background: transparent !important;
+    border: none !important;
+    color: white !important;
+    font-size: 16px !important;
+    height: 40px !important;
+    padding: 0 !important;
+  }
+  
+  .input input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+  
+  .input input:focus {
+    outline: none !important;
+  }
+  
+  .resultsList {
+    background: rgba(30, 31, 34, 0.95);
+    border: 1px solid rgba(0, 242, 195, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease;
+  }
+  
+  .resultItem {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .resultItem:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .resultItem:hover {
+    background: rgba(0, 242, 195, 0.05);
+  }
+  
+  .resultItem:hover .resultIcon {
+    transform: scale(1.1);
+    color: #00F2C3;
+  }
+  
+  .resultIcon {
+    color: rgba(0, 242, 195, 0.8);
+    transition: all 0.2s ease;
+  }
+  
+  .resultContent {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .mainText {
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .secondaryText {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .mapSection {
+    flex: 1;
+    min-height: 300px;
+    position: relative;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeIn 0.3s ease;
+  }
+  
+  .map {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+  
+  .map :global(.gm-style) {
+    border-radius: 0;
+  }
+  
+  /* Estilos personalizados para el mapa de Google */
+  :global(.gm-style-iw) {
+    background-color: #1A1B1F !important;
+    color: white !important;
+  }
+  
+  :global(.gm-style-iw button) {
+    filter: invert(1) !important;
+  }
+  
+  .confirmButton {
+    position: fixed !important;
+    bottom: 24px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    background: linear-gradient(45deg, #00F2C3, #00cc7a) !important;
+    border: none !important;
+    color: #1A1B1F !important;
+    font-weight: 600 !important;
+    padding: 0 32px !important;
+    height: 48px !important;
+    min-width: 200px !important;
+    font-size: 16px !important;
+    border-radius: 12px !important;
+    transition: all 0.3s ease !important;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  .confirmButton:hover {
+    transform: translateX(-50%) translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(0, 242, 195, 0.3) !important;
+  }
+  
+  .confirmButton::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(45deg) translateX(-100%);
+    transition: transform 0.6s ease;
+  }
+  
+  .confirmButton:hover::before {
+    transform: rotate(45deg) translateX(100%);
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .searchSection {
+      padding: 12px;
+    }
+  
+    .searchHeader {
+      margin-bottom: 12px;
+    }
+  
+    .mapSection {
+      min-height: 250px;
+    }
+  
+    .confirmButton {
+      bottom: 16px !important;
+      width: calc(100% - 32px) !important;
+      min-width: 0 !important;
+    }
+  }
+  
+  /* Estilos para la barra de búsqueda cuando está activa */
+  .searchBox:focus-within {
+    background: rgba(0, 242, 195, 0.05);
+  }
+  
+  .searchBox:focus-within .searchIcon {
+    color: #00F2C3;
+  }
+  
+  /* Estilos para el scroll en la lista de resultados */
+  .resultsList {
+    max-height: 50vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 242, 195, 0.3) transparent;
+  }
+  
+  .resultsList::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .resultsList::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .resultsList::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 242, 195, 0.3);
+    border-radius: 3px;
+  }
+  
+  /* Efecto de pulsación en los botones */
+  .resultItem:active {
+    transform: scale(0.98);
+  }
+  
+  .backButton:active {
+    transform: scale(0.95);
+  }
+  
+  /* Efecto de loading para el mapa */
+  .mapLoading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(26, 27, 31, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00F2C3;
+  }
+  
+  /* Estilo para el mensaje de error */
+  .errorMessage {
+    color: #ff4d4d;
+    font-size: 14px;
+    padding: 12px;
+    text-align: center;
+    background: rgba(255, 77, 77, 0.1);
+    border-radius: 8px;
+    margin-top: 12px;
+  }

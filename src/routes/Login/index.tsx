@@ -130,7 +130,7 @@ const LoginView: React.FC = () => {
         </UnstyledButton>
       </form>
 
-      <Text className={styles.version}>v2.54.4 (964)</Text>
+      <Text className={styles.version}>v 0.0.1 (0)</Text>
     </Container>
   );
 };

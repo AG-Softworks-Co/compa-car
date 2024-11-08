@@ -147,7 +147,7 @@ const RegisterView: React.FC = () => {
         </Button>
       </form>
 
-      <Text className={styles.version}>v2.54.4 (964)</Text>
+
     </Container>
   );
 };

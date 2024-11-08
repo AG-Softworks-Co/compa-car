@@ -18,6 +18,9 @@ import {
   useLocation,
 } from "@tanstack/react-router";
 import { Search, PlusCircle, Car, User } from "lucide-react";
+import { config } from "telefunc/client"
+
+config.telefuncUrl = "http://localhost:3000/_telefunc"
 
 const theme = createTheme({
   fontFamily: "Inter, sans-serif",
@@ -41,13 +44,15 @@ const theme = createTheme({
 
 const navItems = [
   { icon: Search, label: "Buscar", to: "/reservar" },
-  { icon: PlusCircle, label: "Publicar", to: "/publish" },
+  { icon: PlusCircle, label: "Publicar", to: "/publicarviaje" },
   { icon: "logo", label: "", to: "/home" },
   { icon: Car, label: "Mis Viajes", to: "/my-trips" },
-  { icon: User, label: "Mi Cuenta", to: "/profile" },
+  { icon: User, label: "Mi Cuenta", to: "/perfil" },
 ];
 
-const noNavBarRoutes = ["/", "/login"]
+const noNavBarRoutes = ["/", "/Login" ,"/Registro","/RecuperarPasword", "/Origen", "/Destino", "/publicarviaje", "/RegistrarVehiculo" , 
+  "/RegistrarVehiculo/Documentos"
+]
 
 export const Route = createRootRoute({
   component: () => {

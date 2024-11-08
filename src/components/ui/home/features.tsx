@@ -14,6 +14,7 @@ interface DestinationCardProps {
 function DestinationCard({ image, title, category, trips }: DestinationCardProps) {
   return (
     <Card className={classes.card} style={{ backgroundImage: `url(${image})` }}>
+      <Box className={classes.overlay}></Box>
       <Text className={classes.category}>{category}</Text>
       <Text className={classes.title}>{title}</Text>
       <Text className={classes.trips}>{trips} viajes disponibles</Text>
@@ -30,18 +31,30 @@ function DestinationCard({ image, title, category, trips }: DestinationCardProps
 
 const data = [
   {
-    image: 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=720&q=80',
-    title: 'Madrid',
-    category: 'CIUDAD',
+    image: 'public/Buga/Basilica.webp',
+    title: 'Basílica del Señor de los Milagros',
+    category: 'Buga',
     trips: 120,
   },
   {
-    image: 'https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?auto=format&fit=crop&w=720&q=80',
-    title: 'Barcelona',
-    category: 'PLAYA',
-    trips: 95,
+    image: 'public/Cali/IglesiaSanAntonio.webp',
+    title: 'Iglesia San Antonio',
+    category: 'Cali',
+    trips: 35,
   },
-  // ... otros destinos
+  {
+    image: 'public/Cali/Zoologico.webp',
+    title: 'Zoológico Cali',
+    category: 'Cali',
+    trips: 100,
+  },
+  {
+    image: 'public/Cali/ParqueGato.webp',
+    title: 'Parque del Gato',
+    category: 'Cali',
+    trips: 35,
+  },
+  // Más destinos si deseas agregarlos
 ];
 
 export function CardsCarousel() {
@@ -58,8 +71,8 @@ export function CardsCarousel() {
           slide: classes.carouselSlide,
           control: classes.carouselControl,
         }}
-        nextControlIcon={<ChevronRight size={20} />}
-        previousControlIcon={<ChevronLeft size={20} />}
+        nextControlIcon={<ChevronRight size={24} />}
+        previousControlIcon={<ChevronLeft size={24} />}
       >
         {data.map((item) => (
           <Carousel.Slide key={item.title}>
