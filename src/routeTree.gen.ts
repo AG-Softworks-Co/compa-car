@@ -19,11 +19,14 @@ import { Route as PerfilIndexImport } from './routes/perfil/index'
 import { Route as HomeIndexImport } from './routes/home/index'
 import { Route as AccountIndexImport } from './routes/account/index'
 import { Route as RegistroIndexImport } from './routes/Registro/index'
+import { Route as RegistrarVehiculoIndexImport } from './routes/RegistrarVehiculo/index'
+import { Route as RegistrarDatosIndexImport } from './routes/RegistrarDatos/index'
 import { Route as RecuperarPaswordIndexImport } from './routes/RecuperarPasword/index'
 import { Route as OrigenIndexImport } from './routes/Origen/index'
 import { Route as LoginIndexImport } from './routes/Login/index'
 import { Route as DestinoIndexImport } from './routes/Destino/index'
 import { Route as DateSelectedIndexImport } from './routes/DateSelected/index'
+import { Route as RegistrarVehiculoDocumentosImport } from './routes/RegistrarVehiculo/Documentos'
 
 // Create Virtual Routes
 
@@ -66,6 +69,16 @@ const RegistroIndexRoute = RegistroIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const RegistrarVehiculoIndexRoute = RegistrarVehiculoIndexImport.update({
+  path: '/RegistrarVehiculo/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const RegistrarDatosIndexRoute = RegistrarDatosIndexImport.update({
+  path: '/RegistrarDatos/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const RecuperarPaswordIndexRoute = RecuperarPaswordIndexImport.update({
   path: '/RecuperarPasword/',
   getParentRoute: () => rootRoute,
@@ -91,6 +104,12 @@ const DateSelectedIndexRoute = DateSelectedIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const RegistrarVehiculoDocumentosRoute =
+  RegistrarVehiculoDocumentosImport.update({
+    path: '/RegistrarVehiculo/Documentos',
+    getParentRoute: () => rootRoute,
+  } as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -100,6 +119,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/RegistrarVehiculo/Documentos': {
+      id: '/RegistrarVehiculo/Documentos'
+      path: '/RegistrarVehiculo/Documentos'
+      fullPath: '/RegistrarVehiculo/Documentos'
+      preLoaderRoute: typeof RegistrarVehiculoDocumentosImport
       parentRoute: typeof rootRoute
     }
     '/DateSelected/': {
@@ -135,6 +161,20 @@ declare module '@tanstack/react-router' {
       path: '/RecuperarPasword'
       fullPath: '/RecuperarPasword'
       preLoaderRoute: typeof RecuperarPaswordIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/RegistrarDatos/': {
+      id: '/RegistrarDatos/'
+      path: '/RegistrarDatos'
+      fullPath: '/RegistrarDatos'
+      preLoaderRoute: typeof RegistrarDatosIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/RegistrarVehiculo/': {
+      id: '/RegistrarVehiculo/'
+      path: '/RegistrarVehiculo'
+      fullPath: '/RegistrarVehiculo'
+      preLoaderRoute: typeof RegistrarVehiculoIndexImport
       parentRoute: typeof rootRoute
     }
     '/Registro/': {
@@ -186,11 +226,14 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
+  '/RegistrarVehiculo/Documentos': typeof RegistrarVehiculoDocumentosRoute
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Destino': typeof DestinoIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
+  '/RegistrarDatos': typeof RegistrarDatosIndexRoute
+  '/RegistrarVehiculo': typeof RegistrarVehiculoIndexRoute
   '/Registro': typeof RegistroIndexRoute
   '/account': typeof AccountIndexRoute
   '/home': typeof HomeIndexRoute
@@ -201,11 +244,14 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
+  '/RegistrarVehiculo/Documentos': typeof RegistrarVehiculoDocumentosRoute
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Destino': typeof DestinoIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
+  '/RegistrarDatos': typeof RegistrarDatosIndexRoute
+  '/RegistrarVehiculo': typeof RegistrarVehiculoIndexRoute
   '/Registro': typeof RegistroIndexRoute
   '/account': typeof AccountIndexRoute
   '/home': typeof HomeIndexRoute
@@ -217,11 +263,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
+  '/RegistrarVehiculo/Documentos': typeof RegistrarVehiculoDocumentosRoute
   '/DateSelected/': typeof DateSelectedIndexRoute
   '/Destino/': typeof DestinoIndexRoute
   '/Login/': typeof LoginIndexRoute
   '/Origen/': typeof OrigenIndexRoute
   '/RecuperarPasword/': typeof RecuperarPaswordIndexRoute
+  '/RegistrarDatos/': typeof RegistrarDatosIndexRoute
+  '/RegistrarVehiculo/': typeof RegistrarVehiculoIndexRoute
   '/Registro/': typeof RegistroIndexRoute
   '/account/': typeof AccountIndexRoute
   '/home/': typeof HomeIndexRoute
@@ -234,11 +283,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/RegistrarVehiculo/Documentos'
     | '/DateSelected'
     | '/Destino'
     | '/Login'
     | '/Origen'
     | '/RecuperarPasword'
+    | '/RegistrarDatos'
+    | '/RegistrarVehiculo'
     | '/Registro'
     | '/account'
     | '/home'
@@ -248,11 +300,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/RegistrarVehiculo/Documentos'
     | '/DateSelected'
     | '/Destino'
     | '/Login'
     | '/Origen'
     | '/RecuperarPasword'
+    | '/RegistrarDatos'
+    | '/RegistrarVehiculo'
     | '/Registro'
     | '/account'
     | '/home'
@@ -262,11 +317,14 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/RegistrarVehiculo/Documentos'
     | '/DateSelected/'
     | '/Destino/'
     | '/Login/'
     | '/Origen/'
     | '/RecuperarPasword/'
+    | '/RegistrarDatos/'
+    | '/RegistrarVehiculo/'
     | '/Registro/'
     | '/account/'
     | '/home/'
@@ -278,11 +336,14 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
+  RegistrarVehiculoDocumentosRoute: typeof RegistrarVehiculoDocumentosRoute
   DateSelectedIndexRoute: typeof DateSelectedIndexRoute
   DestinoIndexRoute: typeof DestinoIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   OrigenIndexRoute: typeof OrigenIndexRoute
   RecuperarPaswordIndexRoute: typeof RecuperarPaswordIndexRoute
+  RegistrarDatosIndexRoute: typeof RegistrarDatosIndexRoute
+  RegistrarVehiculoIndexRoute: typeof RegistrarVehiculoIndexRoute
   RegistroIndexRoute: typeof RegistroIndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
@@ -293,11 +354,14 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
+  RegistrarVehiculoDocumentosRoute: RegistrarVehiculoDocumentosRoute,
   DateSelectedIndexRoute: DateSelectedIndexRoute,
   DestinoIndexRoute: DestinoIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   OrigenIndexRoute: OrigenIndexRoute,
   RecuperarPaswordIndexRoute: RecuperarPaswordIndexRoute,
+  RegistrarDatosIndexRoute: RegistrarDatosIndexRoute,
+  RegistrarVehiculoIndexRoute: RegistrarVehiculoIndexRoute,
   RegistroIndexRoute: RegistroIndexRoute,
   AccountIndexRoute: AccountIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
@@ -319,11 +383,14 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/RegistrarVehiculo/Documentos",
         "/DateSelected/",
         "/Destino/",
         "/Login/",
         "/Origen/",
         "/RecuperarPasword/",
+        "/RegistrarDatos/",
+        "/RegistrarVehiculo/",
         "/Registro/",
         "/account/",
         "/home/",
@@ -334,6 +401,9 @@ export const routeTree = rootRoute
     },
     "/": {
       "filePath": "index.lazy.tsx"
+    },
+    "/RegistrarVehiculo/Documentos": {
+      "filePath": "RegistrarVehiculo/Documentos.tsx"
     },
     "/DateSelected/": {
       "filePath": "DateSelected/index.tsx"
@@ -349,6 +419,12 @@ export const routeTree = rootRoute
     },
     "/RecuperarPasword/": {
       "filePath": "RecuperarPasword/index.tsx"
+    },
+    "/RegistrarDatos/": {
+      "filePath": "RegistrarDatos/index.tsx"
+    },
+    "/RegistrarVehiculo/": {
+      "filePath": "RegistrarVehiculo/index.tsx"
     },
     "/Registro/": {
       "filePath": "Registro/index.tsx"

@@ -21,7 +21,7 @@ const menuItems = [
     icon: Car,
     title: 'Mi vehículo',
     subtitle: 'Gestiona la información de tu vehículo',
-    to: '/profile/vehicle',
+    to: '/RegistrarVehiculo',
   },
   {
     icon: Ticket,

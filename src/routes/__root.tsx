@@ -50,7 +50,9 @@ const navItems = [
   { icon: User, label: "Mi Cuenta", to: "/perfil" },
 ];
 
-const noNavBarRoutes = ["/", "/Login" ,"/Registro","/RecuperarPasword", "/Origen", "/Destino"]
+const noNavBarRoutes = ["/", "/Login" ,"/Registro","/RecuperarPasword", "/Origen", "/Destino", "/publicarviaje", "/RegistrarVehiculo" , 
+  "/RegistrarVehiculo/Documentos"
+]
 
 export const Route = createRootRoute({
   component: () => {
