@@ -3,7 +3,7 @@ import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "../components/ui/button";
 import { ChevronDown } from "lucide-react";
 import styles from "./indexlazy.module.css";
-import { hello } from "$/hello.telefunc.ts";
+// import { hello } from "$/hello.telefunc.ts";
 
 export const Route = createLazyFileRoute("/")({
   component: Index,
@@ -43,9 +43,9 @@ function Index() {
     <div className={styles.container}>
       <div className={styles.backgroundEffect} />
       <header className={styles.header}>
-      <Button onClick={() => hello().then((v) => console.log(v))}>
+      {/* <Button onClick={() => hello().then((v) => console.log(v))}>
         Telefunc
-      </Button>
+      </Button> */}
         <div className={styles.logo}>
           <span className={styles.logoIcon} />
           <span className={styles.logoText}>cupo</span>
