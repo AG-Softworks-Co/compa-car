@@ -1,4 +1,3 @@
-
 import { createFileRoute, Link } from '@tanstack/react-router';
 import {
   Container,
@@ -13,6 +12,7 @@ import { Car, Globe, PiggyBank, Users, MapPin, Leaf } from 'lucide-react';
 import styles from './home.module.css';
 import { CardsCarousel } from '../../components/ui/home/features';
 import { FeatureCarousel } from '../../components/ui/home/FeatureCarousel';
+import { ThreeDMap } from '../../components/ui/home/ThreeDMap'; // Importa tu componente del mapa 3D
 
 const HomeView = () => {
   const features = [
@@ -100,6 +100,12 @@ const HomeView = () => {
           </Text>
         </div>
         <FeatureCarousel features={features} />
+      </Box>
+
+      {/* 3D Map Section */}
+      <Box className={styles.mapSection}>
+       
+        <ThreeDMap /> {/* Aquí incorporamos el componente del mapa 3D */}
       </Box>
 
       {/* Destinations Section */}

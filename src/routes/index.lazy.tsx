@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
-import { createLazyFileRoute, Link } from '@tanstack/react-router';
-import { Button } from '../components/ui/button';
-import { ChevronDown } from 'lucide-react';
-import styles from './indexlazy.module.css';
+import { useState, useEffect } from "react";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
+import { Button } from "../components/ui/button";
+import { ChevronDown } from "lucide-react";
+import styles from "./indexlazy.module.css";
+import { hello } from "$/hello.telefunc.ts";
 
-export const Route = createLazyFileRoute('/')({
+export const Route = createLazyFileRoute("/")({
   component: Index,
 });
 
@@ -15,16 +16,16 @@ function Index() {
   const slides = [
     {
       title: "Viaja seguro",
-      subtitle: "Conecta con conductores verificados"
+      subtitle: "Conecta con conductores verificados",
     },
     {
       title: "Ahorra tiempo",
-      subtitle: "Encuentra rutas eficientes"
+      subtitle: "Encuentra rutas eficientes",
     },
     {
       title: "Cuida el planeta",
-      subtitle: "Reduce tu huella de carbono"
-    }
+      subtitle: "Reduce tu huella de carbono",
+    },
   ];
 
   useEffect(() => {
@@ -41,8 +42,10 @@ function Index() {
   return (
     <div className={styles.container}>
       <div className={styles.backgroundEffect} />
-      
       <header className={styles.header}>
+      <Button onClick={() => hello().then((v) => console.log(v))}>
+        Telefunc
+      </Button>
         <div className={styles.logo}>
           <span className={styles.logoIcon} />
           <span className={styles.logoText}>cupo</span>
@@ -56,10 +59,14 @@ function Index() {
       <main className={styles.main}>
         <div className={styles.content}>
           <div className={styles.slideContent}>
-            <h1 className={`${styles.title} ${animatingText ? styles.fadeOut : styles.fadeIn}`}>
+            <h1
+              className={`${styles.title} ${animatingText ? styles.fadeOut : styles.fadeIn}`}
+            >
               {slides[currentSlide].title}
             </h1>
-            <p className={`${styles.subtitle} ${animatingText ? styles.fadeOut : styles.fadeIn}`}>
+            <p
+              className={`${styles.subtitle} ${animatingText ? styles.fadeOut : styles.fadeIn}`}
+            >
               {slides[currentSlide].subtitle}
             </p>
           </div>
@@ -68,7 +75,7 @@ function Index() {
             {slides.map((_, index) => (
               <button
                 key={index}
-                className={`${styles.indicator} ${currentSlide === index ? styles.activeIndicator : ''}`}
+                className={`${styles.indicator} ${currentSlide === index ? styles.activeIndicator : ""}`}
                 onClick={() => setCurrentSlide(index)}
               />
             ))}
@@ -77,9 +84,7 @@ function Index() {
 
         <div className={styles.actionButtons}>
           <Link to="/Registro" className={styles.registerLink}>
-            <Button className={styles.registerButton}>
-              Crear cuenta
-            </Button>
+            <Button className={styles.registerButton}>Crear cuenta</Button>
           </Link>
           <Link to="/Login" className={styles.loginLink}>
             <Button variant="outline" className={styles.loginButton}>
@@ -87,10 +92,10 @@ function Index() {
             </Button>
           </Link>
           <Link to="/home" className={styles.noLoginLink}>
-    <Button variant="ghost" className={styles.noLoginButton}>
-      Iniciar sin logueo
-    </Button>
-  </Link>
+            <Button variant="ghost" className={styles.noLoginButton}>
+              Iniciar sin logueo
+            </Button>
+          </Link>
         </div>
       </main>
     </div>

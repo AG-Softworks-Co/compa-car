@@ -15,7 +15,7 @@ import {
   User,
   Car
 } from 'lucide-react';
-import PassengerSelector from '../../components/ui/home/PassengerSelector'; // Importamos el nuevo componente
+import PassengerSelector from '../../components/ui/home/PassengerSelector'; 
 import styles from './reservar.module.css';
 
 interface SearchFormData {
