@@ -1,100 +1,421 @@
 .container {
-    padding: 16px;
-    max-width: 100%;
-    background-color: #121212;
-    color: white;
-    min-height: 100vh;
+  padding: 0;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+/* Hero Section */
+.heroSection {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+  padding: 60px 40px;
+  position: relative;
+  background: linear-gradient(45deg, rgba(0, 255, 157, 0.05), transparent);
+  overflow: hidden;
+}
+
+.heroContent {
+  max-width: 600px;
+  position: relative;
+  z-index: 2;
+}
+
+.heroTitle {
+  font-size: 3.5rem !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  margin-bottom: 1.5rem;
+  color: white;
+  animation: fadeInUp 1s ease;
+}
+
+.heroHighlight {
+  background: linear-gradient(90deg, #00ff9d, #00cc7a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+}
+
+.heroSubtitle {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 2rem;
+  animation: fadeInUp 1s ease 0.2s backwards;
+}
+
+.heroButtons {
+  animation: fadeInUp 1s ease 0.4s backwards;
+}
+
+.primaryButton {
+  background: linear-gradient(45deg, #00ff9d, #00cc7a) !important;
+  border: none !important;
+  color: black !important;
+  font-weight: 600 !important;
+  padding: 0 2rem !important;
+  height: 3.5rem !important;
+  font-size: 1.1rem !important;
+  transition: all 0.3s ease !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.primaryButton::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transform: translateX(-100%) rotate(45deg);
+  transition: transform 0.6s ease;
+}
+
+.primaryButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 255, 157, 0.3);
+}
+
+.primaryButton:hover::before {
+  transform: translateX(100%) rotate(45deg);
+}
+
+.secondaryButton {
+  border: 2px solid #00ff9d !important;
+  color: #00ff9d !important;
+  font-weight: 600 !important;
+  padding: 0 2rem !important;
+  height: 3.5rem !important;
+  font-size: 1.1rem !important;
+  transition: all 0.3s ease !important;
+  background: transparent !important;
+}
+
+.secondaryButton:hover {
+  background: rgba(0, 255, 157, 0.1) !important;
+  transform: translateY(-2px);
+}
+
+.heroVisual {
+  position: absolute;
+  top: 50%;
+  right: -10%;
+  transform: translateY(-50%);
+  width: 50%;
+  height: 80%;
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 255, 157, 0.1),
+    transparent 70%
+  );
+  filter: blur(60px);
+  animation: floatAnimation 6s ease-in-out infinite;
+}
+
+/* Features Section */
+/* Features Section Mejorada */
+.featuresSection {
+  padding: 100px 40px;
+  background: linear-gradient(
+    to bottom,
+    #0c0c0c,
+    rgba(12, 12, 12, 0.9)
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+.featuresSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(0, 255, 157, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0, 255, 157, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 60px;
+  position: relative;
+}
+
+.sectionTitle {
+  font-size: 3rem !important;
+  font-weight: 800 !important;
+  color: white;
+  margin-bottom: 1rem !important;
+  position: relative;
+}
+
+.titleGlow {
+  color: #00ff9d;
+  text-shadow: 0 0 20px rgba(0, 255, 157, 0.5);
+  position: relative;
+}
+
+.titleGlow::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00ff9d, transparent);
+  animation: glowLine 2s infinite;
+}
+
+.sectionSubtitle {
+  font-size: 1.2rem !important;
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 600px;
+  margin: 0 auto !important;
+  line-height: 1.6;
+}
+
+.featuresGrid {
+  position: relative;
+  z-index: 1;
+}
+
+.featureCard {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(var(--feature-color), 0.2) !important;
+  border-radius: 24px !important;
+  padding: 2rem !important;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.featureContent {
+  position: relative;
+  z-index: 2;
+}
+
+.featureCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--mouse-x) var(--mouse-y),
+    rgba(var(--feature-color), 0.15),
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.featureCard:hover {
+  transform: translateY(-5px);
+  border-color: var(--feature-color) !important;
+  box-shadow: 0 10px 30px rgba(var(--feature-color), 0.2);
+}
+
+.featureCard:hover::before {
+  opacity: 1;
+}
+
+.featureIconWrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: rgba(var(--feature-color), 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.featureIcon {
+  color: var(--feature-color);
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease;
+}
+
+.iconGlow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(var(--feature-color), 0.3),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.featureCard:hover .featureIcon {
+  transform: scale(1.1);
+}
+
+.featureCard:hover .iconGlow {
+  opacity: 1;
+}
+
+.featureTitle {
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;
+  color: white;
+  margin-bottom: 1rem !important;
+  background: linear-gradient(45deg, white, var(--feature-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.featureDescription {
+  color: rgba(255, 255, 255, 0.7) !important;
+  line-height: 1.6 !important;
+  font-size: 1rem !important;
+}
+
+/* Destinations Section */
+.destinationsSection {
+  padding: 100px 40px;
+  background: #0a0a0a;
+  position: relative;
+}
+
+/* CTA Section */
+.ctaSection {
+  padding: 100px 40px;
+  position: relative;
+  background: linear-gradient(
+    to bottom,
+    #0a0a0a,
+    rgba(0, 255, 157, 0.05)
+  );
+}
+
+.ctaCard {
+  max-width: 600px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(0, 255, 157, 0.1) !important;
+  padding: 3rem !important;
+  border-radius: 32px !important;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.ctaTitle {
+  font-size: 2.5rem !important;
+  font-weight: 800 !important;
+  background: linear-gradient(45deg, white, #00ff9d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 1.5rem !important;
+}
+
+.ctaText {
+  font-size: 1.2rem !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  margin-bottom: 2rem !important;
+  line-height: 1.6;
+}
+
+.ctaButton {
+  background: linear-gradient(45deg, #00ff9d, #00cc7a) !important;
+  border: none !important;
+  color: black !important;
+  font-weight: 600 !important;
+  padding: 0 3rem !important;
+  height: 3.5rem !important;
+  font-size: 1.1rem !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.ctaButton::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(45deg) translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.ctaButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 255, 157, 0.3);
+}
+
+.ctaButton:hover::before {
+  transform: rotate(45deg) translateX(100%);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
-  .heroCard {
-    background-color: #043728;
-    color: white;
-    padding: 24px;
-    margin-bottom: 24px;
-    text-align: center;
-    border-radius: 12px;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .heroTitle {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 8px;
+}
+
+@keyframes floatAnimation {
+  0%, 100% {
+    transform: translateY(-50%) translateX(0);
   }
-  
-  .heroSubtitle {
-    font-size: 16px;
-    margin-bottom: 20px;
+  50% {
+    transform: translateY(-50%) translateX(-30px);
   }
-  
-  .ctaButton {
-    background-color: #32ff98;
-    color: #006400;
-    font-weight: 600;
-  }
-  
-  .ctaButton:hover {
-    background-color: #00cc7d;
-  }
-  
-  .sectionTitle {
-    color: #00ff9d;
-    margin-bottom: 16px;
-    font-size: 20px;
-    font-weight: 600;
-  }
-  
-  .featuresGrid {
-    margin-bottom: 24px;
-  }
-  
-  .featureCard {
-    background-color: #1e1e1e;
-    color: white;
-    padding: 16px;
-    border-radius: 8px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .featureIcon {
-    color: #00ff9d;
-    margin-bottom: 8px;
-  }
-  
-  
-  .destinationCard {
-    background-color: #1e1e1e;
-    color: white;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 300px;  /* Controla el tamaño máximo de la tarjeta */
-    margin-right: 16px; /* Espacio entre tarjetas */
-  }
-  
-  .destinationIcon {
-    color: #00ff9d;
-    margin-bottom: 12px;
-  }
-  
-  .navPlaceholder {
-    height: 60px;
-  }
-  
-  @media (max-width: 768px) {
-    .heroTitle {
-      font-size: 24px;
-    }
-    
-    .sectionTitle {
-      font-size: 18px;
-    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .heroSection {
+    padding: 40px 20px;
   }
 
-  
+  .heroTitle {
+    font-size: 2.5rem !important;
+  }
+
+  .heroSubtitle {
+    font-size: 1.1rem;
+  }
+
+  .featuresSection,
+  .destinationsSection,
+  .ctaSection {
+    padding: 60px 20px;
+  }
+
+  .sectionTitle {
+    font-size: 2rem !important;
+  }
+
+  .ctaCard {
+    padding: 2rem !important;
+  }
+}
+
