@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Container,
   Title,
@@ -16,41 +16,43 @@ import { FeatureCarousel } from '../../components/ui/home/FeatureCarousel';
 
 const HomeView = () => {
   const features = [
-    { 
-      icon: Car, 
-      title: 'Viajes compartidos', 
-      description: 'Conecta con conductores y viajeros que comparten tu ruta.',
-      color: '#00ff9d'
+    {
+      icon: Car,
+      title: "Viajes compartidos",
+      description: "Conecta con conductores y viajeros que comparten tu ruta.",
+      color: "#00ff9d",
     },
-    { 
-      icon: Globe, 
-      title: 'Destinos nacionales', 
-      description: 'Viaja a cualquier destino dentro del país de manera segura.',
-      color: '#00ccff'
+    {
+      icon: Globe,
+      title: "Destinos nacionales",
+      description:
+        "Viaja a cualquier destino dentro del país de manera segura.",
+      color: "#00ccff",
     },
-    { 
-      icon: PiggyBank, 
-      title: 'Ahorra en viajes', 
-      description: 'Reduce tus costos de transporte compartiendo gastos.',
-      color: '#ff9d00'
+    {
+      icon: PiggyBank,
+      title: "Ahorra en viajes",
+      description: "Reduce tus costos de transporte compartiendo gastos.",
+      color: "#ff9d00",
     },
-    { 
-      icon: Users, 
-      title: 'Comunidad confiable', 
-      description: 'Usuarios verificados y sistema de reputación.',
-      color: '#ff00ff'
+    {
+      icon: Users,
+      title: "Comunidad confiable",
+      description: "Usuarios verificados y sistema de reputación.",
+      color: "#ff00ff",
     },
-    { 
-      icon: MapPin, 
-      title: 'Rutas flexibles', 
-      description: 'Encuentra o publica viajes que se ajusten a tus necesidades.',
-      color: '#9d00ff'
+    {
+      icon: MapPin,
+      title: "Rutas flexibles",
+      description:
+        "Encuentra o publica viajes que se ajusten a tus necesidades.",
+      color: "#9d00ff",
     },
-    { 
-      icon: Leaf, 
-      title: 'Eco-friendly', 
-      description: 'Reduce tu huella de carbono compartiendo vehículo.',
-      color: '#00ff9d'
+    {
+      icon: Leaf,
+      title: "Eco-friendly",
+      description: "Reduce tu huella de carbono compartiendo vehículo.",
+      color: "#00ff9d",
     },
   ];
 
@@ -96,7 +98,8 @@ const HomeView = () => {
             <span className={styles.titleGlow}>La mejor forma</span> de viajar
           </Title>
           <Text className={styles.sectionSubtitle}>
-            Descubre por qué miles de personas eligen Cupo para sus viajes diarios
+            Descubre por qué miles de personas eligen Cupo para sus viajes
+            diarios
           </Text>
         </div>
         <FeatureCarousel features={features} />
@@ -135,6 +138,6 @@ const HomeView = () => {
   );
 };
 
-export const Route = createFileRoute('/home/')({
+export const Route = createFileRoute("/home/")({
   component: HomeView,
 });

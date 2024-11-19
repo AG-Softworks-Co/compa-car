@@ -469,3 +469,36 @@
     scroll-behavior: auto !important;
   }
 }
+
+
+.dateTimeSection {
+  width: 100%;
+}
+
+.dateCard {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all var(--animation-duration) ease;
+}
+
+.dateCard:hover {
+  border-color: var(--primary);
+}
+
+/* Estilos específicos para el DateTimePicker */
+:global(.mantine-DateTimePicker-input) {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  height: 48px !important;
+  font-size: 1rem !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+}
+
+:global(.mantine-DateTimePicker-input:focus) {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(0, 255, 157, 0.2) !important;
+}
