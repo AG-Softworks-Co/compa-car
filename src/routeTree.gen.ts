@@ -17,6 +17,7 @@ import { Route as ReservarIndexImport } from './routes/reservar/index'
 import { Route as PublicarviajeIndexImport } from './routes/publicarviaje/index'
 import { Route as HomeIndexImport } from './routes/home/index'
 import { Route as AccountIndexImport } from './routes/account/index'
+import { Route as ViajesPublicadosIndexImport } from './routes/ViajesPublicados/index'
 import { Route as RegistroIndexImport } from './routes/Registro/index'
 import { Route as RegistrarVehiculoIndexImport } from './routes/RegistrarVehiculo/index'
 import { Route as RegistrarDatosIndexImport } from './routes/RegistrarDatos/index'
@@ -24,9 +25,14 @@ import { Route as RecuperarPaswordIndexImport } from './routes/RecuperarPasword/
 import { Route as PerfilIndexImport } from './routes/Perfil/index'
 import { Route as OrigenIndexImport } from './routes/Origen/index'
 import { Route as LoginIndexImport } from './routes/Login/index'
+import { Route as DetallesViajeIndexImport } from './routes/DetallesViaje/index'
 import { Route as DestinoIndexImport } from './routes/Destino/index'
 import { Route as DateSelectedIndexImport } from './routes/DateSelected/index'
-import { Route as RegistrarVehiculoDocumentosImport } from './routes/RegistrarVehiculo/Documentos'
+import { Route as RegistrarVehiculoSoatImport } from './routes/RegistrarVehiculo/Soat'
+import { Route as RegistrarVehiculoPropertyCardImport } from './routes/RegistrarVehiculo/PropertyCard'
+import { Route as RegistrarVehiculoLicenseImport } from './routes/RegistrarVehiculo/License'
+import { Route as RegistrarVehiculoDocumentsRequiredImport } from './routes/RegistrarVehiculo/DocumentsRequired'
+import { Route as RegistrarVehiculoDocumentFormImport } from './routes/RegistrarVehiculo/DocumentForm'
 
 // Create Virtual Routes
 
@@ -56,6 +62,11 @@ const HomeIndexRoute = HomeIndexImport.update({
 
 const AccountIndexRoute = AccountIndexImport.update({
   path: '/account/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ViajesPublicadosIndexRoute = ViajesPublicadosIndexImport.update({
+  path: '/ViajesPublicados/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -94,6 +105,11 @@ const LoginIndexRoute = LoginIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const DetallesViajeIndexRoute = DetallesViajeIndexImport.update({
+  path: '/DetallesViaje/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const DestinoIndexRoute = DestinoIndexImport.update({
   path: '/Destino/',
   getParentRoute: () => rootRoute,
@@ -104,9 +120,31 @@ const DateSelectedIndexRoute = DateSelectedIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const RegistrarVehiculoDocumentosRoute =
-  RegistrarVehiculoDocumentosImport.update({
-    path: '/RegistrarVehiculo/Documentos',
+const RegistrarVehiculoSoatRoute = RegistrarVehiculoSoatImport.update({
+  path: '/RegistrarVehiculo/Soat',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const RegistrarVehiculoPropertyCardRoute =
+  RegistrarVehiculoPropertyCardImport.update({
+    path: '/RegistrarVehiculo/PropertyCard',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const RegistrarVehiculoLicenseRoute = RegistrarVehiculoLicenseImport.update({
+  path: '/RegistrarVehiculo/License',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const RegistrarVehiculoDocumentsRequiredRoute =
+  RegistrarVehiculoDocumentsRequiredImport.update({
+    path: '/RegistrarVehiculo/DocumentsRequired',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const RegistrarVehiculoDocumentFormRoute =
+  RegistrarVehiculoDocumentFormImport.update({
+    path: '/RegistrarVehiculo/DocumentForm',
     getParentRoute: () => rootRoute,
   } as any)
 
@@ -121,11 +159,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
-    '/RegistrarVehiculo/Documentos': {
-      id: '/RegistrarVehiculo/Documentos'
-      path: '/RegistrarVehiculo/Documentos'
-      fullPath: '/RegistrarVehiculo/Documentos'
-      preLoaderRoute: typeof RegistrarVehiculoDocumentosImport
+    '/RegistrarVehiculo/DocumentForm': {
+      id: '/RegistrarVehiculo/DocumentForm'
+      path: '/RegistrarVehiculo/DocumentForm'
+      fullPath: '/RegistrarVehiculo/DocumentForm'
+      preLoaderRoute: typeof RegistrarVehiculoDocumentFormImport
+      parentRoute: typeof rootRoute
+    }
+    '/RegistrarVehiculo/DocumentsRequired': {
+      id: '/RegistrarVehiculo/DocumentsRequired'
+      path: '/RegistrarVehiculo/DocumentsRequired'
+      fullPath: '/RegistrarVehiculo/DocumentsRequired'
+      preLoaderRoute: typeof RegistrarVehiculoDocumentsRequiredImport
+      parentRoute: typeof rootRoute
+    }
+    '/RegistrarVehiculo/License': {
+      id: '/RegistrarVehiculo/License'
+      path: '/RegistrarVehiculo/License'
+      fullPath: '/RegistrarVehiculo/License'
+      preLoaderRoute: typeof RegistrarVehiculoLicenseImport
+      parentRoute: typeof rootRoute
+    }
+    '/RegistrarVehiculo/PropertyCard': {
+      id: '/RegistrarVehiculo/PropertyCard'
+      path: '/RegistrarVehiculo/PropertyCard'
+      fullPath: '/RegistrarVehiculo/PropertyCard'
+      preLoaderRoute: typeof RegistrarVehiculoPropertyCardImport
+      parentRoute: typeof rootRoute
+    }
+    '/RegistrarVehiculo/Soat': {
+      id: '/RegistrarVehiculo/Soat'
+      path: '/RegistrarVehiculo/Soat'
+      fullPath: '/RegistrarVehiculo/Soat'
+      preLoaderRoute: typeof RegistrarVehiculoSoatImport
       parentRoute: typeof rootRoute
     }
     '/DateSelected/': {
@@ -140,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/Destino'
       fullPath: '/Destino'
       preLoaderRoute: typeof DestinoIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/DetallesViaje/': {
+      id: '/DetallesViaje/'
+      path: '/DetallesViaje'
+      fullPath: '/DetallesViaje'
+      preLoaderRoute: typeof DetallesViajeIndexImport
       parentRoute: typeof rootRoute
     }
     '/Login/': {
@@ -191,6 +264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegistroIndexImport
       parentRoute: typeof rootRoute
     }
+    '/ViajesPublicados/': {
+      id: '/ViajesPublicados/'
+      path: '/ViajesPublicados'
+      fullPath: '/ViajesPublicados'
+      preLoaderRoute: typeof ViajesPublicadosIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/account/': {
       id: '/account/'
       path: '/account'
@@ -226,9 +306,14 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
-  '/RegistrarVehiculo/Documentos': typeof RegistrarVehiculoDocumentosRoute
+  '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
+  '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
+  '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
+  '/RegistrarVehiculo/PropertyCard': typeof RegistrarVehiculoPropertyCardRoute
+  '/RegistrarVehiculo/Soat': typeof RegistrarVehiculoSoatRoute
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Destino': typeof DestinoIndexRoute
+  '/DetallesViaje': typeof DetallesViajeIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
   '/Perfil': typeof PerfilIndexRoute
@@ -236,6 +321,7 @@ export interface FileRoutesByFullPath {
   '/RegistrarDatos': typeof RegistrarDatosIndexRoute
   '/RegistrarVehiculo': typeof RegistrarVehiculoIndexRoute
   '/Registro': typeof RegistroIndexRoute
+  '/ViajesPublicados': typeof ViajesPublicadosIndexRoute
   '/account': typeof AccountIndexRoute
   '/home': typeof HomeIndexRoute
   '/publicarviaje': typeof PublicarviajeIndexRoute
@@ -244,9 +330,14 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
-  '/RegistrarVehiculo/Documentos': typeof RegistrarVehiculoDocumentosRoute
+  '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
+  '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
+  '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
+  '/RegistrarVehiculo/PropertyCard': typeof RegistrarVehiculoPropertyCardRoute
+  '/RegistrarVehiculo/Soat': typeof RegistrarVehiculoSoatRoute
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Destino': typeof DestinoIndexRoute
+  '/DetallesViaje': typeof DetallesViajeIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
   '/Perfil': typeof PerfilIndexRoute
@@ -254,6 +345,7 @@ export interface FileRoutesByTo {
   '/RegistrarDatos': typeof RegistrarDatosIndexRoute
   '/RegistrarVehiculo': typeof RegistrarVehiculoIndexRoute
   '/Registro': typeof RegistroIndexRoute
+  '/ViajesPublicados': typeof ViajesPublicadosIndexRoute
   '/account': typeof AccountIndexRoute
   '/home': typeof HomeIndexRoute
   '/publicarviaje': typeof PublicarviajeIndexRoute
@@ -263,9 +355,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
-  '/RegistrarVehiculo/Documentos': typeof RegistrarVehiculoDocumentosRoute
+  '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
+  '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
+  '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
+  '/RegistrarVehiculo/PropertyCard': typeof RegistrarVehiculoPropertyCardRoute
+  '/RegistrarVehiculo/Soat': typeof RegistrarVehiculoSoatRoute
   '/DateSelected/': typeof DateSelectedIndexRoute
   '/Destino/': typeof DestinoIndexRoute
+  '/DetallesViaje/': typeof DetallesViajeIndexRoute
   '/Login/': typeof LoginIndexRoute
   '/Origen/': typeof OrigenIndexRoute
   '/Perfil/': typeof PerfilIndexRoute
@@ -273,6 +370,7 @@ export interface FileRoutesById {
   '/RegistrarDatos/': typeof RegistrarDatosIndexRoute
   '/RegistrarVehiculo/': typeof RegistrarVehiculoIndexRoute
   '/Registro/': typeof RegistroIndexRoute
+  '/ViajesPublicados/': typeof ViajesPublicadosIndexRoute
   '/account/': typeof AccountIndexRoute
   '/home/': typeof HomeIndexRoute
   '/publicarviaje/': typeof PublicarviajeIndexRoute
@@ -283,9 +381,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/RegistrarVehiculo/Documentos'
+    | '/RegistrarVehiculo/DocumentForm'
+    | '/RegistrarVehiculo/DocumentsRequired'
+    | '/RegistrarVehiculo/License'
+    | '/RegistrarVehiculo/PropertyCard'
+    | '/RegistrarVehiculo/Soat'
     | '/DateSelected'
     | '/Destino'
+    | '/DetallesViaje'
     | '/Login'
     | '/Origen'
     | '/Perfil'
@@ -293,6 +396,7 @@ export interface FileRouteTypes {
     | '/RegistrarDatos'
     | '/RegistrarVehiculo'
     | '/Registro'
+    | '/ViajesPublicados'
     | '/account'
     | '/home'
     | '/publicarviaje'
@@ -300,9 +404,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/RegistrarVehiculo/Documentos'
+    | '/RegistrarVehiculo/DocumentForm'
+    | '/RegistrarVehiculo/DocumentsRequired'
+    | '/RegistrarVehiculo/License'
+    | '/RegistrarVehiculo/PropertyCard'
+    | '/RegistrarVehiculo/Soat'
     | '/DateSelected'
     | '/Destino'
+    | '/DetallesViaje'
     | '/Login'
     | '/Origen'
     | '/Perfil'
@@ -310,6 +419,7 @@ export interface FileRouteTypes {
     | '/RegistrarDatos'
     | '/RegistrarVehiculo'
     | '/Registro'
+    | '/ViajesPublicados'
     | '/account'
     | '/home'
     | '/publicarviaje'
@@ -317,9 +427,14 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/RegistrarVehiculo/Documentos'
+    | '/RegistrarVehiculo/DocumentForm'
+    | '/RegistrarVehiculo/DocumentsRequired'
+    | '/RegistrarVehiculo/License'
+    | '/RegistrarVehiculo/PropertyCard'
+    | '/RegistrarVehiculo/Soat'
     | '/DateSelected/'
     | '/Destino/'
+    | '/DetallesViaje/'
     | '/Login/'
     | '/Origen/'
     | '/Perfil/'
@@ -327,6 +442,7 @@ export interface FileRouteTypes {
     | '/RegistrarDatos/'
     | '/RegistrarVehiculo/'
     | '/Registro/'
+    | '/ViajesPublicados/'
     | '/account/'
     | '/home/'
     | '/publicarviaje/'
@@ -336,9 +452,14 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
-  RegistrarVehiculoDocumentosRoute: typeof RegistrarVehiculoDocumentosRoute
+  RegistrarVehiculoDocumentFormRoute: typeof RegistrarVehiculoDocumentFormRoute
+  RegistrarVehiculoDocumentsRequiredRoute: typeof RegistrarVehiculoDocumentsRequiredRoute
+  RegistrarVehiculoLicenseRoute: typeof RegistrarVehiculoLicenseRoute
+  RegistrarVehiculoPropertyCardRoute: typeof RegistrarVehiculoPropertyCardRoute
+  RegistrarVehiculoSoatRoute: typeof RegistrarVehiculoSoatRoute
   DateSelectedIndexRoute: typeof DateSelectedIndexRoute
   DestinoIndexRoute: typeof DestinoIndexRoute
+  DetallesViajeIndexRoute: typeof DetallesViajeIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   OrigenIndexRoute: typeof OrigenIndexRoute
   PerfilIndexRoute: typeof PerfilIndexRoute
@@ -346,6 +467,7 @@ export interface RootRouteChildren {
   RegistrarDatosIndexRoute: typeof RegistrarDatosIndexRoute
   RegistrarVehiculoIndexRoute: typeof RegistrarVehiculoIndexRoute
   RegistroIndexRoute: typeof RegistroIndexRoute
+  ViajesPublicadosIndexRoute: typeof ViajesPublicadosIndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
   PublicarviajeIndexRoute: typeof PublicarviajeIndexRoute
@@ -354,9 +476,15 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
-  RegistrarVehiculoDocumentosRoute: RegistrarVehiculoDocumentosRoute,
+  RegistrarVehiculoDocumentFormRoute: RegistrarVehiculoDocumentFormRoute,
+  RegistrarVehiculoDocumentsRequiredRoute:
+    RegistrarVehiculoDocumentsRequiredRoute,
+  RegistrarVehiculoLicenseRoute: RegistrarVehiculoLicenseRoute,
+  RegistrarVehiculoPropertyCardRoute: RegistrarVehiculoPropertyCardRoute,
+  RegistrarVehiculoSoatRoute: RegistrarVehiculoSoatRoute,
   DateSelectedIndexRoute: DateSelectedIndexRoute,
   DestinoIndexRoute: DestinoIndexRoute,
+  DetallesViajeIndexRoute: DetallesViajeIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   OrigenIndexRoute: OrigenIndexRoute,
   PerfilIndexRoute: PerfilIndexRoute,
@@ -364,6 +492,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegistrarDatosIndexRoute: RegistrarDatosIndexRoute,
   RegistrarVehiculoIndexRoute: RegistrarVehiculoIndexRoute,
   RegistroIndexRoute: RegistroIndexRoute,
+  ViajesPublicadosIndexRoute: ViajesPublicadosIndexRoute,
   AccountIndexRoute: AccountIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
   PublicarviajeIndexRoute: PublicarviajeIndexRoute,
@@ -383,9 +512,14 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/RegistrarVehiculo/Documentos",
+        "/RegistrarVehiculo/DocumentForm",
+        "/RegistrarVehiculo/DocumentsRequired",
+        "/RegistrarVehiculo/License",
+        "/RegistrarVehiculo/PropertyCard",
+        "/RegistrarVehiculo/Soat",
         "/DateSelected/",
         "/Destino/",
+        "/DetallesViaje/",
         "/Login/",
         "/Origen/",
         "/Perfil/",
@@ -393,6 +527,7 @@ export const routeTree = rootRoute
         "/RegistrarDatos/",
         "/RegistrarVehiculo/",
         "/Registro/",
+        "/ViajesPublicados/",
         "/account/",
         "/home/",
         "/publicarviaje/",
@@ -402,14 +537,29 @@ export const routeTree = rootRoute
     "/": {
       "filePath": "index.lazy.tsx"
     },
-    "/RegistrarVehiculo/Documentos": {
-      "filePath": "RegistrarVehiculo/Documentos.tsx"
+    "/RegistrarVehiculo/DocumentForm": {
+      "filePath": "RegistrarVehiculo/DocumentForm.tsx"
+    },
+    "/RegistrarVehiculo/DocumentsRequired": {
+      "filePath": "RegistrarVehiculo/DocumentsRequired.tsx"
+    },
+    "/RegistrarVehiculo/License": {
+      "filePath": "RegistrarVehiculo/License.tsx"
+    },
+    "/RegistrarVehiculo/PropertyCard": {
+      "filePath": "RegistrarVehiculo/PropertyCard.tsx"
+    },
+    "/RegistrarVehiculo/Soat": {
+      "filePath": "RegistrarVehiculo/Soat.tsx"
     },
     "/DateSelected/": {
       "filePath": "DateSelected/index.tsx"
     },
     "/Destino/": {
       "filePath": "Destino/index.tsx"
+    },
+    "/DetallesViaje/": {
+      "filePath": "DetallesViaje/index.tsx"
     },
     "/Login/": {
       "filePath": "Login/index.tsx"
@@ -431,6 +581,9 @@ export const routeTree = rootRoute
     },
     "/Registro/": {
       "filePath": "Registro/index.tsx"
+    },
+    "/ViajesPublicados/": {
+      "filePath": "ViajesPublicados/index.tsx"
     },
     "/account/": {
       "filePath": "account/index.tsx"

@@ -1,266 +1,249 @@
-import  { useState, useEffect, useRef } from 'react';
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Container, TextInput, Text, Button } from '@mantine/core';
-import { ArrowLeft, MapPin } from 'lucide-react';
-import styles from './index.module.css';
+  import { useState, useEffect, useRef } from 'react';
+  import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
+  import { Container, TextInput, Text, Button, Title } from '@mantine/core';
+  import { ArrowLeft, MapPin } from 'lucide-react';
+  import { GoogleMap, Marker } from '@react-google-maps/api';
+  import { mapOptions } from '../../types/PublicarViaje/TripDataManagement';
+  import styles from './index.module.css';
+  // Importa las utilidades
+  interface Suggestion {
+    id: string;
+    description: string;
+    main_text: string;
+    secondary_text: string;
+  }
 
-// Tipos
-interface Suggestion {
-  id: string;
-  description: string;
-  main_text: string;
-  secondary_text: string;
-}
+  interface Location {
+    lat: number;
+    lng: number;
+  }
 
-interface Location {
-  lat: number;
-  lng: number;
-}
+  function OrigenView() {
+    const navigate = useNavigate();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [results, setResults] = useState<Suggestion[]>([]);
+    const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+    const [selectedAddress, setSelectedAddress] = useState('');
+    const [showMap, setShowMap] = useState(false);
+    const [, setError] = useState<string | null>(null);
+    const [, setIsSearching] = useState(false);
 
-function OrigenView() {
-  const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [results, setResults] = useState<Suggestion[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [showMap, setShowMap] = useState(false);
+    const mapRef = useRef<google.maps.Map | null>(null);
+    const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
+    const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
+    const searchTimeout = useRef<NodeJS.Timeout>();
 
-  // Referencias
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const markerRef = useRef<google.maps.Marker | null>(null);
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
-  const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
+    useEffect(() => {
+      if (window.google && !autocompleteServiceRef.current) {
+        autocompleteServiceRef.current = new google.maps.places.AutocompleteService();
+      }
+    }, []);
 
-  // Inicializar servicios de Google Maps
-  const initializeServices = () => {
-    if (!window.google) return;
+    useEffect(() => {
+      if (searchTimeout.current) {
+        clearTimeout(searchTimeout.current);
+      }
 
-    autocompleteServiceRef.current = new google.maps.places.AutocompleteService();
-    const tempNode = document.createElement('div');
-    const tempMap = new google.maps.Map(tempNode);
-    placesServiceRef.current = new google.maps.places.PlacesService(tempMap);
-  };
+      if (searchTerm && !selectedLocation) {
+        setIsSearching(true);
+        searchTimeout.current = setTimeout(() => {
+          if (autocompleteServiceRef.current) {
+            const request: google.maps.places.AutocompletionRequest = {
+              input: searchTerm,
+              componentRestrictions: { country: 'co' },
+            };
 
-  useEffect(() => {
-    initializeServices();
-  }, []);
-
-  // Manejar búsqueda de lugares
-  useEffect(() => {
-    if (!searchTerm || !autocompleteServiceRef.current) return;
-
-    const timer = setTimeout(() => {
-      const request: google.maps.places.AutocompletionRequest = {
-        input: searchTerm,
-        componentRestrictions: { country: 'co' },
-      };
-
-      autocompleteServiceRef.current?.getPlacePredictions(
-        request,
-        (predictions, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-            const suggestions = predictions.map(prediction => ({
-              id: prediction.place_id,
-              description: prediction.description,
-              main_text: prediction.structured_formatting.main_text,
-              secondary_text: prediction.structured_formatting.secondary_text,
-            }));
-            setResults(suggestions);
+            autocompleteServiceRef.current.getPlacePredictions(request, (predictions, status) => {
+              setIsSearching(false);
+              if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+                setResults(
+                  predictions.map((prediction) => ({
+                    id: prediction.place_id,
+                    description: prediction.description,
+                    main_text: prediction.structured_formatting.main_text,
+                    secondary_text: prediction.structured_formatting.secondary_text,
+                  }))
+                );
+              } else {
+                setResults([]);
+              }
+            });
           }
+        }, 300);
+      }
+
+      return () => {
+        if (searchTimeout.current) {
+          clearTimeout(searchTimeout.current);
         }
-      );
-    }, 300);
+      };
+    }, [searchTerm, selectedLocation]);
 
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
+    const handlePlaceSelect = async (suggestion: Suggestion) => {
+      if (!placesServiceRef.current) return;
 
-  // Inicializar mapa
-  const initializeMap = (location: Location) => {
-    if (!mapContainerRef.current || !window.google) return;
-
-    const map = new google.maps.Map(mapContainerRef.current, {
-      center: location,
-      zoom: 15,
-      styles: [
-        {
-          featureType: 'all',
-          elementType: 'geometry',
-          stylers: [{ color: '#242f3e' }]
-        },
-        {
-          featureType: 'all',
-          elementType: 'labels.text.fill',
-          stylers: [{ color: '#746855' }]
-        }
-      ],
-      disableDefaultUI: true,
-      zoomControl: true,
-    });
-
-    mapRef.current = map;
-
-    const marker = new google.maps.Marker({
-      map,
-      position: location,
-      draggable: true,
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 7,
-        fillColor: '#00F2C3',
-        fillOpacity: 1,
-        strokeColor: '#FFFFFF',
-        strokeWeight: 2,
-      }
-    });
-
-    markerRef.current = marker;
-
-    // Eventos del mapa
-    marker.addListener('dragend', () => {
-      const position = marker.getPosition();
-      if (position) {
-        updateLocationDetails({
-          lat: position.lat(),
-          lng: position.lng()
+      try {
+        const result = await new Promise<google.maps.places.PlaceResult>((resolve, reject) => {
+          placesServiceRef.current?.getDetails(
+            { placeId: suggestion.id, fields: ['geometry', 'formatted_address'] },
+            (place, status) => {
+              if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+                resolve(place);
+              } else {
+                reject(new Error('Error obteniendo detalles del lugar'));
+              }
+            }
+          );
         });
-      }
-    });
 
-    map.addListener('click', (event: google.maps.MapMouseEvent) => {
-      if (event.latLng) {
-        updateLocationDetails({
-          lat: event.latLng.lat(),
-          lng: event.latLng.lng()
-        });
-      }
-    });
-  };
-
-  // Actualizar detalles de ubicación
-  const updateLocationDetails = async (location: Location) => {
-    if (!window.google) return;
-
-    setSelectedLocation(location);
-    if (markerRef.current) {
-      markerRef.current.setPosition(location);
-    }
-    if (mapRef.current) {
-      mapRef.current.panTo(location);
-    }
-
-    try {
-      const geocoder = new google.maps.Geocoder();
-      const response = await geocoder.geocode({ location });
-      if (response.results[0]) {
-        setSearchTerm(response.results[0].formatted_address);
-      }
-    } catch (error) {
-      console.error('Error en geocoding:', error);
-    }
-  };
-
-  // Manejar selección de lugar
-  const handlePlaceSelect = (suggestion: Suggestion) => {
-    if (!placesServiceRef.current) return;
-
-    placesServiceRef.current.getDetails(
-      {
-        placeId: suggestion.id,
-        fields: ['geometry', 'formatted_address']
-      },
-      (place, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+        if (result.geometry?.location) {
           const location = {
-            lat: place.geometry.location.lat(),
-            lng: place.geometry.location.lng()
+            lat: result.geometry.location.lat(),
+            lng: result.geometry.location.lng(),
           };
 
+          // Actualizar estados en orden para una transición suave
           setSelectedLocation(location);
-          setSearchTerm(suggestion.description);
-          setResults([]);
+          setSelectedAddress(result.formatted_address || suggestion.description);
+          setSearchTerm(result.formatted_address || suggestion.description);
           setShowMap(true);
+          setResults([]); // Cerrar la lista después de seleccionar
 
-          if (!mapRef.current) {
-            initializeMap(location);
-          } else {
-            updateLocationDetails(location);
-          }
+          // Asegurar que el mapa se actualice correctamente
+          requestAnimationFrame(() => {
+            if (mapRef.current) {
+              mapRef.current.panTo(location);
+              mapRef.current.setZoom(15);
+            }
+          });
         }
+      } catch (err) {
+        console.error('Error:', err);
+        setError('Error al obtener la ubicación');
       }
-    );
-  };
+    };
 
-  // Confirmar ubicación
-  const handleConfirmLocation = () => {
-    if (selectedLocation && searchTerm) {
-      navigate({
-        to: '/publicarviaje',
-        search: {
-          selectedAddress: searchTerm
+    const handleMapClick = async (event: google.maps.MapMouseEvent) => {
+      if (!event.latLng) return;
+
+      const location = {
+        lat: event.latLng.lat(),
+        lng: event.latLng.lng(),
+      };
+
+      try {
+        const geocoder = new google.maps.Geocoder();
+        const response = await geocoder.geocode({ location });
+        if (response.results[0]) {
+          setSelectedLocation(location);
+          setSelectedAddress(response.results[0].formatted_address);
+          setSearchTerm(response.results[0].formatted_address);
+          setResults([]); // Cerrar la lista si está abierta
         }
-      });
-    }
-  };
+      } catch (err) {
+        console.error('Error:', err);
+        setError('Error al obtener la dirección');
+      }
+    };
 
-  return (
-    <Container className={styles.container}>
-      <div className={styles.searchSection}>
-        <div className={styles.searchHeader}>
-          <Link to="/publicarviaje" className={styles.backButton}>
-            <ArrowLeft size={24} />
-          </Link>
+    const handleContinue = () => {
+      if (selectedAddress) {
+        navigate({
+          to: '/publicarviaje',
+          search: { selectedAddress },
+        });
+      }
+    };
+
+    return (
+      <Container fluid className={styles.container}>
+        <div className={styles.searchSection}>
+          <div className={styles.header}>
+            <Link to="/publicarviaje" className={styles.backButton}>
+              <ArrowLeft size={24} />
+            </Link>
+            <Title order={4} className={styles.headerTitle}>Origen del viaje</Title>
+          </div>
+
           <div className={styles.searchBox}>
             <MapPin className={styles.searchIcon} size={20} />
             <TextInput
               placeholder="¿Desde dónde sales?"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.currentTarget.value)}
+              onChange={(e) => {
+                const newValue = e.currentTarget.value;
+                setSearchTerm(newValue);
+                if (newValue === '') {
+                  setSelectedLocation(null);
+                  setShowMap(false);
+                }
+              }}
               variant="unstyled"
               className={styles.input}
             />
           </div>
+
+          {results.length > 0 && !selectedLocation && (
+            <div className={styles.resultsList}>
+              {results.map((result) => (
+                <button
+                  key={result.id}
+                  className={styles.resultItem}
+                  onClick={() => handlePlaceSelect(result)}
+                >
+                  <MapPin size={18} className={styles.resultIcon} />
+                  <div className={styles.resultContent}>
+                    <Text className={styles.mainText}>{result.main_text}</Text>
+                    <Text className={styles.secondaryText}>{result.secondary_text}</Text>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {results.length > 0 && !showMap && (
-          <div className={styles.resultsList}>
-            {results.map((result) => (
-              <button
-                key={result.id}
-                className={styles.resultItem}
-                onClick={() => handlePlaceSelect(result)}
-              >
-                <MapPin size={18} className={styles.resultIcon} />
-                <div className={styles.resultContent}>
-                  <Text className={styles.mainText}>{result.main_text}</Text>
-                  <Text className={styles.secondaryText}>{result.secondary_text}</Text>
-                </div>
-              </button>
-            ))}
-          </div>
+        <div className={`${styles.mapSection} ${showMap ? styles.mapSectionVisible : ''}`}>
+          <GoogleMap
+            mapContainerStyle={{ width: '100%', height: '100%' }}
+            options={{
+              ...mapOptions,
+              gestureHandling: 'greedy',
+            }}
+            center={selectedLocation || { lat: 4.6097, lng: -74.0817 }}
+            zoom={13}
+            onClick={handleMapClick}
+            onLoad={(map) => {
+              mapRef.current = map;
+              placesServiceRef.current = new google.maps.places.PlacesService(map);
+            }}
+          >
+            {selectedLocation && (
+              <Marker
+                position={selectedLocation}
+                icon={{
+                  path: google.maps.SymbolPath.CIRCLE,
+                  scale: 7,
+                  fillColor: '#00ff9d',
+                  fillOpacity: 1,
+                  strokeColor: '#FFFFFF',
+                  strokeWeight: 2,
+                }}
+              />
+            )}
+          </GoogleMap>
+        </div>
+
+        {selectedLocation && (
+          <Button className={styles.confirmButton} onClick={handleContinue}>
+            Siguiente
+          </Button>
         )}
-      </div>
+      </Container>
+    );
+  }
 
-      {showMap && (
-        <div className={styles.mapSection}>
-          <div ref={mapContainerRef} className={styles.map} />
-        </div>
-      )}
+  export const Route = createFileRoute('/Origen/')({
+    component: OrigenView,
+  });
 
-      {selectedLocation && (
-        <Button
-          className={styles.confirmButton}
-          onClick={handleConfirmLocation}
-        >
-          Confirmar ubicación
-        </Button>
-      )}
-    </Container>
-  );
-}
-
-// Definir la ruta después del componente
-export const Route = createFileRoute('/Origen/')({
-  component: OrigenView,
-});
-
-export default OrigenView;
+  export default OrigenView;

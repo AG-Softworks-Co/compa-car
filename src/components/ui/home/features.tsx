@@ -31,25 +31,25 @@ function DestinationCard({ image, title, category, trips }: DestinationCardProps
 
 const data = [
   {
-    image: 'Buga/Basilica.webp',
+    image: '/Buga/Basilica.webp',
     title: 'Basílica del Señor de los Milagros',
     category: 'Buga',
     trips: 120,
   },
   {
-    image: 'Cali/IglesiaSanAntonio.webp',
+    image: '/Cali/IglesiaSanAntonio.webp',
     title: 'Iglesia San Antonio',
     category: 'Cali',
     trips: 35,
   },
   {
-    image: 'Cali/Zoologico.webp',
+    image: '/Cali/Zoologico.webp',
     title: 'Zoológico Cali',
     category: 'Cali',
     trips: 100,
   },
   {
-    image: 'Cali/ParqueGato.webp',
+    image: '/Cali/ParqueGato.webp',
     title: 'Parque del Gato',
     category: 'Cali',
     trips: 35,

@@ -1,6 +1,5 @@
-
-import  { useState, useRef, useCallback, useEffect } from 'react';
-import { createFileRoute, Link, useSearch } from '@tanstack/react-router';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { createFileRoute, Link, useSearch, useNavigate } from '@tanstack/react-router';
 import {
   Container,
   Title,
@@ -12,366 +11,334 @@ import {
   Stack,
   Badge,
   Loader,
+  ActionIcon,
+
+  Popover,
+  Switch
 } from '@mantine/core';
-import { MapPin, ArrowLeft, Clock, Navigation } from 'lucide-react';
-import { GoogleMap, DirectionsRenderer } from '@react-google-maps/api';
+import { 
+  MapPin, 
+  ArrowLeft, 
+  Clock, 
+  Navigation, 
+  Car,
+  DollarSign,
+  Settings,
+  Trees
+} from 'lucide-react';
+import { GoogleMap, Marker } from '@react-google-maps/api';
+import { 
+  mapOptions, 
+  tripStore,
+  TripRoute,
+  TripLocation,
+  errorMessages
+} from '../../types/PublicarViaje/TripDataManagement';
 import styles from './index.module.css';
 
-// Interfaces
+const MARKER_ICONS = {
+  origin: {
+    path: window.google?.maps.SymbolPath.CIRCLE ?? '', // Chequeo de google
+    fillColor: "#4CAF50", // Verde oscuro para origen
+    fillOpacity: 1,
+    strokeWeight: 2,
+    strokeColor: '#FFFFFF',
+    scale: 7,
+    labelOrigin: window.google ? new window.google.maps.Point(0, -3) : undefined,
+    label: {
+      text: 'A',
+      color: '#FFFFFF',
+      fontSize: '14px',
+      fontWeight: 'bold'
+    }
+  },
+  destination: {
+    path: window.google?.maps.SymbolPath.CIRCLE ?? '',
+    fillColor: "#FF0000", // Rojo oscuro para destino
+    fillOpacity: 1,
+    strokeWeight: 1,
+    strokeColor: '#FFFFFF',
+    scale: 7,
+    labelOrigin: window.google ? new window.google.maps.Point(0, -3) : undefined,
+    label: {
+      text: 'B',
+      color: '#FFFFFF',
+      fontSize: '14px',
+      fontWeight: 'bold'
+    }
+  }
+};
+
+
+interface RoutePreferences {
+  avoidTolls: boolean;
+  avoidHighways: boolean;
+  optimizeFuel: boolean;
+}
+
 interface SearchParams {
   selectedAddress?: string;
   selectedDestination?: string;
 }
-
-interface Coords {
-  lat: number;
-  lng: number;
-}
-
-interface LocationData {
-  address: string;
-  city?: string;
-  coords: Coords;
-}
-
-interface RouteInfo {
-  distance: string;
-  duration: string;
-  summary: string;
-  bounds: google.maps.LatLngBounds;
-  route: google.maps.DirectionsRoute;
-  index: number;
-}
-
-interface SelectedRouteInfo {
-  index: number;
-  distance: string;
-  duration: string;
-  summary: string;
-  startAddress: string;
-  endAddress: string;
-  bounds: google.maps.LatLngBounds;
-  polyline: string;
+interface ReservarViewProps {
+  isLoaded: boolean;
 }
 
 export const Route = createFileRoute('/publicarviaje/')({
-  validateSearch: (search: Record<string, unknown>): SearchParams => {
-    return {
-      selectedAddress: search.selectedAddress as string | undefined,
-      selectedDestination: search.selectedDestination as string | undefined,
-    };
-  },
+  validateSearch: (search: Record<string, unknown>): SearchParams => ({
+    selectedAddress: search.selectedAddress as string | undefined,
+    selectedDestination: search.selectedDestination as string | undefined,
+  }),
   component: ReservarView,
 });
 
-const mapOptions: google.maps.MapOptions = {
-  styles: [
-    {
-      elementType: "geometry",
-      stylers: [{ color: "#242f3e" }]
-    },
-    {
-      featureType: "road",
-      elementType: "geometry",
-      stylers: [{ color: "#38414e" }]
-    },
-    {
-      featureType: "road",
-      elementType: "geometry.stroke",
-      stylers: [{ color: "#212a37" }]
-    },
-    {
-      featureType: "road",
-      elementType: "labels.text.fill",
-      stylers: [{ color: "#9ca5b3" }]
-    },
-    {
-      featureType: "road.highway",
-      elementType: "geometry",
-      stylers: [{ color: "#746855" }]
-    },
-    {
-      featureType: "water",
-      elementType: "geometry",
-      stylers: [{ color: "#17263c" }]
-    }
-  ],
-  disableDefaultUI: false,
-  zoomControl: true,
-  mapTypeControl: true,
-  scaleControl: true,
-  streetViewControl: false,
-  rotateControl: false,
-  fullscreenControl: true,
-  backgroundColor: '#242f3e',
-  gestureHandling: 'greedy',
-};
+function ReservarView({ isLoaded }: ReservarViewProps){
 
-function ReservarView() {
+  if (!isLoaded) {
+    const navigate = useNavigate();
   const { selectedAddress = '', selectedDestination = '' } = useSearch({ from: '/publicarviaje/' });
   
+  // Estados base
   const [showRouteMap, setShowRouteMap] = useState(false);
+  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
-  const [routes, setRoutes] = useState<RouteInfo[]>([]);
+  const [routes, setRoutes] = useState<TripRoute[]>([]);
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
-  const [selectedRouteDetails, setSelectedRouteDetails] = useState<SelectedRouteInfo | null>(null);
-  const [origin, setOrigin] = useState<LocationData | null>(null);
-  const [destination, setDestination] = useState<LocationData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [originMarker, setOriginMarker] = useState<google.maps.Marker | null>(null);
+  const [destinationMarker, setDestinationMarker] = useState<google.maps.Marker | null>(null);
 
+  // Estados de preferencias
+  const [routePreferences, setRoutePreferences] = useState<RoutePreferences>({
+    avoidTolls: false,
+    avoidHighways: false,
+    optimizeFuel: false
+  });
+
+  // Referencias
   const mapRef = useRef<google.maps.Map | null>(null);
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
 
-  // Efecto para geocodificar direcciones
-  useEffect(() => {
-    if (!window.google?.maps || !selectedAddress || !selectedDestination) {
-      console.log('Esperando datos para geocodificar:', {
-        googleMaps: !!window.google?.maps,
-        origen: selectedAddress,
-        destino: selectedDestination
-      });
-      return;
-    }
-
-    async function geocodeAddresses() {
-      const geocoder = new google.maps.Geocoder();
-      setIsLoading(true);
-      
-      try {
-        // Geocodificar origen
-        console.log('Geocodificando origen:', selectedAddress);
-        const originResults = await geocoder.geocode({ address: selectedAddress });
-        if (originResults.results[0]) {
-          const result = originResults.results[0];
-          const originData = {
-            address: selectedAddress,
-            city: result.address_components.find(c => c.types.includes('locality'))?.long_name,
-            coords: {
-              lat: result.geometry.location.lat(),
-              lng: result.geometry.location.lng()
-            }
-          };
-          console.log('Origen geocodificado:', originData);
-          setOrigin(originData);
-        }
-
-        // Geocodificar destino
-        console.log('Geocodificando destino:', selectedDestination);
-        const destResults = await geocoder.geocode({ address: selectedDestination });
-        if (destResults.results[0]) {
-          const result = destResults.results[0];
-          const destData = {
-            address: selectedDestination,
-            city: result.address_components.find(c => c.types.includes('locality'))?.long_name,
-            coords: {
-              lat: result.geometry.location.lat(),
-              lng: result.geometry.location.lng()
-            }
-          };
-          console.log('Destino geocodificado:', destData);
-          setDestination(destData);
-        }
-      } catch (err) {
-        console.error('Error en geocoding:', err);
-        setError('Error obteniendo las coordenadas');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    geocodeAddresses();
-  }, [selectedAddress, selectedDestination]);
-
-  // Función para calcular la ruta
+  // Función para calcular rutas con manejo de marcadores
   const calculateRoute = useCallback(async () => {
-    if (!origin?.coords || !destination?.coords || !window.google) {
-      console.log('Faltan datos para calcular ruta:', {
-        tieneOrigen: !!origin?.coords,
-        tieneDestino: !!destination?.coords,
-        tieneGoogleMaps: !!window.google
-      });
-      setError('No se pueden obtener las coordenadas');
+    if (!selectedAddress || !selectedDestination) {
+      setError('Se requieren ambas direcciones');
       return;
     }
 
     setIsLoading(true);
     setError(null);
 
-    console.log('Iniciando cálculo de ruta:', {
-      origen: origin.coords,
-      destino: destination.coords
-    });
-
-    const directionsService = new google.maps.DirectionsService();
-    
     try {
-      const request: google.maps.DirectionsRequest = {
-        origin: origin.coords,
-        destination: destination.coords,
-        travelMode: google.maps.TravelMode.DRIVING,
-        provideRouteAlternatives: true,
-        optimizeWaypoints: true,
+      const geocoder = new google.maps.Geocoder();
+      const [originResult, destResult] = await Promise.all([
+        geocoder.geocode({ address: selectedAddress }),
+        geocoder.geocode({ address: selectedDestination })
+      ]);
+
+      const origin = originResult.results[0];
+      const destination = destResult.results[0];
+
+      if (!origin?.geometry?.location || !destination?.geometry?.location) {
+        throw new Error(errorMessages.GEOCODING_ERROR);
+      }
+
+      const originLocation: TripLocation = {
+        placeId: origin.place_id,
+        address: selectedAddress,
+        coords: {
+          lat: origin.geometry.location.lat(),
+          lng: origin.geometry.location.lng()
+        },
+        mainText: origin.address_components[0].long_name,
+        secondaryText: origin.formatted_address
       };
 
-      console.log('Request de ruta:', request);
+      const destinationLocation: TripLocation = {
+        placeId: destination.place_id,
+        address: selectedDestination,
+        coords: {
+          lat: destination.geometry.location.lat(),
+          lng: destination.geometry.location.lng()
+        },
+        mainText: destination.address_components[0].long_name,
+        secondaryText: destination.formatted_address
+      };
+// Coordenadas del origen y destino
+const originLat = originLocation.coords.lat;
+const originLng = originLocation.coords.lng;
+const destinationLat = destinationLocation.coords.lat;
+const destinationLng = destinationLocation.coords.lng;
 
+      // Actualizar marcadores
+      if (mapRef.current) {
+        originMarker?.setMap(null);
+        destinationMarker?.setMap(null);
+      
+        const newOriginMarker = new google.maps.Marker({
+          position: { lat: originLat, lng: originLng },
+          map: mapRef.current,
+          icon: MARKER_ICONS.origin,
+        });
+      
+        const newDestinationMarker = new google.maps.Marker({
+          position: { lat: destinationLat, lng: destinationLng },
+          map: mapRef.current,
+          icon: MARKER_ICONS.destination,
+        });
+      
+        setOriginMarker(newOriginMarker);
+        setDestinationMarker(newDestinationMarker);
+      }
+
+      tripStore.setOrigin(originLocation);
+      tripStore.setDestination(destinationLocation);
+
+      // Calcular rutas con opciones
+      const directionsService = new google.maps.DirectionsService();
       const result = await new Promise<google.maps.DirectionsResult>((resolve, reject) => {
-        directionsService.route(request, (response, status) => {
-          console.log('Respuesta DirectionsService:', {
-            status,
-            tieneRespuesta: !!response,
-            cantidadRutas: response?.routes?.length
-          });
-
+        directionsService.route({
+          origin: originLocation.coords,
+          destination: destinationLocation.coords,
+          travelMode: google.maps.TravelMode.DRIVING,
+          provideRouteAlternatives: true,
+          optimizeWaypoints: true,
+          avoidTolls: routePreferences.avoidTolls,
+          avoidHighways: routePreferences.avoidHighways,
+        }, (response, status) => {
           if (status === google.maps.DirectionsStatus.OK && response) {
-            resolve(response);
+            if (response.routes.length > 0) {
+              const bounds = new google.maps.LatLngBounds();
+              response.routes[0].legs[0].steps.forEach((step) => {
+                bounds.extend(step.start_location);
+                bounds.extend(step.end_location);
+              });
+              if (mapRef.current) {
+                mapRef.current.fitBounds(bounds, 50); // Padding en píxeles
+              }
+              
+              resolve(response);
+            } else {
+              reject(new Error('No se encontraron rutas'));
+            }
           } else {
-            reject(new Error(`Error en DirectionsService: ${status}`));
+            reject(new Error(errorMessages.ROUTE_CALCULATION_ERROR));
           }
         });
       });
 
-      console.log('Rutas obtenidas:', result.routes);
+      const processedRoutes: TripRoute[] = result.routes.map((route, index) => ({
+        index,
+        distance: route.legs[0].distance?.text || '',
+        duration: route.legs[0].duration?.text || '',
+        summary: route.summary || '',
+        startAddress: route.legs[0].start_address,
+        endAddress: route.legs[0].end_address,
+        bounds: route.bounds,
+        polyline: route.overview_polyline,
+        warnings: route.warnings || []
+      }));
+
       setDirections(result);
+      setRoutes(processedRoutes);
+      setSelectedRouteIndex(0);
 
-      // Procesar todas las rutas disponibles
-      const routesInfo = result.routes.map((route, index) => {
-        const routeInfo = {
-          distance: route.legs[0].distance?.text || '',
-          duration: route.legs[0].duration?.text || '',
-          summary: route.summary || '',
-          bounds: route.bounds,
-          route: route,
-          index
-        };
-        console.log(`Ruta ${index}:`, routeInfo);
-        return routeInfo;
-      });
-
-      setRoutes(routesInfo);
-
-      // Seleccionar automáticamente la primera ruta
-      if (routesInfo.length > 0) {
-        const firstRoute = result.routes[0];
-        const initialSelectedRoute: SelectedRouteInfo = {
-          index: 0,
-          distance: firstRoute.legs[0].distance?.text || '',
-          duration: firstRoute.legs[0].duration?.text || '',
-          summary: firstRoute.summary || '',
-          startAddress: firstRoute.legs[0].start_address,
-          endAddress: firstRoute.legs[0].end_address,
-          bounds: firstRoute.bounds,
-          polyline: firstRoute.overview_polyline
-        };
-        setSelectedRouteDetails(initialSelectedRoute);
-        setSelectedRouteIndex(0);
-        console.log('Ruta inicial seleccionada:', initialSelectedRoute);
+      if (processedRoutes.length > 0) {
+        tripStore.setRoutes(processedRoutes, processedRoutes[0]);
       }
 
       setShowRouteMap(true);
 
-      // Ajustar el mapa a la primera ruta
-      if (mapRef.current && result.routes[0].bounds) {
-        console.log('Ajustando vista del mapa a los bounds:', result.routes[0].bounds.toString());
-        mapRef.current.fitBounds(result.routes[0].bounds);
-        setTimeout(() => {
-          if (mapRef.current) {
-            const zoom = mapRef.current.getZoom();
-            if (zoom) {
-              mapRef.current.setZoom(zoom - 0.5);
-            }
-          }
-        }, 100);
-      }
-
     } catch (err) {
-      console.error('Error calculando rutas:', err);
-      setError('Error al calcular las rutas disponibles');
+      console.error('Error:', err);
+      setError(errorMessages.ROUTE_CALCULATION_ERROR);
     } finally {
       setIsLoading(false);
     }
-  }, [origin, destination]);
+  }, [selectedAddress, selectedDestination, routePreferences, originMarker, destinationMarker]);
 
-  // Función para manejar la selección de ruta
-  const handleRouteSelect = useCallback((index: number) => {
-    if (!directions?.routes[index]) return;
+  // Manejo del DirectionsRenderer
+  useEffect(() => {
+    if (!mapInstance || !directions) return;
 
-    const route = directions.routes[index];
-    const routeDetails: SelectedRouteInfo = {
-      index,
-      distance: route.legs[0].distance?.text || '',
-      duration: route.legs[0].duration?.text || '',
-      summary: route.summary || '',
-      startAddress: route.legs[0].start_address,
-      endAddress: route.legs[0].end_address,
-      bounds: route.bounds,
-      polyline: route.overview_polyline
-    };
+    if (directionsRendererRef.current) {
+      directionsRendererRef.current.setMap(null);
+    }
 
-    setSelectedRouteIndex(index);
-    setSelectedRouteDetails(routeDetails);
-
-    console.log('Nueva ruta seleccionada:', {
-      indice: index,
-      resumen: routeDetails.summary,
-      distancia: routeDetails.distance,
-      duracion: routeDetails.duration,
-      direccionInicio: routeDetails.startAddress,
-      direccionFin: routeDetails.endAddress
+    const renderer = new google.maps.DirectionsRenderer({
+      map: mapInstance,
+      directions,
+      routeIndex: selectedRouteIndex,
+      suppressMarkers: true,
+      polylineOptions: {
+        strokeColor: '#4285F4',
+        strokeWeight: 3.5,
+        strokeOpacity: 0.9,
+      },
     });
+  
+    directionsRendererRef.current = renderer;
 
-    if (mapRef.current) {
-      mapRef.current.fitBounds(route.bounds);
+    if (directions.routes[selectedRouteIndex]?.bounds) {
+      mapInstance.fitBounds(directions.routes[selectedRouteIndex].bounds);
       setTimeout(() => {
-        if (mapRef.current) {
-          const zoom = mapRef.current.getZoom();
-          if (zoom) {
-            mapRef.current.setZoom(zoom - 0.5);
-          }
+        const zoom = mapInstance.getZoom();
+        if (zoom) {
+          mapInstance.setZoom(zoom - 0.5);
         }
       }, 100);
     }
-  }, [directions]);
+  }, [directions, selectedRouteIndex, mapInstance]);
 
-  // Función para cargar el mapa
-  const onMapLoad = useCallback((map: google.maps.Map) => {
-    console.log('Mapa cargado');
-    mapRef.current = map;
-  
-    // Crear el renderer una sola vez
-    if (!directionsRendererRef.current) {
-      directionsRendererRef.current = new google.maps.DirectionsRenderer({
-        map: map,
-        suppressMarkers: false,
+  // Limpieza
+  useEffect(() => {
+    return () => {
+      originMarker?.setMap(null);
+      destinationMarker?.setMap(null);
+      if (directionsRendererRef.current) {
+        directionsRendererRef.current.setMap(null);
+      }
+    };
+  }, [originMarker, destinationMarker]);
+
+  // Manejador de selección de ruta
+  const handleRouteSelect = useCallback((index: number) => {
+    if (!directions?.routes[index]) return;
+    setSelectedRouteIndex(index);
+    
+    if (directionsRendererRef.current) {
+      directionsRendererRef.current.setRouteIndex(index);
+      directionsRendererRef.current.setOptions({
         polylineOptions: {
-          strokeColor: '#00ff9d',
+          strokeColor: '#4285F4',
           strokeWeight: 5,
-          strokeOpacity: 0.8,
-          geodesic: true,
-        },
-        markerOptions: {
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            fillColor: '#00ff9d',
-            fillOpacity: 1,
-            strokeColor: '#FFFFFF',
-            strokeWeight: 2,
-            scale: 7,
-          }
+          strokeOpacity: 0.8
         }
       });
     }
-  }, []);
+    
+    if (routes[index]) {
+      tripStore.setRoutes(routes, routes[index]);
+    }
+  }, [directions, routes]);
 
-  // Efecto para actualizar la ruta cuando cambia el DirectionsResult
-  useEffect(() => {
-    if (!directions || !directionsRendererRef.current || !mapRef.current) return;
-  
-    directionsRendererRef.current.setMap(mapRef.current); // Importante: vincular al mapa
-    directionsRendererRef.current.setDirections(directions);
-    directionsRendererRef.current.setRouteIndex(selectedRouteIndex);
-  }, [directions, selectedRouteIndex]);
+  // Manejador de confirmación
+  const handleRouteConfirm = useCallback(() => {
+    if (routes[selectedRouteIndex]) {
+      const selectedRoute = routes[selectedRouteIndex];
+      tripStore.updateData({
+        currentStep: 'details',
+        selectedRoute: selectedRoute
+      });
+      navigate({ 
+        to: '/DetallesViaje',
+        search: {
+          routeId: selectedRoute.index.toString()
+        }
+      });
+    }
+  }, [navigate, routes, selectedRouteIndex]);
 
   return (
     <Container fluid className={styles.container}>
@@ -387,15 +354,7 @@ function ReservarView() {
           <Title className={styles.stepTitle}>¿Desde dónde sales?</Title>
           <div className={styles.searchBox}>
             <MapPin className={styles.searchIcon} size={20} />
-            <Link
-              to="/Origen"
-              style={{
-                textDecoration: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
+            <Link to="/Origen" className={styles.searchLink}>
               <TextInput
                 placeholder="Escribe la dirección completa"
                 className={styles.input}
@@ -411,12 +370,7 @@ function ReservarView() {
             <Link
               to="/Destino"
               search={{ originAddress: selectedAddress }}
-              style={{
-                textDecoration: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                width: '100%',
-              }}
+              className={styles.searchLink}
             >
               <TextInput
                 placeholder="Escribe la dirección completa"
@@ -429,156 +383,205 @@ function ReservarView() {
         </div>
 
         {error && (
-          <Text color="red" size="sm" mt="xs">
+          <Text color="red" size="sm" className={styles.errorText}>
             {error}
           </Text>
         )}
 
-        {origin && destination && (
+        {selectedAddress && selectedDestination && (
           <Button 
             onClick={calculateRoute}
             className={styles.nextButton}
             loading={isLoading}
-            style={{ marginTop: '20px', width: '100%' }}
           >
             Ver ruta en el mapa
           </Button>
         )}
 
-<Modal
-  opened={showRouteMap}
-  onClose={() => setShowRouteMap(false)}
-  title="Ruta del viaje"
-  fullScreen
-  transitionProps={{ transition: 'fade', duration: 200 }}
-  classNames={{
-    root: styles.routeModal,
-    header: styles.routeModalTitle,
-    body: styles.routeModalContent
+        <Modal
+          opened={showRouteMap}
+          onClose={() => setShowRouteMap(false)}
+          title="Ruta del viaje"
+          fullScreen
+          classNames={{
+            root: styles.routeModal,
+            header: styles.routeModalHeader,
+            body: styles.routeModalBody
+          }}
+        >
+          <div className={styles.routeContent}>
+            <div className={styles.mapControls}>
+              <div className={styles.mapOptions}>
+                <Popover width={300} position="bottom" shadow="md">
+                  <Popover.Target>
+                    <ActionIcon variant="light">
+                      <Settings size={20} />
+                    </ActionIcon>
+                  </Popover.Target>
+                  <Popover.Dropdown>
+                    <Stack gap="xs">
+                      <Text fw={500}>Preferencias de ruta</Text>
+                      <div className={styles.preference}>
+                        <Switch
+                          label="Evitar peajes"
+                          checked={routePreferences.avoidTolls}
+                          onChange={(e) => setRoutePreferences(prev => ({
+                            ...prev,
+                            avoidTolls: e.currentTarget.checked
+                          }))}
+                        />
+                        <DollarSign size={16} className={styles.preferenceIcon} />
+                      </div>
+                      <div className={styles.preference}>
+                        <Switch
+                          label="Evitar autopistas"
+                          checked={routePreferences.avoidHighways}
+                          onChange={(e) => setRoutePreferences(prev => ({
+                            ...prev,
+                            avoidHighways: e.currentTarget.checked
+                          }))}
+                        />
+                        <Car size={16} className={styles.preferenceIcon} />
+                      </div>
+                      <div className={styles.preference}>
+                        <Switch
+                          label="Optimizar consumo"
+                          checked={routePreferences.optimizeFuel}
+                          onChange={(e) => setRoutePreferences(prev => ({
+                            ...prev,
+                            optimizeFuel: e.currentTarget.checked
+                          }))}
+                        />
+                        <Trees size={16} className={styles.preferenceIcon} />
+                      </div>
+                    </Stack>
+                  </Popover.Dropdown>
+                </Popover>
+              </div>
+            </div>
+
+            <div className={styles.mapSection}>
+              {isLoading && (
+                <div className={styles.mapLoading}>
+                  <Loader color="#4285F4" size="lg" />
+                </div>
+              )}
+              <GoogleMap
+  mapContainerStyle={{ width: '100%', height: '100%' }}
+  options={{
+    ...mapOptions,
+    gestureHandling: 'greedy',
+    disableDoubleClickZoom: true, // Desactiva el zoom al doble clic
+    zoomControl: true,
+    fullscreenControl: true,
+    streetViewControl: false,
+    mapTypeControl: true,
+    styles: [
+      {
+        featureType: "administrative",
+        elementType: "geometry",
+        stylers: [{ visibility: "true" }],
+      },
+      {
+        featureType: "poi",
+        stylers: [{ visibility: "true" }],
+      },
+      {
+        featureType: "transit",
+        stylers: [{ visibility: "true" }],
+      },
+      {
+        featureType: "road",
+        elementType: "geometry",
+        stylers: [{ color: "#FFBE00" }], // Color blanco para las carreteras
+      },
+      {
+        featureType: "landscape",
+        stylers: [{ color: "#f5f5f5" }], // Fondo gris claro
+      },
+      {
+        featureType: "water",
+        stylers: [{ color: "#c9e7ff" }], // Agua azul clara
+      },
+    ]
+  }}
+  onLoad={(map) => {
+    setMapInstance(map);
+    mapRef.current = map;
   }}
 >
-  <div className={styles.routeContent}>
-    <div className={styles.mapSection}>
-      {isLoading && (
-        <div className={styles.mapLoading}>
-          <Loader color="#00ff9d" size="lg" />
-        </div>
-      )}
-      <GoogleMap
-        mapContainerStyle={{ 
-          width: '100%', 
-          height: '100%',
-        }}
-        center={origin?.coords || { lat: 4.6097, lng: -74.0817 }}
-        zoom={12}
-        options={mapOptions}
-        onLoad={onMapLoad}
+  {originMarker && destinationMarker && (
+    <>
+      <Marker
+        position={originMarker.getPosition() as google.maps.LatLng}
+        icon={MARKER_ICONS.origin}
+      />
+      <Marker
+        position={destinationMarker.getPosition() as google.maps.LatLng}
+        icon={MARKER_ICONS.destination}
+      />
+    </>
+  )}
+</GoogleMap>
+</div>
+
+<div className={styles.routesSection}>
+  <div className={styles.routesList}>
+    <Text className={styles.routesTitle}>Rutas disponibles</Text>
+    {routes.map((route) => (
+      <div
+        key={route.index}
+        className={`${styles.routeOption} ${
+          route.index === selectedRouteIndex ? styles.routeOptionSelected : ''
+        }`}
+        onClick={() => handleRouteSelect(route.index)}
       >
-        {directions && (
-          <DirectionsRenderer
-            directions={directions}
-            routeIndex={selectedRouteIndex}
-            options={{
-              suppressMarkers: false,
-              polylineOptions: {
-                strokeColor: '#00ff9d',
-                strokeWeight: 5,
-                strokeOpacity: 0.8,
-                geodesic: true,
-              },
-              markerOptions: {
-                icon: {
-                  path: google.maps.SymbolPath.CIRCLE,
-                  fillColor: '#00ff9d',
-                  fillOpacity: 1,
-                  strokeColor: '#FFFFFF',
-                  strokeWeight: 2,
-                  scale: 7,
-                }
-              }
-            }}
-          />
-        )}
-      </GoogleMap>
-    </div>
-
-    <div className={styles.routesSection}>
-      <div className={styles.routesList}>
-        <Text className={styles.routesTitle}>Rutas disponibles</Text>
-        {routes.map((route, index) => (
-          <div
-            key={index}
-            className={`${styles.routeOption} ${
-              index === selectedRouteIndex ? styles.routeOptionSelected : ''
-            }`}
-            onClick={() => handleRouteSelect(index)}
-          >
-            <Stack gap="xs">
-              <div className={styles.routeInfo}>
-                <div className={styles.routeTime}>
-                  <Clock size={16} />
-                  <Text>{route.duration}</Text>
-                </div>
-                <div className={styles.routeDistance}>
-                  <Navigation size={16} />
-                  <Text>{route.distance}</Text>
-                </div>
-              </div>
-              <Text size="sm" color="dimmed">
-                Vía {route.summary}
-              </Text>
-              {route.route.warnings?.length > 0 && (
-                <Badge color="yellow" size="sm">
-                  {route.route.warnings[0]}
-                </Badge>
-              )}
-            </Stack>
+        <Stack gap="xs">
+          <div className={styles.routeInfo}>
+            <div className={styles.routeTime}>
+              <Clock size={16} />
+              <Text fw={500}>{route.duration}</Text>
+            </div>
+            <div className={styles.routeDistance}>
+              <Navigation size={16} />
+              <Text>{route.distance}</Text>
+            </div>
           </div>
-        ))}
+          <Text size="sm" color="dimmed">
+            Vía {route.summary}
+          </Text>
+          {route.warnings?.map((warning: string, i: number) => (
+            <Badge key={i} color="yellow" size="sm">
+              {warning}
+            </Badge>
+          ))}
+        </Stack>
       </div>
-
-      {selectedRouteDetails && (
-        <div className={styles.routeActions}>
-          <div className={styles.routeDetailInfo}>
-            <div className={styles.routeDetailItem}>
-              <Clock size={18} />
-              <Text size="lg" fw={500}>{selectedRouteDetails.duration}</Text>
-            </div>
-            <div className={styles.routeDetailItem}>
-              <Navigation size={18} />
-              <Text size="lg" fw={500}>{selectedRouteDetails.distance}</Text>
-            </div>
-          </div>
-          <Stack gap="md" style={{ width: '100%' }}>
-            <Button
-              className={styles.selectRouteButton}
-              onClick={() => {
-                console.log('Ruta seleccionada para continuar:', {
-                  indice: selectedRouteDetails.index,
-                  resumen: selectedRouteDetails.summary,
-                  distancia: selectedRouteDetails.distance,
-                  duracion: selectedRouteDetails.duration,
-                  direccionInicio: selectedRouteDetails.startAddress,
-                  direccionFin: selectedRouteDetails.endAddress
-                });
-                // Aquí puedes agregar la lógica para continuar al siguiente paso
-                setShowRouteMap(false);
-              }}
-              fullWidth
-              size="lg"
-              leftSection={<MapPin size={18} />}
-            >
-              Siguiente
-            </Button>
-          </Stack>
-        </div>
-      )}
-    </div>
+    ))}
   </div>
-</Modal>
-      </Container>
-    </Container>
-  );
-}
 
+  {routes.length > 0 && (
+    <div className={styles.routeActions}>
+      <Button
+        className={styles.selectRouteButton}
+        onClick={handleRouteConfirm}
+        fullWidth
+        size="lg"
+        leftSection={<MapPin size={18} />}
+        loading={isLoading}
+      >
+        Confirmar ruta
+      </Button>
+    </div>
+  )}
+</div>
+</div>
+</Modal>
+</Container>
+</Container>
+);
+  }
+  
+}
 export default ReservarView;
+
