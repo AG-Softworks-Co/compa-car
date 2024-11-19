@@ -14,8 +14,6 @@ import {
   NumberInputProps,
   Textarea,
   Switch,
-  ActionIcon,
-  Popover,
   Modal,
 } from '@mantine/core';
 import { 
@@ -37,17 +35,7 @@ import 'dayjs/locale/es';
 import styles from './index.module.css';
 
 // Interfaces
-interface CustomTimeInputProps {
-  value: string;
-  onChange: (value: string) => void;
-  error?: string | null;
-}
 
-interface TimeComponentState {
-  hour: string;
-  minute: string;
-  period: string;
-}
 
 interface FormattedNumberInputProps extends Omit<NumberInputProps, 'onChange'> {
   onChange: (value: number) => void;
@@ -222,143 +210,11 @@ function FormattedNumberInput({
 }
 
 
-// Componente personalizado para el selector de hora
-function CustomTimeInput({ value, onChange, error }: CustomTimeInputProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
-  const minutes = ['00', '15', '30', '45'];
-  const periods = ['AM', 'PM'];
 
-  const [timeState, setTimeState] = useState<TimeComponentState>({
-    hour: '',
-    minute: '',
-    period: 'AM'
-  });
-
-  useEffect(() => {
-    if (value) {
-      const [time, period] = value.split(' ');
-      const [hour, minute] = time.split(':');
-      setTimeState({
-        hour,
-        minute,
-        period: period || 'AM'
-      });
-    }
-  }, [value]);
-
-  const handleTimeSelect = (hour: number, minute: string, period: string) => {
-    const formattedHour = hour.toString().padStart(2, '0');
-    const timeString = `${formattedHour}:${minute} ${period}`;
-    onChange(timeString);
-    setTimeState({
-      hour: formattedHour,
-      minute,
-      period
-    });
-    setIsOpen(false);
-  };
-
-  return (
-    <Popover
-      opened={isOpen}
-      onClose={() => setIsOpen(false)}
-      position="bottom"
-      width={300}
-      shadow="md"
-      classNames={{
-        dropdown: styles.timeDropdown
-      }}
-    >
-      <Popover.Target>
-        <div className={styles.timeInputWrapper}>
-          <input
-            type="text"
-            value={value}
-            readOnly
-            placeholder="Selecciona hora"
-            className={`${styles.timeInput} ${error ? styles.timeInputError : ''}`}
-            onClick={() => setIsOpen(true)}
-          />
-          <ActionIcon 
-            className={styles.timeInputIcon}
-            onClick={() => setIsOpen(true)}
-          >
-            <Clock size={18} />
-          </ActionIcon>
-        </div>
-      </Popover.Target>
-      <Popover.Dropdown>
-        <div className={styles.timeSelector}>
-          <div className={styles.timeSelectorHeader}>
-            <Text fw={500}>Selecciona la hora</Text>
-          </div>
-          <div className={styles.timeSelectorContent}>
-            <div className={styles.hoursGrid}>
-              {hours.map((hour) => (
-                <button
-                  key={hour}
-                  type="button"
-                  className={`${styles.timeOption} ${
-                    timeState.hour === hour.toString().padStart(2, '0') ? styles.selected : ''
-                  }`}
-                  onClick={() => setTimeState(prev => ({ 
-                    ...prev, 
-                    hour: hour.toString().padStart(2, '0')
-                  }))}
-                >
-                  {hour}
-                </button>
-              ))}
-            </div>
-            <div className={styles.minutesGrid}>
-              {minutes.map((minute) => (
-                <button
-                  key={minute}
-                  type="button"
-                  className={`${styles.timeOption} ${
-                    timeState.minute === minute ? styles.selected : ''
-                  }`}
-                  onClick={() => setTimeState(prev => ({ ...prev, minute }))}
-                >
-                  {minute}
-                </button>
-              ))}
-            </div>
-            <div className={styles.periodGrid}>
-              {periods.map((period) => (
-                <button
-                  key={period}
-                  type="button"
-                  className={`${styles.timeOption} ${
-                    timeState.period === period ? styles.selected : ''
-                  }`}
-                  onClick={() => {
-                    if (timeState.hour && timeState.minute) {
-                      handleTimeSelect(
-                        parseInt(timeState.hour),
-                        timeState.minute,
-                        period
-                      );
-                    }
-                  }}
-                >
-                  {period}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </Popover.Dropdown>
-    </Popover>
-  );
-}
 
 function DetallesViajeView() {
   const navigate = useNavigate();
   const [tripData] = useState<TripData>(tripStore.getStoredData());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string>('');
   const [seats, setSeats] = useState<number>(1);
   const [pricePerSeat, setPricePerSeat] = useState<number>(0);
   const [description, setDescription] = useState<string>('');
@@ -509,21 +365,7 @@ function DetallesViajeView() {
   required
   error={formError && formError.includes('fecha') ? formError : null}
   leftSection={<Calendar size={18} />}
-  styles={(theme) => ({
-    input: {
-      backgroundColor: 'var(--card-bg)',
-      borderColor: 'var(--border-color)',
-      color: 'var(--text-primary)',
-      height: '48px',
-      '&:focus': {
-        borderColor: 'var(--primary)',
-      },
-    },
-    dropdown: {
-      backgroundColor: 'var(--card-bg)',
-      borderColor: 'var(--border-color)',
-    },
-  })}
+ 
 />
   </Card>
 </div>
