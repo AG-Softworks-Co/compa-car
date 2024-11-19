@@ -12,7 +12,7 @@ import { Car, Globe, PiggyBank, Users, MapPin, Leaf } from 'lucide-react';
 import styles from './home.module.css';
 import { CardsCarousel } from '../../components/ui/home/features';
 import { FeatureCarousel } from '../../components/ui/home/FeatureCarousel';
-import { ThreeDMap } from '../../components/ui/home/ThreeDMap'; // Importa tu componente del mapa 3D
+
 
 const HomeView = () => {
   const features = [
@@ -102,12 +102,7 @@ const HomeView = () => {
         <FeatureCarousel features={features} />
       </Box>
 
-      {/* 3D Map Section */}
-      <Box className={styles.mapSection}>
-       
-        <ThreeDMap /> {/* Aquí incorporamos el componente del mapa 3D */}
-      </Box>
-
+     
       {/* Destinations Section */}
       <Box className={styles.destinationsSection}>
         <Title order={2} className={styles.sectionTitle}>

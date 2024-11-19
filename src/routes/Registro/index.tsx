@@ -43,7 +43,7 @@ const RegisterView: React.FC = () => {
 
     const res = await ky
       .post(
-        "https://rest-sorella-production.up.railway.app/api/usuarios_compacar",
+        "https://rest-sorella-production.up.railway.app/api/usuarios",
         {
           json: {
             correo: values.email,

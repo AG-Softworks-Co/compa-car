@@ -1,4 +1,4 @@
-/* Base Styles */
+/* Contenedor Principal */
 .container {
   min-height: 100vh;
   background-color: #0a0a0a;
@@ -17,7 +17,7 @@
   pointer-events: none;
 }
 
-/* Header Styles */
+/* Header */
 .header {
   padding: 20px;
   display: flex;
@@ -51,10 +51,11 @@
   color: white;
 }
 
-/* Main Content */
+/* Contenido Principal */
 .content {
   padding: 24px;
   max-width: 600px;
+  margin: 0 auto;
 }
 
 .stepContent {
@@ -68,7 +69,7 @@
   margin-bottom: 24px;
 }
 
-/* Search Box */
+/* Cajas de Búsqueda */
 .searchBox {
   position: relative;
   margin-bottom: 24px;
@@ -81,6 +82,12 @@
   transform: translateY(-50%);
   color: rgba(255, 255, 255, 0.4);
   z-index: 1;
+}
+
+.searchLink {
+  text-decoration: none;
+  width: 100%;
+  display: block;
 }
 
 .input {
@@ -104,49 +111,54 @@
   transform: translateY(-2px);
 }
 
-/* Modal and Route Content */
+/* Botón Principal */
+.nextButton {
+  background: #00ff9d !important;
+  color: black !important;
+  font-weight: 600 !important;
+  height: 56px !important;
+  border-radius: 16px !important;
+  width: 100% !important;
+  transition: all 0.3s ease !important;
+}
+
+.nextButton:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(0, 255, 157, 0.2) !important;
+}
+
+/* Modal de Ruta */
 .routeModal {
-  background-color: #0a0a0a;
+  background-color: #0a0a0a !important;
 }
 
-.routeModalTitle {
-  color: white;
-  font-size: 24px;
-  font-weight: 600;
-  padding: 20px;
-  background-color: #0a0a0a;
-  border-bottom: 1px solid rgba(0, 255, 157, 0.1);
+.routeModalHeader {
+  padding: 16px 20px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: #171717 !important;
 }
 
-.routeModalContent {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  padding: 0;
-  background-color: #0a0a0a;
+.routeModalBody {
+  padding: 0 !important;
 }
 
 .routeContent {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 70px);
-  background-color: #0a0a0a;
+  height: calc(100vh - 60px);
 }
 
-/* Map Section */
+/* Sección del Mapa */
 .mapSection {
-  flex: 2;
+  flex: 1.5;
   position: relative;
-  min-height: 400px;
+  min-height: 45vh;
   background-color: #1a1a1a;
 }
 
 .mapLoading {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -154,19 +166,35 @@
   z-index: 1000;
 }
 
-/* Routes Section */
+/* Sección de Rutas */
 .routesSection {
   flex: 1;
   display: flex;
   flex-direction: column;
+  background: #171717;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(26, 27, 31, 0.95);
+  max-height: 40vh;
 }
 
 .routesList {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 157, 0.3) transparent;
+}
+
+.routesList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.routesList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.routesList::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 255, 157, 0.3);
+  border-radius: 3px;
 }
 
 .routesTitle {
@@ -176,10 +204,10 @@
   margin-bottom: 16px;
 }
 
-/* Route Option Styles */
+/* Opciones de Ruta */
 .routeOption {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(0, 255, 157, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 12px;
@@ -194,12 +222,12 @@
 
 .routeOptionSelected {
   background: rgba(0, 255, 157, 0.1);
-  border-color: #00ff9d;
+  border: 1px solid #00ff9d;
 }
 
-/* Route Info */
 .routeInfo {
   display: flex;
+  align-items: center;
   gap: 16px;
   margin-bottom: 8px;
 }
@@ -213,64 +241,35 @@
   font-size: 14px;
 }
 
-/* Route Actions */
+/* Acciones de Ruta */
 .routeActions {
-  padding: 20px;
-  background: rgba(26, 27, 31, 0.95);
+  padding: 16px 20px;
+  background: #171717;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.routeDetailInfo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.routeDetailItem {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: white;
-  font-size: 16px;
-}
-
-.routeSummary {
-  color: #00ff9d;
-  font-weight: bold;
-  font-size: 18px;
-  text-align: center;
-  margin-bottom: 8px;
-}
-
-/* Buttons */
-.nextButton {
-  background: #00ff9d;
-  color: black;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  height: 56px;
-  border-radius: 16px;
-}
-
-.nextButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 255, 157, 0.2);
-}
-
 .selectRouteButton {
-  background: #00ff9d;
-  color: black;
-  font-weight: 600;
-  height: 48px;
-  transition: all 0.3s ease;
-  border-radius: 12px;
+  background: #00ff9d !important;
+  color: #171717 !important;
+  font-weight: 600 !important;
+  height: 48px !important;
+  font-size: 16px !important;
+  transition: all 0.3s ease !important;
 }
 
 .selectRouteButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 255, 157, 0.2);
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 16px rgba(0, 255, 157, 0.2) !important;
+}
+
+/* Error Message */
+.errorText {
+  color: #ff3b30;
+  background: rgba(255, 59, 48, 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+  font-size: 14px;
 }
 
 /* Google Maps Styles */
@@ -279,34 +278,42 @@
 }
 
 :global(.gm-style-iw) {
-  background-color: #1A1B1F;
-  color: white;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 255, 157, 0.1);
+  background-color: #171717 !important;
+  color: white !important;
+  padding: 12px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 255, 157, 0.1) !important;
 }
 
 :global(.gm-style-iw button) {
-  filter: invert(1);
+  filter: invert(1) !important;
 }
 
 :global(.gm-fullscreen-control),
 :global(.gm-svpc),
 :global(.gmnoprint) {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
-  margin: 10px;
-  filter: invert(1);
+  background: white !important;
+  border-radius: 8px !important;
+  margin: 10px !important;
 }
 
 /* Responsive Styles */
 @media (max-width: 768px) {
+  .header {
+    padding: 16px;
+  }
+
   .content {
     padding: 16px;
   }
 
   .stepTitle {
     font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .stepContent {
+    margin-top: 24px;
   }
 
   .input input {
@@ -323,14 +330,74 @@
   }
 
   .routesList {
-    max-height: calc(50vh - 180px);
+    padding: 16px;
+    max-height: calc(50vh - 84px);
   }
 
-  .routeDetailInfo {
-    gap: 12px;
+  .routeOption {
+    padding: 12px;
+  }
+
+  .routeTime,
+  .routeDistance {
+    font-size: 13px;
   }
 
   .selectRouteButton {
-    height: 56px;
+    height: 56px !important;
   }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 12px;
+  }
+
+  .headerTitle {
+    font-size: 20px;
+  }
+
+  .backButton {
+    width: 36px;
+    height: 36px;
+  }
+
+  .stepTitle {
+    font-size: 20px;
+  }
+
+  .routeOption {
+    padding: 10px;
+  }
+}
+
+
+.mapSection {
+  position: relative;
+  flex: 1.5;
+  min-height: 45vh;
+  background: #1a1a1a;
+}
+
+.mapSection :global(.gm-style-iw) {
+  background-color: #1A1B1F !important;
+  color: white !important;
+  padding: 12px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+.mapSection :global(.gm-style-iw button) {
+  filter: invert(1) !important;
+}
+
+.mapControls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  background: rgba(26, 27, 31, 0.9);
+  padding: 8px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
 }

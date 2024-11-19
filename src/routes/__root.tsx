@@ -11,6 +11,7 @@ import {
   Image,
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
+import '@mantine/dates/styles.css' 
 import {
   createRootRoute,
   Outlet,
@@ -46,12 +47,12 @@ const navItems = [
   { icon: Search, label: "Buscar", to: "/reservar" },
   { icon: PlusCircle, label: "Publicar", to: "/publicarviaje" },
   { icon: "logo", label: "", to: "/home" },
-  { icon: Car, label: "Mis Viajes", to: "/my-trips" },
+  { icon: Car, label: "Mis Viajes", to: "/ViajesPublicados" },
   { icon: User, label: "Mi Cuenta", to: "/perfil" },
 ];
 
 const noNavBarRoutes = ["/", "/Login" ,"/Registro","/RecuperarPasword", "/Origen", "/Destino", "/publicarviaje", "/RegistrarVehiculo" , 
-  "/RegistrarVehiculo/Documentos"
+  "/RegistrarVehiculo/Documentos" , "/DetallesViaje"
 ]
 
 export const Route = createRootRoute({
