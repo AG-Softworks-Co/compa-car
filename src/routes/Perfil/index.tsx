@@ -96,6 +96,6 @@ const ProfileView = () => {
   )
 }
 
-export const Route = createFileRoute('/Perfil/')({
+export const Route = createFileRoute('/perfil/')({
   component: ProfileView,
 })

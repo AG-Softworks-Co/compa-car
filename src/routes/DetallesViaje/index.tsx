@@ -25,12 +25,11 @@ import {
   Users, 
   DollarSign,
   Calendar,
-  ChevronDown,
   Check,
 
 } from 'lucide-react';
-import { MantineTheme } from '@mantine/core';
-import { DatePickerInput, } from '@mantine/dates';
+import { MantineTheme , } from '@mantine/core';
+import { DateTimePicker ,} from '@mantine/dates';
 import { tripStore, TripData } from '../../types/PublicarViaje/TripDataManagement';
 import { saveToLocalStorage, getFromLocalStorage } from '../../types/PublicarViaje/localStorageHelper';
 import dayjs from 'dayjs';
@@ -62,8 +61,7 @@ interface PreviewModalProps {
   onConfirm: () => void;
   data: {
     tripData: TripData;
-    date: Date | null;
-    time: string;
+    dateTime: Date | null;  // Cambiado de date y time a dateTime
     seats: number;
     pricePerSeat: number;
     description: string;
@@ -71,7 +69,6 @@ interface PreviewModalProps {
     allowSmoking: boolean;
   };
 }
-
 // Componente para previsualización de información
 const PreviewInfo: React.FC<PreviewModalProps> = ({ isOpen, onClose, onConfirm, data }) => {
   if (!data.tripData.selectedRoute) return null;
@@ -95,8 +92,10 @@ const PreviewInfo: React.FC<PreviewModalProps> = ({ isOpen, onClose, onConfirm, 
               <div>
                 <Text fw={500} size="lg">Fecha y Hora</Text>
                 <Text>
-                  {data.date ? dayjs(data.date).format('DD/MM/YYYY') : ''} - {data.time}
-                </Text>
+  {data.dateTime 
+    ? dayjs(data.dateTime).format('DD MMM YYYY hh:mm A')
+    : ''}
+</Text>
               </div>
               <Badge 
                 size="lg" 
@@ -368,6 +367,7 @@ function DetallesViajeView() {
   const [formError, setFormError] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [showPreviewModal, setShowPreviewModal] = useState<boolean>(false);
+  const [dateTime, setDateTime] = useState<Date | null>(null);
 
   useEffect(() => {
     if (!tripData.selectedRoute || !tripData.origin || !tripData.destination) {
@@ -376,36 +376,31 @@ function DetallesViajeView() {
   }, [tripData, navigate]);
 
   const validateForm = () => {
-    if (!selectedDate) {
-      setFormError('Selecciona una fecha para el viaje');
+    if (!dateTime) {
+      setFormError('Selecciona la fecha y hora del viaje');
       return false;
     }
-    if (!selectedTime) {
-      setFormError('Selecciona una hora de salida');
+  
+    if (dayjs(dateTime).isBefore(dayjs())) {
+      setFormError('La fecha y hora deben ser posteriores al momento actual');
       return false;
     }
+  
     if (seats < 1 || seats > 6) {
       setFormError('El número de asientos debe estar entre 1 y 6');
       return false;
     }
+  
     if (pricePerSeat <= 0) {
       setFormError('Ingresa un precio válido por asiento');
       return false;
     }
+  
     if (!description.trim()) {
       setFormError('Agrega una descripción del viaje');
       return false;
     }
-
-    const selectedDateTime = dayjs(selectedDate)
-      .hour(parseInt(selectedTime.split(':')[0]))
-      .minute(parseInt(selectedTime.split(':')[1].split(' ')[0]));
-
-    if (selectedDateTime.isBefore(dayjs())) {
-      setFormError('La fecha y hora deben ser posteriores al momento actual');
-      return false;
-    }
-
+  
     return true;
   };
 
@@ -417,12 +412,11 @@ function DetallesViajeView() {
 
   const handleSubmit = () => {
     if (!validateForm()) return;
-
+  
     const tripDetails = {
       id: Date.now().toString(),
       ...tripData,
-      date: dayjs(selectedDate).format('YYYY-MM-DD'),
-      time: selectedTime,
+      dateTime: dateTime?.toISOString(),
       seats,
       pricePerSeat,
       description,
@@ -431,7 +425,7 @@ function DetallesViajeView() {
       status: 'active',
       createdAt: new Date().toISOString()
     };
-
+  
     try {
       const existingTrips = getFromLocalStorage<TripData[]>('publishedTrips') || [];
       saveToLocalStorage('publishedTrips', [...existingTrips, tripDetails]);
@@ -492,58 +486,47 @@ function DetallesViajeView() {
 
         <form onSubmit={(e) => e.preventDefault()} className={styles.form}>
           <Stack gap="xl">
-            <div className={styles.dateTimeSection}>
-              <Card className={styles.dateCard}>
-                <Group gap="apart" mb="md">
-                  <div>
-                    <Text fw={500}>Fecha del viaje</Text>
-                    <Text size="sm" c="dimmed">Selecciona el día de salida</Text>
-                  </div>
-                  <Calendar size={24} className={styles.dateIcon} />
-                </Group>
-                
-                <DatePickerInput
-                  placeholder="DD/MM/YYYY"
-                  value={selectedDate}
-                  onChange={setSelectedDate}
-                  minDate={dayjs().add(1, 'day').toDate()}
-                  locale="es"
-                  required
-                  error={formError && formError.includes('fecha') ? formError : null}
-                  weekendDays={[0]}
-                  firstDayOfWeek={1}
-                  renderDay={(date) => {
-                    const day = date.getDate();
-                    const isWeekend = date.getDay() === 0;
-                    return (
-                      <div className={`${styles.calendarDay} ${
-                        isWeekend ? styles.weekend : ''
-                      }`}>
-                        {day}
-                      </div>
-                    );
-                  }}
-                  leftSection={<Calendar size={18} />}
-                  rightSection={<ChevronDown size={18} />}
-                />
-              </Card>
-
-              <Card className={styles.timeCard}>
-                <Group gap="apart" mb="md">
-                  <div>
-                    <Text fw={500}>Hora de salida</Text>
-                    <Text size="sm" c="dimmed">Selecciona la hora de partida</Text>
-                  </div>
-                  <Clock size={24} className={styles.timeIcon} />
-                </Group>
-                
-                <CustomTimeInput
-                  value={selectedTime}
-                  onChange={setSelectedTime}
-                  error={formError && formError.includes('hora') ? formError : null}
-                />
-              </Card>
-            </div>
+          <div className={styles.dateTimeSection}>
+  <Card className={styles.dateCard}>
+    <Group gap="apart" mb="md">
+      <div>
+        <Text fw={500}>Fecha y hora del viaje</Text>
+        <Text size="sm" c="dimmed">Selecciona cuándo saldrás</Text>
+      </div>
+      <Calendar size={24} className={styles.dateIcon} />
+    </Group>
+    
+    <DateTimePicker
+  label="Fecha y hora del viaje"
+  description="Selecciona cuándo saldrás"
+  placeholder="Selecciona fecha y hora"
+  value={dateTime}
+  onChange={setDateTime}
+  valueFormat="DD MMM YYYY hh:mm A"
+  locale="es"
+  clearable={false}
+  minDate={dayjs().add(1, 'day').toDate()}
+  required
+  error={formError && formError.includes('fecha') ? formError : null}
+  leftSection={<Calendar size={18} />}
+  styles={(theme) => ({
+    input: {
+      backgroundColor: 'var(--card-bg)',
+      borderColor: 'var(--border-color)',
+      color: 'var(--text-primary)',
+      height: '48px',
+      '&:focus': {
+        borderColor: 'var(--primary)',
+      },
+    },
+    dropdown: {
+      backgroundColor: 'var(--card-bg)',
+      borderColor: 'var(--border-color)',
+    },
+  })}
+/>
+  </Card>
+</div>
 
             <Group grow>
               <FormattedNumberInput
@@ -619,20 +602,19 @@ function DetallesViajeView() {
         </form>
 
         <PreviewInfo
-          isOpen={showPreviewModal}
-          onClose={() => setShowPreviewModal(false)}
-          onConfirm={handleSubmit}
-          data={{
-            tripData,
-            date: selectedDate,
-            time: selectedTime,
-            seats,
-            pricePerSeat,
-            description,
-            allowPets,
-            allowSmoking
-          }}
-        />
+  isOpen={showPreviewModal}
+  onClose={() => setShowPreviewModal(false)}
+  onConfirm={handleSubmit}
+  data={{
+    tripData,
+    dateTime,  // Cambiado de date y time a dateTime
+    seats,
+    pricePerSeat,
+    description,
+    allowPets,
+    allowSmoking
+  }}
+/>
 
         {showSuccessModal && (
           <Modal
