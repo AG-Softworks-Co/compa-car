@@ -121,6 +121,22 @@ const LoginView: React.FC = () => {
         >
           Ingresar
         </Button>
+        <Button
+          loading={loading}
+          fullWidth
+          size="lg"
+          className={styles.loginButton}
+          onClick={async () => {
+            const authData = await pb.collection("users").authWithOAuth2({
+              provider: "google",
+            });
+            console.log(pb.authStore.isValid);
+            console.log(pb.authStore.token);
+            console.log(pb.authStore.record?.id);
+          }}
+        >
+          Ingresar Con Google
+        </Button>
 
         <UnstyledButton
           className={styles.forgotPassword}

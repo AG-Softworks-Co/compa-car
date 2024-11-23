@@ -9,7 +9,7 @@ import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { MantineProvider } from '@mantine/core';
 import { useJsApiLoader } from '@react-google-maps/api';
-
+import Pocketbase from 'pocketbase';
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
 
@@ -24,6 +24,12 @@ declare module '@tanstack/react-router' {
     router: typeof router;
   }
 }
+
+declare global {
+  var pb: Pocketbase;
+}
+
+globalThis.pb = new Pocketbase("https://curious-parrot-relicware-35f0bbc0.koyeb.app/")
 
 // App component with Google Maps API loader
 function App() {
