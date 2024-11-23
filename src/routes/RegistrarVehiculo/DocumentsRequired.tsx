@@ -155,7 +155,7 @@ const DocumentsRequired: React.FC = () => {
               </button>
               <button 
                 className={styles.buttonPrimary}
-                onClick={() => navigate({ to: '/perfil' })}
+                onClick={() => navigate({ to: '/Perfil' })}
               >
                 Finalizar Registro
               </button>

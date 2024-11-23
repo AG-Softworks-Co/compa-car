@@ -103,7 +103,7 @@ const VehicleRegistration: React.FC = () => {
       setCurrentStep(1);
     } else {
       // Si estamos en el formulario de información del vehículo, volvemos al perfil
-      navigate({ to: '/perfil' });
+      navigate({ to: '/Perfil' });
     }
   };
 

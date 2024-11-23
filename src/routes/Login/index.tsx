@@ -127,12 +127,13 @@ const LoginView: React.FC = () => {
           size="lg"
           className={styles.loginButton}
           onClick={async () => {
-            const authData = await pb.collection("users").authWithOAuth2({
+            await pb.collection("users").authWithOAuth2({
               provider: "google",
             });
             console.log(pb.authStore.isValid);
             console.log(pb.authStore.token);
             console.log(pb.authStore.record?.id);
+
           }}
         >
           Ingresar Con Google
