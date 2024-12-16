@@ -9,6 +9,7 @@ import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { MantineProvider } from '@mantine/core';
 import { useJsApiLoader } from '@react-google-maps/api';
+import ReservarView from "./routes/publicarviaje/index";
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
@@ -37,6 +38,7 @@ function App() {
   return (
     <MantineProvider>
       <RouterProvider router={router} />
+      <ReservarView isLoaded={isLoaded} />
     </MantineProvider>
   );
 }

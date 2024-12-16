@@ -32,28 +32,43 @@
     margin-bottom: 32px;
     position: relative;
 }
-
 .backButton {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: none;
-    border: none;
-    color: #00ff9d;
-    font-size: 16px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
     position: absolute;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: #00f2a9;
+    background: rgba(0, 242, 169, 0.1);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
 }
 
 .backButton:hover {
-    background: rgba(0, 255, 157, 0.1);
+    background: rgba(0, 242, 169, 0.2);
     transform: translateY(-50%) translateX(-4px);
+}
+
+.backButton span {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    .header {
+        margin-bottom: 1.5rem;
+    }
+    
+    .backButton {
+        width: 36px;
+        height: 36px;
+    }
 }
 
 .title {

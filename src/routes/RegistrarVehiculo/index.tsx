@@ -1,79 +1,198 @@
-// src/routes/RegistrarVehiculo/index.tsx
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { createFileRoute } from '@tanstack/react-router';
 import { 
   ArrowLeft, 
   Camera, 
-  Car, 
-  Info,
-  FileText,
-  Shield,
-  Edit2,
-  Calendar,
-  Key
+  AlertCircle,
+  Edit2
 } from 'lucide-react';
-import type { VehicleFormData, ValidationErrors } from '../../types/FormsVehicle';
-import { VEHICLE_COLORS, AVAILABLE_YEARS } from '../../types/FormsVehicle';
+import {
+  Container,
+  LoadingOverlay,
+  Paper,
+  Group,
+  TextInput,
+  Select,
+  Button,
+  Text,
+  Box,
+  UnstyledButton,
+} from '@mantine/core';
 import styles from './index.module.css';
 
-const validateLicensePlate = (plate: string): boolean => {
-  const regex = /^[A-Z]{3}\d{3}$/;
-  return regex.test(plate.replace(/-/g, '').toUpperCase());
-};
+interface VehicleFormData {
+  user_id: number;
+  brand: string;
+  model: string;
+  year: string;
+  plate: string;
+  color: string;
+  body_type: string;
+  engine_number: string;
+  chassis_number: string;
+  vin_number: string;
+  photo?: File | null;
+  photoUrl?: string | null;
+}
 
-const validateVIN = (vin: string): boolean => {
-  const regex = /^[A-HJ-NPR-Z0-9]{17}$/;
-  return regex.test(vin.toUpperCase());
-};
+interface ValidationErrors {
+  [key: string]: string;
+}
+
+const BASE_URL = 'https://rest-sorella-production.up.railway.app/api';
+
+const COLORS = [
+  { value: 'Blanco', label: 'Blanco' },
+  { value: 'Negro', label: 'Negro' },
+  { value: 'Gris', label: 'Gris' },
+  { value: 'Rojo', label: 'Rojo' },
+  { value: 'Azul', label: 'Azul' },
+  { value: 'Verde', label: 'Verde' },
+  { value: 'Amarillo', label: 'Amarillo' },
+  { value: 'Plata', label: 'Plata' },
+];
+
+const BODY_TYPES = [
+  { value: 'Automovil', label: 'Automóvil' },
+  { value: 'Camioneta', label: 'Camioneta' },
+  { value: 'SUV', label: 'SUV' },
+  { value: 'Van', label: 'Van' },
+  { value: 'Pickup', label: 'Pick-up' },
+];
+
+const YEARS = Array.from(
+  { length: 25 },
+  (_, i) => {
+    const year = (new Date().getFullYear() - i).toString();
+    return { value: year, label: year };
+  }
+);
 
 const VehicleRegistration: React.FC = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [viewMode, setViewMode] = useState(true); // Por defecto en modo visualización
+  const [hasVehicle, setHasVehicle] = useState(false);
+
   const [formData, setFormData] = useState<VehicleFormData>({
+    user_id: 0,
     brand: '',
     model: '',
     year: '',
+    plate: '',
     color: '',
-    licensePlate: '',
-    vin: '',
-    lastMaintenanceDate: '',
+    body_type: '',
+    engine_number: '',
+    chassis_number: '',
+    vin_number: '',
     photo: null,
-    photoPreview: null,
-    documents: {}
+    photoUrl: null
   });
+
   const [errors, setErrors] = useState<ValidationErrors>({});
 
-  const validateField = (name: string, value: string): string => {
-    switch (name) {
-      case 'brand':
-        return value.trim() ? '' : 'La marca es requerida';
-      case 'model':
-        return value.trim() ? '' : 'El modelo es requerido';
-      case 'licensePlate':
-        return validateLicensePlate(value) ? '' : 'Formato inválido. Ejemplo: ABC123';
-      case 'vin':
-        return validateVIN(value) ? '' : 'VIN inválido (17 caracteres alfanuméricos)';
-      default:
-        return '';
+  useEffect(() => {
+    const loadVehicleData = async () => {
+      try {
+        console.log('Iniciando carga de datos del vehículo...');
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+
+        if (!token || !userId) {
+          console.log('No hay token o userId. Redirigiendo a login...');
+          navigate({ to: '/Login' });
+          return;
+        }
+
+        console.log('Token y userId encontrados. UserId:', userId);
+
+        setFormData(prev => ({
+          ...prev,
+          user_id: parseInt(userId)
+        }));
+
+        const response = await fetch(`${BASE_URL}/vehicles`, {
+          headers: {
+            'x-token': token
+          }
+        });
+
+        console.log('Respuesta del servidor status:', response.status);
+
+        if (!response.ok) {
+          throw new Error('Error al obtener los datos del vehículo');
+        }
+
+        const data = await response.json();
+        console.log('Datos recibidos del servidor:', data);
+
+        // Filtrar vehículos por el user_id
+        const userVehicles = data.data.filter((vehicle: any) => vehicle.user_id.toString() === userId);
+
+        if (userVehicles.length > 0) {
+          console.log('Vehículo encontrado:', userVehicles[0]);
+          const vehicle = userVehicles[0];
+          setHasVehicle(true);
+          setFormData(prev => ({
+            ...prev,
+            ...vehicle,
+            photoUrl: vehicle.photo || null,
+            year: vehicle.year?.toString() || ''
+          }));
+        } else {
+          console.log('No se encontraron vehículos para este usuario');
+          setHasVehicle(false);
+          setViewMode(false); // Permitir registro si no hay vehículo
+        }
+      } catch (error) {
+        console.error('Error durante la carga de datos:', error);
+        setError("Error al cargar la información del vehículo");
+        setViewMode(false);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    loadVehicleData();
+  }, [navigate]);
+
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+    
+    if (!formData.brand.trim()) newErrors.brand = 'La marca es requerida';
+    if (!formData.model.trim()) newErrors.model = 'El modelo es requerido';
+    if (!formData.year) newErrors.year = 'El año es requerido';
+    if (!formData.plate.trim()) newErrors.plate = 'La placa es requerida';
+    if (!formData.color) newErrors.color = 'El color es requerido';
+    if (!formData.body_type) newErrors.body_type = 'El tipo de vehículo es requerido';
+    if (!formData.engine_number.trim()) newErrors.engine_number = 'El número de motor es requerido';
+    if (!formData.chassis_number.trim()) newErrors.chassis_number = 'El número de chasis es requerido';
+    if (!formData.vin_number.trim()) newErrors.vin_number = 'El número VIN es requerido';
+    if (!hasVehicle && !formData.photo && !formData.photoUrl) {
+      newErrors.photo = 'La foto del vehículo es requerida';
     }
+
+    const plateRegex = /^[A-Z]{3}\d{3}$/;
+    if (!plateRegex.test(formData.plate.toUpperCase())) {
+      newErrors.plate = 'Formato de placa inválido (ejemplo: ABC123)';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+  const handleInputChange = (name: string, value: string) => {
+    if (viewMode) return; // No permitir cambios en modo visualización
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
 
-    const error = validateField(name, value);
-    if (error) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: error
-      }));
-    } else {
+    if (errors[name]) {
       setErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors[name];
@@ -83,6 +202,8 @@ const VehicleRegistration: React.FC = () => {
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (viewMode) return; // No permitir cambios en modo visualización
+
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -91,366 +212,295 @@ const VehicleRegistration: React.FC = () => {
       setFormData(prev => ({
         ...prev,
         photo: file,
-        photoPreview: reader.result as string
+        photoUrl: reader.result as string
       }));
     };
     reader.readAsDataURL(file);
   };
 
-  const handleBack = () => {
-    if (currentStep === 3) {
-      // Si estamos en el resumen, volvemos al formulario de información del vehículo
-      setCurrentStep(1);
-    } else {
-      // Si estamos en el formulario de información del vehículo, volvemos al perfil
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      setError("Por favor, complete todos los campos requeridos correctamente");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate({ to: '/Login' });
+        return;
+      }
+
+      const formDataToSend = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key !== 'photoUrl' && value !== null) {
+          formDataToSend.append(key, value.toString());
+        }
+      });
+
+      if (formData.photo) {
+        formDataToSend.append('photo', formData.photo);
+      }
+
+      console.log('Enviando datos al servidor:', Object.fromEntries(formDataToSend));
+
+      const method = hasVehicle ? 'PUT' : 'POST';
+      console.log('Método HTTP:', method);
+
+      const response = await fetch(`${BASE_URL}/vehicles`, {
+        method,
+        headers: {
+          'x-token': token
+        },
+        body: formDataToSend
+      });
+
+      const data = await response.json();
+      console.log('Respuesta del servidor:', data);
+
+      if (!response.ok) {
+        throw new Error(data.msg || 'Error al procesar el vehículo');
+      }
+
       navigate({ to: '/perfil' });
+    } catch (error: any) {
+      console.error('Error al procesar el vehículo:', error);
+      setError(error.message || "Error al guardar los datos");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const validateStep = (): boolean => {
-    const newErrors: ValidationErrors = {};
-    
-    if (currentStep === 1) {
-      if (!formData.brand) newErrors.brand = 'La marca es requerida';
-      if (!formData.model) newErrors.model = 'El modelo es requerido';
-      if (!formData.year) newErrors.year = 'El año es requerido';
-      if (!formData.color) newErrors.color = 'El color es requerido';
-      if (!validateLicensePlate(formData.licensePlate)) {
-        newErrors.licensePlate = 'Formato de placa inválido';
-      }
-      if (!validateVIN(formData.vin)) {
-        newErrors.vin = 'VIN inválido';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleBack = () => {
+    navigate({ to: '/perfil' });
   };
 
-  const handleNext = () => {
-    if (currentStep === 1 && validateStep()) {
-      setCurrentStep(3); // Pasar al resumen
-    } else if (currentStep === 3) {
-      // Enviar o procesar la información final
-      navigate({ to: '/RegistrarVehiculo/DocumentsRequired' });
-    }
+  const toggleEditMode = () => {
+    setViewMode(!viewMode);
   };
 
-  const renderVehicleForm = () => (
-    <div className={styles.section}>
-      <div className={styles.sectionHeader}>
-        <Car className={styles.sectionIcon} />
-        <h2>Información del Vehículo</h2>
-      </div>
-
-      <div className={styles.photoUpload}>
-        <div className={styles.photoPreview}>
-          {formData.photoPreview ? (
-            <img 
-              src={formData.photoPreview} 
-              alt="Vista previa del vehículo" 
-              className={styles.previewImage}
-            />
-          ) : (
-            <Camera size={40} className={styles.cameraIcon} />
-          )}
-        </div>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handlePhotoUpload}
-          className={styles.photoInput}
-          id="vehicle-photo"
-        />
-        <label htmlFor="vehicle-photo" className={styles.photoLabel}>
-          {formData.photoPreview ? 'Cambiar foto' : 'Agregar foto del vehículo'}
-        </label>
-      </div>
-
-      <div className={styles.formGrid}>
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Marca</label>
-          <input
-            type="text"
-            name="brand"
-            value={formData.brand}
-            onChange={handleInputChange}
-            className={`${styles.input} ${errors.brand ? styles.inputError : ''}`}
-            placeholder="ej. Toyota"
-          />
-          {errors.brand && <span className={styles.errorText}>{errors.brand}</span>}
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Modelo</label>
-          <input
-            type="text"
-            name="model"
-            value={formData.model}
-            onChange={handleInputChange}
-            className={`${styles.input} ${errors.model ? styles.inputError : ''}`}
-            placeholder="ej. Corolla"
-          />
-          {errors.model && <span className={styles.errorText}>{errors.model}</span>}
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Año</label>
-          <select
-            name="year"
-            value={formData.year}
-            onChange={handleInputChange}
-            className={`${styles.select} ${errors.year ? styles.inputError : ''}`}
-          >
-            <option value="">Seleccione año</option>
-            {AVAILABLE_YEARS.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-          {errors.year && <span className={styles.errorText}>{errors.year}</span>}
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Color</label>
-          <select
-            name="color"
-            value={formData.color}
-            onChange={handleInputChange}
-            className={`${styles.select} ${errors.color ? styles.inputError : ''}`}
-          >
-            <option value="">Seleccione color</option>
-            {VEHICLE_COLORS.map((color) => (
-              <option key={color} value={color}>
-                {color}
-              </option>
-            ))}
-          </select>
-          {errors.color && <span className={styles.errorText}>{errors.color}</span>}
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Placa</label>
-          <input
-            type="text"
-            name="licensePlate"
-            value={formData.licensePlate}
-            onChange={handleInputChange}
-            className={`${styles.input} ${errors.licensePlate ? styles.inputError : ''}`}
-            placeholder="ej. ABC123"
-          />
-          {errors.licensePlate && <span className={styles.errorText}>{errors.licensePlate}</span>}
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.label}>VIN</label>
-          <input
-            type="text"
-            name="vin"
-            value={formData.vin}
-            onChange={handleInputChange}
-            className={`${styles.input} ${errors.vin ? styles.inputError : ''}`}
-            placeholder="17 caracteres alfanuméricos"
-          />
-          {errors.vin && <span className={styles.errorText}>{errors.vin}</span>}
-        </div>
-      </div>
-    </div>
-  );
-  const renderSummary = () => (
-    <div className={styles.section}>
-        <div className={styles.sectionHeader}>
-            <Info className={styles.sectionIcon} />
-            <h2 className={styles.sectionTitle}>Resumen y Confirmación</h2>
-        </div>
-        <p className={styles.subtitle}>
-            Verifique que la información sea correcta antes de continuar
-        </p>
-
-        <div className={styles.summaryContainer}>
-            {/* Vista previa del vehículo */}
-            {formData.photoPreview && (
-                <div className={styles.summaryPhotoContainer}>
-                    <img 
-                        src={formData.photoPreview} 
-                        alt="Vista previa del vehículo" 
-                        className={styles.summaryPhoto}
-                    />
-                    <div className={styles.photoOverlay}>
-                        <button 
-                            onClick={() => document.getElementById('vehicle-photo')?.click()}
-                            className={styles.editPhotoButton}
-                        >
-                            <Camera size={18} />
-                            Cambiar foto
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Detalles del Vehículo */}
-            <div className={styles.summaryCard}>
-                <div className={styles.summaryCardHeader}>
-                    <Car className={styles.summaryCardIcon} />
-                    <h3 className={styles.summaryCardTitle}>Detalles del Vehículo</h3>
-                </div>
-                <div className={styles.summaryGrid}>
-                    <div className={styles.summaryField}>
-                        <span className={styles.fieldLabel}>
-                            <Car size={16} />
-                            Marca
-                        </span>
-                        <span className={styles.fieldValue}>{formData.brand}</span>
-                    </div>
-                    <div className={styles.summaryField}>
-                        <span className={styles.fieldLabel}>
-                            <Info size={16} />
-                            Modelo
-                        </span>
-                        <span className={styles.fieldValue}>{formData.model}</span>
-                    </div>
-                    <div className={styles.summaryField}>
-                        <span className={styles.fieldLabel}>
-                            <Calendar size={16} />
-                            Año
-                        </span>
-                        <span className={styles.fieldValue}>{formData.year}</span>
-                    </div>
-                    <div className={styles.summaryField}>
-                        <span className={styles.fieldLabel}>
-                            <Info size={16} />
-                            Color
-                        </span>
-                        <div className={styles.colorValue}>
-                            <span 
-                                className={styles.colorSwatch}
-                                style={{ backgroundColor: formData.color.toLowerCase() }}
-                            />
-                            <span>{formData.color}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Información de Identificación */}
-            <div className={styles.summaryCard}>
-                <div className={styles.summaryCardHeader}>
-                    <Key className={styles.summaryCardIcon} />
-                    <h3 className={styles.summaryCardTitle}>Identificación</h3>
-                </div>
-                <div className={styles.summaryGrid}>
-                    <div className={styles.summaryField}>
-                        <span className={styles.fieldLabel}>
-                            <Key size={16} />
-                            Placa
-                        </span>
-                        <span className={styles.highlightValue}>
-                            {formData.licensePlate}
-                        </span>
-                    </div>
-                    <div className={styles.summaryField}>
-                        <span className={styles.fieldLabel}>
-                            <FileText size={16} />
-                            VIN
-                        </span>
-                        <span className={styles.fieldValue}>{formData.vin}</span>
-                    </div>
-                    {formData.lastMaintenanceDate && (
-                        <div className={styles.summaryField}>
-                            <span className={styles.fieldLabel}>
-                                <Calendar size={16} />
-                                Último Mantenimiento
-                            </span>
-                            <span className={styles.dateValue}>
-                                {new Date(formData.lastMaintenanceDate).toLocaleDateString()}
-                            </span>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Próximos Pasos */}
-            <div className={styles.summaryCard}>
-                <div className={styles.summaryCardHeader}>
-                    <FileText className={styles.summaryCardIcon} />
-                    <h3 className={styles.summaryCardTitle}>Documentación Requerida</h3>
-                </div>
-                <div className={styles.documentList}>
-                    <div className={styles.documentItem}>
-                        <FileText size={20} />
-                        <span>Tarjeta de Propiedad</span>
-                        <span className={styles.statusPending}>Pendiente</span>
-                    </div>
-                    <div className={styles.documentItem}>
-                        <Shield size={20} />
-                        <span>SOAT</span>
-                        <span className={styles.statusPending}>Pendiente</span>
-                    </div>
-                    <div className={styles.documentItem}>
-                        <FileText size={20} />
-                        <span>Licencia de Conducción</span>
-                        <span className={styles.statusPending}>Pendiente</span>
-                    </div>
-                </div>
-                <p className={styles.documentNote}>
-                    Al continuar, podrá cargar los documentos requeridos para completar el registro.
-                </p>
-            </div>
-
-            <div className={styles.summaryActions}>
-                <button
-                    type="button"
-                    onClick={() => setCurrentStep(1)}
-                    className={styles.editButton}
-                >
-                    <Edit2 size={18} />
-                    Editar información
-                </button>
-                <div className={styles.mainActions}>
-                    
-                    
-                </div>
-            </div>
-        </div>
-    </div>
-);
+  if (initialLoading) {
+    return (
+      <Container className={styles.container}>
+        <LoadingOverlay visible={true} />
+      </Container>
+    );
+  }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.gradientBackground} />
-      <div className={styles.content}>
-        <div className={styles.header}>
-          <button onClick={handleBack} className={styles.backButton}>
-            <ArrowLeft className="w-5 h-5" />
-            <span>Volver</span>
-          </button>
-          <h1 className={styles.title}>Registro de Vehículo</h1>
-        </div>
+    <Container className={styles.container}>
+      <LoadingOverlay visible={loading} />
+
+      <Group justify="flex-start" mb="xl">
+        <UnstyledButton onClick={handleBack} className={styles.backButton}>
+          <ArrowLeft size={24} />
+        </UnstyledButton>
+      </Group>
+
+      <Paper className={styles.formWrapper}>
+        <Box className={styles.header}>
+          <Group gap="apart" align="center">
+            <Text className={styles.title}>
+              {hasVehicle ? 'Información del Vehículo' : 'Registrar Vehículo'}
+            </Text>
+            {hasVehicle && (
+              <Button
+                variant="subtle"
+                onClick={toggleEditMode}
+                leftSection={<Edit2 size={16} />}
+              >
+                {viewMode ? 'Editar' : 'Cancelar Edición'}
+              </Button>
+            )}
+          </Group>
+          <Text className={styles.subtitle}>
+            {hasVehicle 
+              ? viewMode 
+                ? 'Detalles de tu vehículo registrado'
+                : 'Actualiza la información de tu vehículo'
+              : 'Ingresa los datos de tu vehículo'
+            }
+          </Text>
+        </Box>
 
         <form className={styles.form}>
-          {currentStep === 1 && renderVehicleForm()}
-          {currentStep === 3 && renderSummary()}
+          <div className={styles.photoSection}>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              id="vehicle-photo"
+              className={styles.hiddenInput}
+              disabled={viewMode}
+            />
+            <label 
+              htmlFor="vehicle-photo" 
+              className={`${styles.photoUpload} ${viewMode ? styles.disabled : ''}`}
+            >
+              {formData.photoUrl ? (
+                <div className={styles.photoPreview}>
+                  <img 
+                    src={formData.photoUrl} 
+                    alt="Vehículo" 
+                    className={styles.previewImage}
+                  />
+                  {!viewMode && (
+                    <div className={styles.photoOverlay}>
+                      <Camera size={24} />
+                      <span>Cambiar foto</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className={styles.photoPlaceholder}>
+                  <Camera size={32} />
+                  <span>Agregar foto del vehículo</span>
+                </div>
+              )}
+            </label>
+            {errors.photo && (
+              <Text size="sm" color="red" mt="xs">
+                {errors.photo}
+              </Text>
+            )}
+          </div>
 
-          <div className={styles.formActions}>
-            <button 
-              type="button" 
+          <Group grow>
+            <TextInput
+              label="Marca"
+              placeholder="ej. Toyota"
+              value={formData.brand}
+              onChange={(e) => handleInputChange('brand', e.currentTarget.value)}
+              error={errors.brand}
+              required
+              disabled={viewMode}
+            />
+
+            <TextInput
+              label="Modelo"
+              placeholder="ej. Corolla"
+              value={formData.model}
+              onChange={(e) => handleInputChange('model', e.currentTarget.value)}
+              error={errors.model}
+              required
+              disabled={viewMode}
+            />
+          </Group>
+
+          <Group grow>
+            <Select
+              label="Año"
+              placeholder="Seleccione año"
+              data={YEARS}
+              value={formData.year}
+              onChange={(value) => handleInputChange('year', value || '')}
+              error={errors.year}
+              required
+              disabled={viewMode}
+            />
+
+            <Select
+              label="Color"
+              placeholder="Seleccione color"
+              data={COLORS}
+              value={formData.color}
+              onChange={(value) => handleInputChange('color', value || '')}
+              error={errors.color}
+              required
+              disabled={viewMode}
+            />
+          </Group>
+
+          <Group grow>
+            <TextInput
+              label="Placa"
+              placeholder="ABC123"
+              value={formData.plate}
+              onChange={(e) => handleInputChange('plate', e.currentTarget.value.toUpperCase())}
+              error={errors.plate}
+              required
+              disabled={viewMode}
+            />
+
+            <Select
+              label="Tipo de Vehículo"
+              placeholder="Seleccione tipo"
+              data={BODY_TYPES}
+              value={formData.body_type}
+              onChange={(value) => handleInputChange('body_type', value || '')}
+              error={errors.body_type}
+              required
+              disabled={viewMode}
+            />
+          </Group>
+
+          <Group grow>
+            <TextInput
+              label="Número de Motor"
+              placeholder="Ingrese número de motor"
+              value={formData.engine_number}
+              onChange={(e) => handleInputChange('engine_number', e.currentTarget.value)}
+              error={errors.engine_number}
+              required
+              disabled={viewMode}
+            />
+
+            <TextInput
+              label="Número de Chasis"
+              placeholder="Ingrese número de chasis"
+              value={formData.chassis_number}
+              onChange={(e) => handleInputChange('chassis_number', e.currentTarget.value)}
+              error={errors.chassis_number}
+              required
+              disabled={viewMode}
+            />
+          </Group>
+
+          <TextInput
+            label="Número VIN"
+            placeholder="Ingrese número VIN"
+            value={formData.vin_number}
+            onChange={(e) => handleInputChange('vin_number', e.currentTarget.value)}
+            error={errors.vin_number}
+            required
+            disabled={viewMode}
+          />
+
+          {error && (
+            <Text color="red" size="sm" mt="md" className={styles.errorMessage}>
+              <AlertCircle size={16} style={{ marginRight: 8 }} />
+              {error}
+            </Text>
+          )}
+
+          <Group justify="space-between" mt="xl">
+            <Button
+              variant="outline"
               onClick={handleBack}
               className={styles.secondaryButton}
             >
-              {currentStep === 1 ? 'Cancelar' : 'Anterior'}
-            </button>
-            <button 
-              type="button"
-              onClick={handleNext}
-              className={styles.primaryButton}
-            >
-              {currentStep === 3 ? 'Finalizar Registro' : 'Siguiente'}
-            </button>
-          </div>
+              Regresar
+            </Button>
+
+            {!viewMode && (
+              <Button
+                onClick={handleSubmit}
+                loading={loading}
+                className={styles.primaryButton}
+              >
+                {loading 
+                  ? 'Guardando...' 
+                  : (hasVehicle ? 'Actualizar' : 'Guardar')
+                }
+              </Button>
+            )}
+          </Group>
         </form>
-      </div>
-    </div>
+      </Paper>
+    </Container>
   );
 };
 
@@ -459,4 +509,3 @@ export const Route = createFileRoute('/RegistrarVehiculo/')({
 });
 
 export default VehicleRegistration;
-

@@ -1,0 +1,198 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.backButtonContainer {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+}
+
+.backButton {
+  color: #00f2a9;
+  background: rgba(0, 242, 169, 0.1);
+  border-radius: 50%;
+  padding: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  background: rgba(0, 242, 169, 0.2);
+  transform: translateX(-2px);
+}
+
+.formWrapper {
+  background-color: #121212;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  width: 100%;
+  max-width: 480px;
+  margin: 2rem auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.avatarWrapper {
+  background-color: #00f2a9;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 0 20px rgba(0, 242, 169, 0.2);
+}
+
+.avatarIcon {
+  color: #000000;
+}
+
+.title {
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.subtitle {
+  color: #8b8b8b;
+  margin-bottom: 2rem;
+}
+
+.form {
+  width: 100%;
+}
+
+.input {
+  margin-bottom: 1.5rem;
+}
+
+.input input,
+.input select {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-radius: 0.75rem;
+  height: 48px;
+  padding: 0 1rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.input input:focus,
+.input select:focus {
+  border-color: #00f2a9;
+  background-color: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 0 0 2px rgba(0, 242, 169, 0.1);
+}
+
+.input label {
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+}
+
+.input label span.required {
+  color: #00f2a9;
+  margin-left: 4px;
+}
+
+/* Enhanced dropdown styles */
+.input select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300f2a9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+.input select:focus {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300f2a9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 15l-6-6-6 6'/%3E%3C/svg%3E");
+}
+
+.input select option {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  padding: 1rem;
+  font-size: 0.95rem;
+}
+
+.input select option:hover,
+.input select option:focus {
+  background-color: rgba(0, 242, 169, 0.1);
+}
+
+.errorMessage {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background-color: rgba(239, 68, 68, 0.1);
+  margin-bottom: 1rem;
+  color: #ef4444;
+}
+
+.submitButton {
+  background-color: #00f2a9;
+  color: #000000;
+  padding: 0.875rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  height: 48px;
+  width: 100%;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.submitButton:hover {
+  background-color: #00d696;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 242, 169, 0.2);
+}
+
+.submitButton:active {
+  transform: translateY(0);
+}
+
+/* Disabled state styles */
+.input input:disabled {
+  background-color: rgba(255, 255, 255, 0.03);
+  color: #666666;
+  cursor: not-allowed;
+  border-color: transparent;
+}
+
+/* Placeholder styles */
+.input input::placeholder {
+  color: #666666;
+}
+
+/* Focus styles for better accessibility */
+.input input:focus-visible,
+.input select:focus-visible {
+  outline: none;
+  border-color: #00f2a9;
+  box-shadow: 0 0 0 2px rgba(0, 242, 169, 0.2);
+}
+
+/* Hover states */
+.input input:hover:not(:disabled),
+.input select:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.2);
+}

@@ -220,3 +220,260 @@
 .passengerIcon {
   transform: scale(0.9); 
 }
+
+
+/* Previous styles remain the same, add these new styles: */
+
+.dateInput {
+  background: transparent !important;
+  border: none !important;
+  color: white !important;
+  font-size: 1rem !important;
+  height: 36px !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+.dateInput::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.dateDropdown {
+  background: rgba(20, 20, 20, 0.95) !important;
+  border: 1px solid rgba(0, 255, 157, 0.2) !important;
+  border-radius: 16px !important;
+  padding: 1rem !important;
+  margin-top: 0.5rem !important;
+}
+
+.dateDay {
+  color: white !important;
+  border-radius: 8px !important;
+}
+
+.dateDay[data-selected] {
+  background: #00ff9d !important;
+  color: black !important;
+}
+
+.dateDay:hover {
+  background: rgba(0, 255, 157, 0.1) !important;
+}
+
+.dateWeekday {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.dateMonth {
+  color: white !important;
+}
+
+/* All previous styles from your CSS file should remain unchanged */
+
+/*search styles*/
+
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.suggestionsContainer {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(12, 12, 12, 0.95);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-top: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.suggestionItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.suggestionItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.suggestionIcon {
+  color: rgba(255, 255, 255, 0.5);
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.suggestionMain {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.suggestionSecondary {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 2px;
+}
+
+.input input {
+  background: transparent !important;
+  border: none !important;
+  color: white !important;
+  font-size: 0.95rem !important;
+  padding: 8px 0 !important;
+}
+
+.input input::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.input input::selection {
+  background-color: rgba(0, 255, 157, 0.3);
+}
+
+
+/* Estilos para la sección de resultados */
+.tripsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+ }
+ 
+ .tripCard {
+  background: rgba(20, 20, 20, 0.95) !important;
+  border: 1px solid rgba(0, 255, 157, 0.2) !important;
+  border-radius: 16px !important;
+  padding: 1.5rem !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+ }
+ 
+ .tripCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 255, 157, 0.15);
+ }
+ 
+ .tripRoute {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+ }
+ 
+ .routeLine {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(0, 255, 157, 0.3),
+    transparent
+  );
+  margin: 1rem 0;
+ }
+ 
+ .tripCard badge {
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+ }
+ 
+ /* Estilos para los badges */
+ .tripBadge {
+  background: rgba(0, 255, 157, 0.1) !important;
+  color: #00ff9d !important;
+  font-weight: 500 !important;
+  padding: 0.5rem 1rem !important;
+ }
+ 
+ /* Estilos para textos dentro de la tarjeta */
+ .tripCard Text {
+  color: white !important;
+ }
+ 
+ .tripCard Text[c="dimmed"] {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-size: 0.9rem;
+ }
+ 
+ /* Botón de reserva */
+ .reserveButton {
+  background: rgba(0, 255, 157, 0.1) !important;
+  color: #00ff9d !important;
+  border: 1px solid rgba(0, 255, 157, 0.3) !important;
+  transition: all 0.2s ease;
+ }
+ 
+ .reserveButton:hover {
+  background: rgba(0, 255, 157, 0.2) !important;
+  transform: translateY(-2px);
+ }
+ 
+ /* Animaciones al cargar */
+ .tripCard {
+  animation: fadeInUp 0.3s ease forwards;
+  opacity: 0;
+  transform: translateY(20px);
+ }
+ 
+ @keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+ }
+ 
+ /* Estilos responsivos */
+ @media (max-width: 768px) {
+  .tripsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tripCard {
+    padding: 1rem !important;
+  }
+ }
+ 
+ /* Sección de resultados vacíos */
+ .resultsSection {
+  text-align: center;
+  padding: 2rem 0;
+ }
+ 
+ .resultsTitle {
+  color: white !important;
+  font-size: 2rem !important;
+  margin-bottom: 1rem !important;
+ }
+ 
+ .resultsSubtitle {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.1rem;
+ }
+ 
+ /* Estilos para los badges de estados */
+ .statusBadge {
+  font-size: 0.85rem !important;
+  padding: 0.4rem 0.8rem !important;
+  border-radius: 8px !important;
+ }
+ 
+ /* Animación de carga */
+ @keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+ }
+ 
+ .loadingResults {
+  animation: pulse 1.5s infinite;
+ }

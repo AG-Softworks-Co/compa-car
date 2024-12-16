@@ -19,7 +19,7 @@ export interface TripLocation {
     summary: string;
     startAddress: string;
     endAddress: string;
-    bounds: google.maps.LatLngBounds;
+    bounds: google.maps.LatLngBounds; 
     polyline: string;
     warnings?: string[];
   }
@@ -31,6 +31,7 @@ export interface TripLocation {
   }
   
   export interface TripData {
+    
     origin: TripLocation | null;
     destination: TripLocation | null;
     routes: TripRoute[] | null;
@@ -235,7 +236,7 @@ export interface TripLocation {
       }
       return false;
     },
-    
+
     getPublishedTrips(): TripData[] {
       const trips = localStorage.getItem(PUBLISHED_TRIPS_KEY);
       return trips ? JSON.parse(trips) : [];

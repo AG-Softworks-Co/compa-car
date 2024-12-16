@@ -23,6 +23,7 @@ const RegisterView: React.FC = () => {
   const form = useForm({
     mode: "uncontrolled",
     initialValues: {
+      nombre: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -30,6 +31,7 @@ const RegisterView: React.FC = () => {
   });
 
   const handleRegister = async (values: {
+    nombre: string;
     email: string;
     password: string;
     confirmPassword: string;
@@ -46,12 +48,9 @@ const RegisterView: React.FC = () => {
         "https://rest-sorella-production.up.railway.app/api/usuarios",
         {
           json: {
+            nombre: values.nombre,
             correo: values.email,
             password: values.password,
-            idrole: "USER",
-            img: "Sin imagen",
-            estado: true,
-            google: false,
           },
         }
       )
@@ -85,6 +84,17 @@ const RegisterView: React.FC = () => {
       </Box>
 
       <form onSubmit={form.onSubmit(handleRegister)} className={styles.form}>
+
+      <Box className={styles.inputWrapper}>
+          <Text className={styles.inputLabel}>Nombre completo </Text>
+          <TextInput
+            placeholder="Tu nombre completo"
+            className={styles.input}
+            size="lg"
+            required
+            {...form.getInputProps("nombre")}
+          />
+        </Box>
         <Box className={styles.inputWrapper}>
           <Text className={styles.inputLabel}>Correo electrónico</Text>
           <TextInput

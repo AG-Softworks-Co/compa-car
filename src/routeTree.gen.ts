@@ -19,15 +19,20 @@ import { Route as PerfilIndexImport } from './routes/perfil/index'
 import { Route as HomeIndexImport } from './routes/home/index'
 import { Route as AccountIndexImport } from './routes/account/index'
 import { Route as ViajesPublicadosIndexImport } from './routes/ViajesPublicados/index'
+import { Route as ReservasIndexImport } from './routes/Reservas/index'
 import { Route as RegistroIndexImport } from './routes/Registro/index'
 import { Route as RegistrarVehiculoIndexImport } from './routes/RegistrarVehiculo/index'
 import { Route as RegistrarDatosIndexImport } from './routes/RegistrarDatos/index'
 import { Route as RecuperarPaswordIndexImport } from './routes/RecuperarPasword/index'
+import { Route as PagarCupoIndexImport } from './routes/PagarCupo/index'
 import { Route as OrigenIndexImport } from './routes/Origen/index'
 import { Route as LoginIndexImport } from './routes/Login/index'
 import { Route as DetallesViajeIndexImport } from './routes/DetallesViaje/index'
 import { Route as DestinoIndexImport } from './routes/Destino/index'
 import { Route as DateSelectedIndexImport } from './routes/DateSelected/index'
+import { Route as CuponesIndexImport } from './routes/Cupones/index'
+import { Route as ConfirmarCupoIndexImport } from './routes/ConfirmarCupo/index'
+import { Route as CompletarRegistroIndexImport } from './routes/CompletarRegistro/index'
 import { Route as RegistrarVehiculoSoatImport } from './routes/RegistrarVehiculo/Soat'
 import { Route as RegistrarVehiculoPropertyCardImport } from './routes/RegistrarVehiculo/PropertyCard'
 import { Route as RegistrarVehiculoLicenseImport } from './routes/RegistrarVehiculo/License'
@@ -75,6 +80,11 @@ const ViajesPublicadosIndexRoute = ViajesPublicadosIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const ReservasIndexRoute = ReservasIndexImport.update({
+  path: '/Reservas/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const RegistroIndexRoute = RegistroIndexImport.update({
   path: '/Registro/',
   getParentRoute: () => rootRoute,
@@ -92,6 +102,11 @@ const RegistrarDatosIndexRoute = RegistrarDatosIndexImport.update({
 
 const RecuperarPaswordIndexRoute = RecuperarPaswordIndexImport.update({
   path: '/RecuperarPasword/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PagarCupoIndexRoute = PagarCupoIndexImport.update({
+  path: '/PagarCupo/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -117,6 +132,21 @@ const DestinoIndexRoute = DestinoIndexImport.update({
 
 const DateSelectedIndexRoute = DateSelectedIndexImport.update({
   path: '/DateSelected/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CuponesIndexRoute = CuponesIndexImport.update({
+  path: '/Cupones/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ConfirmarCupoIndexRoute = ConfirmarCupoIndexImport.update({
+  path: '/ConfirmarCupo/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CompletarRegistroIndexRoute = CompletarRegistroIndexImport.update({
+  path: '/CompletarRegistro/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -194,6 +224,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegistrarVehiculoSoatImport
       parentRoute: typeof rootRoute
     }
+    '/CompletarRegistro/': {
+      id: '/CompletarRegistro/'
+      path: '/CompletarRegistro'
+      fullPath: '/CompletarRegistro'
+      preLoaderRoute: typeof CompletarRegistroIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/ConfirmarCupo/': {
+      id: '/ConfirmarCupo/'
+      path: '/ConfirmarCupo'
+      fullPath: '/ConfirmarCupo'
+      preLoaderRoute: typeof ConfirmarCupoIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/Cupones/': {
+      id: '/Cupones/'
+      path: '/Cupones'
+      fullPath: '/Cupones'
+      preLoaderRoute: typeof CuponesIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/DateSelected/': {
       id: '/DateSelected/'
       path: '/DateSelected'
@@ -229,6 +280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrigenIndexImport
       parentRoute: typeof rootRoute
     }
+    '/PagarCupo/': {
+      id: '/PagarCupo/'
+      path: '/PagarCupo'
+      fullPath: '/PagarCupo'
+      preLoaderRoute: typeof PagarCupoIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/RecuperarPasword/': {
       id: '/RecuperarPasword/'
       path: '/RecuperarPasword'
@@ -255,6 +313,13 @@ declare module '@tanstack/react-router' {
       path: '/Registro'
       fullPath: '/Registro'
       preLoaderRoute: typeof RegistroIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/Reservas/': {
+      id: '/Reservas/'
+      path: '/Reservas'
+      fullPath: '/Reservas'
+      preLoaderRoute: typeof ReservasIndexImport
       parentRoute: typeof rootRoute
     }
     '/ViajesPublicados/': {
@@ -311,15 +376,20 @@ export interface FileRoutesByFullPath {
   '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
   '/RegistrarVehiculo/PropertyCard': typeof RegistrarVehiculoPropertyCardRoute
   '/RegistrarVehiculo/Soat': typeof RegistrarVehiculoSoatRoute
+  '/CompletarRegistro': typeof CompletarRegistroIndexRoute
+  '/ConfirmarCupo': typeof ConfirmarCupoIndexRoute
+  '/Cupones': typeof CuponesIndexRoute
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Destino': typeof DestinoIndexRoute
   '/DetallesViaje': typeof DetallesViajeIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
+  '/PagarCupo': typeof PagarCupoIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
   '/RegistrarDatos': typeof RegistrarDatosIndexRoute
   '/RegistrarVehiculo': typeof RegistrarVehiculoIndexRoute
   '/Registro': typeof RegistroIndexRoute
+  '/Reservas': typeof ReservasIndexRoute
   '/ViajesPublicados': typeof ViajesPublicadosIndexRoute
   '/account': typeof AccountIndexRoute
   '/home': typeof HomeIndexRoute
@@ -335,15 +405,20 @@ export interface FileRoutesByTo {
   '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
   '/RegistrarVehiculo/PropertyCard': typeof RegistrarVehiculoPropertyCardRoute
   '/RegistrarVehiculo/Soat': typeof RegistrarVehiculoSoatRoute
+  '/CompletarRegistro': typeof CompletarRegistroIndexRoute
+  '/ConfirmarCupo': typeof ConfirmarCupoIndexRoute
+  '/Cupones': typeof CuponesIndexRoute
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Destino': typeof DestinoIndexRoute
   '/DetallesViaje': typeof DetallesViajeIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
+  '/PagarCupo': typeof PagarCupoIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
   '/RegistrarDatos': typeof RegistrarDatosIndexRoute
   '/RegistrarVehiculo': typeof RegistrarVehiculoIndexRoute
   '/Registro': typeof RegistroIndexRoute
+  '/Reservas': typeof ReservasIndexRoute
   '/ViajesPublicados': typeof ViajesPublicadosIndexRoute
   '/account': typeof AccountIndexRoute
   '/home': typeof HomeIndexRoute
@@ -360,15 +435,20 @@ export interface FileRoutesById {
   '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
   '/RegistrarVehiculo/PropertyCard': typeof RegistrarVehiculoPropertyCardRoute
   '/RegistrarVehiculo/Soat': typeof RegistrarVehiculoSoatRoute
+  '/CompletarRegistro/': typeof CompletarRegistroIndexRoute
+  '/ConfirmarCupo/': typeof ConfirmarCupoIndexRoute
+  '/Cupones/': typeof CuponesIndexRoute
   '/DateSelected/': typeof DateSelectedIndexRoute
   '/Destino/': typeof DestinoIndexRoute
   '/DetallesViaje/': typeof DetallesViajeIndexRoute
   '/Login/': typeof LoginIndexRoute
   '/Origen/': typeof OrigenIndexRoute
+  '/PagarCupo/': typeof PagarCupoIndexRoute
   '/RecuperarPasword/': typeof RecuperarPaswordIndexRoute
   '/RegistrarDatos/': typeof RegistrarDatosIndexRoute
   '/RegistrarVehiculo/': typeof RegistrarVehiculoIndexRoute
   '/Registro/': typeof RegistroIndexRoute
+  '/Reservas/': typeof ReservasIndexRoute
   '/ViajesPublicados/': typeof ViajesPublicadosIndexRoute
   '/account/': typeof AccountIndexRoute
   '/home/': typeof HomeIndexRoute
@@ -386,15 +466,20 @@ export interface FileRouteTypes {
     | '/RegistrarVehiculo/License'
     | '/RegistrarVehiculo/PropertyCard'
     | '/RegistrarVehiculo/Soat'
+    | '/CompletarRegistro'
+    | '/ConfirmarCupo'
+    | '/Cupones'
     | '/DateSelected'
     | '/Destino'
     | '/DetallesViaje'
     | '/Login'
     | '/Origen'
+    | '/PagarCupo'
     | '/RecuperarPasword'
     | '/RegistrarDatos'
     | '/RegistrarVehiculo'
     | '/Registro'
+    | '/Reservas'
     | '/ViajesPublicados'
     | '/account'
     | '/home'
@@ -409,15 +494,20 @@ export interface FileRouteTypes {
     | '/RegistrarVehiculo/License'
     | '/RegistrarVehiculo/PropertyCard'
     | '/RegistrarVehiculo/Soat'
+    | '/CompletarRegistro'
+    | '/ConfirmarCupo'
+    | '/Cupones'
     | '/DateSelected'
     | '/Destino'
     | '/DetallesViaje'
     | '/Login'
     | '/Origen'
+    | '/PagarCupo'
     | '/RecuperarPasword'
     | '/RegistrarDatos'
     | '/RegistrarVehiculo'
     | '/Registro'
+    | '/Reservas'
     | '/ViajesPublicados'
     | '/account'
     | '/home'
@@ -432,15 +522,20 @@ export interface FileRouteTypes {
     | '/RegistrarVehiculo/License'
     | '/RegistrarVehiculo/PropertyCard'
     | '/RegistrarVehiculo/Soat'
+    | '/CompletarRegistro/'
+    | '/ConfirmarCupo/'
+    | '/Cupones/'
     | '/DateSelected/'
     | '/Destino/'
     | '/DetallesViaje/'
     | '/Login/'
     | '/Origen/'
+    | '/PagarCupo/'
     | '/RecuperarPasword/'
     | '/RegistrarDatos/'
     | '/RegistrarVehiculo/'
     | '/Registro/'
+    | '/Reservas/'
     | '/ViajesPublicados/'
     | '/account/'
     | '/home/'
@@ -457,15 +552,20 @@ export interface RootRouteChildren {
   RegistrarVehiculoLicenseRoute: typeof RegistrarVehiculoLicenseRoute
   RegistrarVehiculoPropertyCardRoute: typeof RegistrarVehiculoPropertyCardRoute
   RegistrarVehiculoSoatRoute: typeof RegistrarVehiculoSoatRoute
+  CompletarRegistroIndexRoute: typeof CompletarRegistroIndexRoute
+  ConfirmarCupoIndexRoute: typeof ConfirmarCupoIndexRoute
+  CuponesIndexRoute: typeof CuponesIndexRoute
   DateSelectedIndexRoute: typeof DateSelectedIndexRoute
   DestinoIndexRoute: typeof DestinoIndexRoute
   DetallesViajeIndexRoute: typeof DetallesViajeIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   OrigenIndexRoute: typeof OrigenIndexRoute
+  PagarCupoIndexRoute: typeof PagarCupoIndexRoute
   RecuperarPaswordIndexRoute: typeof RecuperarPaswordIndexRoute
   RegistrarDatosIndexRoute: typeof RegistrarDatosIndexRoute
   RegistrarVehiculoIndexRoute: typeof RegistrarVehiculoIndexRoute
   RegistroIndexRoute: typeof RegistroIndexRoute
+  ReservasIndexRoute: typeof ReservasIndexRoute
   ViajesPublicadosIndexRoute: typeof ViajesPublicadosIndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
@@ -482,15 +582,20 @@ const rootRouteChildren: RootRouteChildren = {
   RegistrarVehiculoLicenseRoute: RegistrarVehiculoLicenseRoute,
   RegistrarVehiculoPropertyCardRoute: RegistrarVehiculoPropertyCardRoute,
   RegistrarVehiculoSoatRoute: RegistrarVehiculoSoatRoute,
+  CompletarRegistroIndexRoute: CompletarRegistroIndexRoute,
+  ConfirmarCupoIndexRoute: ConfirmarCupoIndexRoute,
+  CuponesIndexRoute: CuponesIndexRoute,
   DateSelectedIndexRoute: DateSelectedIndexRoute,
   DestinoIndexRoute: DestinoIndexRoute,
   DetallesViajeIndexRoute: DetallesViajeIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   OrigenIndexRoute: OrigenIndexRoute,
+  PagarCupoIndexRoute: PagarCupoIndexRoute,
   RecuperarPaswordIndexRoute: RecuperarPaswordIndexRoute,
   RegistrarDatosIndexRoute: RegistrarDatosIndexRoute,
   RegistrarVehiculoIndexRoute: RegistrarVehiculoIndexRoute,
   RegistroIndexRoute: RegistroIndexRoute,
+  ReservasIndexRoute: ReservasIndexRoute,
   ViajesPublicadosIndexRoute: ViajesPublicadosIndexRoute,
   AccountIndexRoute: AccountIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
@@ -517,15 +622,20 @@ export const routeTree = rootRoute
         "/RegistrarVehiculo/License",
         "/RegistrarVehiculo/PropertyCard",
         "/RegistrarVehiculo/Soat",
+        "/CompletarRegistro/",
+        "/ConfirmarCupo/",
+        "/Cupones/",
         "/DateSelected/",
         "/Destino/",
         "/DetallesViaje/",
         "/Login/",
         "/Origen/",
+        "/PagarCupo/",
         "/RecuperarPasword/",
         "/RegistrarDatos/",
         "/RegistrarVehiculo/",
         "/Registro/",
+        "/Reservas/",
         "/ViajesPublicados/",
         "/account/",
         "/home/",
@@ -552,6 +662,15 @@ export const routeTree = rootRoute
     "/RegistrarVehiculo/Soat": {
       "filePath": "RegistrarVehiculo/Soat.tsx"
     },
+    "/CompletarRegistro/": {
+      "filePath": "CompletarRegistro/index.tsx"
+    },
+    "/ConfirmarCupo/": {
+      "filePath": "ConfirmarCupo/index.tsx"
+    },
+    "/Cupones/": {
+      "filePath": "Cupones/index.tsx"
+    },
     "/DateSelected/": {
       "filePath": "DateSelected/index.tsx"
     },
@@ -567,6 +686,9 @@ export const routeTree = rootRoute
     "/Origen/": {
       "filePath": "Origen/index.tsx"
     },
+    "/PagarCupo/": {
+      "filePath": "PagarCupo/index.tsx"
+    },
     "/RecuperarPasword/": {
       "filePath": "RecuperarPasword/index.tsx"
     },
@@ -578,6 +700,9 @@ export const routeTree = rootRoute
     },
     "/Registro/": {
       "filePath": "Registro/index.tsx"
+    },
+    "/Reservas/": {
+      "filePath": "Reservas/index.tsx"
     },
     "/ViajesPublicados/": {
       "filePath": "ViajesPublicados/index.tsx"
