@@ -5,7 +5,6 @@ import {
   ArrowLeft, 
   Camera,
   Calendar,
-  User,
   Heart,
   FileText,
   Shield,
@@ -166,58 +165,7 @@ const License: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          {/* Información Personal */}
-          <div className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <User className={styles.sectionIcon} size={24} />
-              <h2 className={styles.sectionTitle}>Información Personal</h2>
-            </div>
-            <div className={styles.formGrid}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <User size={16} className={styles.labelIcon} />
-                  Nombres
-                </label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName || ''}
-                  onChange={handleInputChange}
-                  className={styles.input}
-                  placeholder="Nombres completos"
-                  disabled={isSubmitting}
-                />
-                {errors.firstName && (
-                  <span className={styles.errorText}>
-                    <AlertCircle size={14} />
-                    {errors.firstName}
-                  </span>
-                )}
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <User size={16} className={styles.labelIcon} />
-                  Apellidos
-                </label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName || ''}
-                  onChange={handleInputChange}
-                  className={styles.input}
-                  placeholder="Apellidos completos"
-                  disabled={isSubmitting}
-                />
-                {errors.lastName && (
-                  <span className={styles.errorText}>
-                    <AlertCircle size={14} />
-                    {errors.lastName}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
+        
 
           {/* Información de la Licencia */}
           <div className={styles.section}>

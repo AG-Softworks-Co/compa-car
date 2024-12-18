@@ -24,6 +24,7 @@ import { Route as RegistroIndexImport } from './routes/Registro/index'
 import { Route as RegistrarVehiculoIndexImport } from './routes/RegistrarVehiculo/index'
 import { Route as RegistrarDatosIndexImport } from './routes/RegistrarDatos/index'
 import { Route as RecuperarPaswordIndexImport } from './routes/RecuperarPasword/index'
+import { Route as ParadasIndexImport } from './routes/Paradas/index'
 import { Route as PagarCupoIndexImport } from './routes/PagarCupo/index'
 import { Route as OrigenIndexImport } from './routes/Origen/index'
 import { Route as LoginIndexImport } from './routes/Login/index'
@@ -102,6 +103,11 @@ const RegistrarDatosIndexRoute = RegistrarDatosIndexImport.update({
 
 const RecuperarPaswordIndexRoute = RecuperarPaswordIndexImport.update({
   path: '/RecuperarPasword/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ParadasIndexRoute = ParadasIndexImport.update({
+  path: '/Paradas/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -287,6 +293,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PagarCupoIndexImport
       parentRoute: typeof rootRoute
     }
+    '/Paradas/': {
+      id: '/Paradas/'
+      path: '/Paradas'
+      fullPath: '/Paradas'
+      preLoaderRoute: typeof ParadasIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/RecuperarPasword/': {
       id: '/RecuperarPasword/'
       path: '/RecuperarPasword'
@@ -385,6 +398,7 @@ export interface FileRoutesByFullPath {
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
   '/PagarCupo': typeof PagarCupoIndexRoute
+  '/Paradas': typeof ParadasIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
   '/RegistrarDatos': typeof RegistrarDatosIndexRoute
   '/RegistrarVehiculo': typeof RegistrarVehiculoIndexRoute
@@ -414,6 +428,7 @@ export interface FileRoutesByTo {
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
   '/PagarCupo': typeof PagarCupoIndexRoute
+  '/Paradas': typeof ParadasIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
   '/RegistrarDatos': typeof RegistrarDatosIndexRoute
   '/RegistrarVehiculo': typeof RegistrarVehiculoIndexRoute
@@ -444,6 +459,7 @@ export interface FileRoutesById {
   '/Login/': typeof LoginIndexRoute
   '/Origen/': typeof OrigenIndexRoute
   '/PagarCupo/': typeof PagarCupoIndexRoute
+  '/Paradas/': typeof ParadasIndexRoute
   '/RecuperarPasword/': typeof RecuperarPaswordIndexRoute
   '/RegistrarDatos/': typeof RegistrarDatosIndexRoute
   '/RegistrarVehiculo/': typeof RegistrarVehiculoIndexRoute
@@ -475,6 +491,7 @@ export interface FileRouteTypes {
     | '/Login'
     | '/Origen'
     | '/PagarCupo'
+    | '/Paradas'
     | '/RecuperarPasword'
     | '/RegistrarDatos'
     | '/RegistrarVehiculo'
@@ -503,6 +520,7 @@ export interface FileRouteTypes {
     | '/Login'
     | '/Origen'
     | '/PagarCupo'
+    | '/Paradas'
     | '/RecuperarPasword'
     | '/RegistrarDatos'
     | '/RegistrarVehiculo'
@@ -531,6 +549,7 @@ export interface FileRouteTypes {
     | '/Login/'
     | '/Origen/'
     | '/PagarCupo/'
+    | '/Paradas/'
     | '/RecuperarPasword/'
     | '/RegistrarDatos/'
     | '/RegistrarVehiculo/'
@@ -561,6 +580,7 @@ export interface RootRouteChildren {
   LoginIndexRoute: typeof LoginIndexRoute
   OrigenIndexRoute: typeof OrigenIndexRoute
   PagarCupoIndexRoute: typeof PagarCupoIndexRoute
+  ParadasIndexRoute: typeof ParadasIndexRoute
   RecuperarPaswordIndexRoute: typeof RecuperarPaswordIndexRoute
   RegistrarDatosIndexRoute: typeof RegistrarDatosIndexRoute
   RegistrarVehiculoIndexRoute: typeof RegistrarVehiculoIndexRoute
@@ -591,6 +611,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginIndexRoute: LoginIndexRoute,
   OrigenIndexRoute: OrigenIndexRoute,
   PagarCupoIndexRoute: PagarCupoIndexRoute,
+  ParadasIndexRoute: ParadasIndexRoute,
   RecuperarPaswordIndexRoute: RecuperarPaswordIndexRoute,
   RegistrarDatosIndexRoute: RegistrarDatosIndexRoute,
   RegistrarVehiculoIndexRoute: RegistrarVehiculoIndexRoute,
@@ -631,6 +652,7 @@ export const routeTree = rootRoute
         "/Login/",
         "/Origen/",
         "/PagarCupo/",
+        "/Paradas/",
         "/RecuperarPasword/",
         "/RegistrarDatos/",
         "/RegistrarVehiculo/",
@@ -688,6 +710,9 @@ export const routeTree = rootRoute
     },
     "/PagarCupo/": {
       "filePath": "PagarCupo/index.tsx"
+    },
+    "/Paradas/": {
+      "filePath": "Paradas/index.tsx"
     },
     "/RecuperarPasword/": {
       "filePath": "RecuperarPasword/index.tsx"

@@ -12,7 +12,6 @@ import {
   Badge,
   Loader,
   ActionIcon,
-
   Popover,
   Switch
 } from '@mantine/core';

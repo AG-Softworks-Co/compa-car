@@ -10,11 +10,9 @@ import {
   RotateCw,
   AlertCircle,
   CheckCircle,
-  Ambulance,
-  Heart,
-  Car
+
 } from 'lucide-react';
-import { SoatFormData, INSURANCE_COMPANIES, COVERAGE_TYPES } from '../../types/SoatTypes';
+import { SoatFormData, INSURANCE_COMPANIES } from '../../types/SoatTypes';
 import styles from './Soat.module.css';
 
 const Soat: React.FC = () => {
@@ -183,7 +181,7 @@ const Soat: React.FC = () => {
   };
 
   const handleBack = () => {
-    navigate({ to: '/RegistrarVehiculo/DocumentsRequired' });
+    navigate({ to: '/perfil' });
   };
 
 
@@ -310,121 +308,7 @@ const Soat: React.FC = () => {
           </div>
 
           {/* Información de Coberturas */}
-          <div className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <Shield className={styles.sectionIcon} size={24} />
-              <h2 className={styles.sectionTitle}>Información de Coberturas</h2>
-            </div>
-            <div className={styles.formGrid}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <Shield size={16} className={styles.labelIcon} />
-                  Tipo de Cobertura
-                </label>
-                <select
-                  name="coverageType"
-                  value={formData.coverageType}
-                  onChange={handleInputChange}
-                  className={styles.select}
-                  disabled={isSubmitting}
-                >
-                  {COVERAGE_TYPES.map(type => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <Heart size={16} className={styles.labelIcon} />
-                  Cobertura por Muerte
-                </label>
-                <input
-                  type="text"
-                  name="deathCoverage"
-                  value={formData.deathCoverage}
-                  onChange={handleInputChange}
-                  className={styles.input}
-                  placeholder="Cobertura por muerte y gastos funerarios"
-                  disabled={isSubmitting}
-                />
-                {errors.deathCoverage && (
-                  <span className={styles.errorText}>
-                    <AlertCircle size={14} />
-                    {errors.deathCoverage}
-                  </span>
-                )}
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <Ambulance size={16} className={styles.labelIcon} />
-                  Gastos Médicos
-                </label>
-                <input
-                  type="text"
-                  name="medicalCoverage"
-                  value={formData.medicalCoverage}
-                  onChange={handleInputChange}
-                  className={styles.input}
-                  placeholder="Cobertura de gastos médicos"
-                  disabled={isSubmitting}
-                />
-                {errors.medicalCoverage && (
-                  <span className={styles.errorText}>
-                    <AlertCircle size={14} />
-                    {errors.medicalCoverage}
-                  </span>
-                )}
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <Shield size={16} className={styles.labelIcon} />
-                  Incapacidad Permanente
-                </label>
-                <input
-                  type="text"
-                  name="disabilityCoverage"
-                  value={formData.disabilityCoverage}
-                  onChange={handleInputChange}
-                  className={styles.input}
-                  placeholder="Cobertura por incapacidad permanente"
-                  disabled={isSubmitting}
-                />
-                {errors.disabilityCoverage && (
-                  <span className={styles.errorText}>
-                    <AlertCircle size={14} />
-                    {errors.disabilityCoverage}
-                  </span>
-                )}
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <Car size={16} className={styles.labelIcon} />
-                  Gastos de Transporte
-                </label>
-                <input
-                  type="text"
-                  name="transportCoverage"
-                  value={formData.transportCoverage}
-                  onChange={handleInputChange}
-                  className={styles.input}
-                  placeholder="Cobertura de gastos de transporte"
-                  disabled={isSubmitting}
-                />
-                {errors.transportCoverage && (
-                  <span className={styles.errorText}>
-                    <AlertCircle size={14} />
-                    {errors.transportCoverage}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
+          
 
           {/* Fotos del Documento */}
           <div className={styles.section}>
