@@ -19,10 +19,9 @@ const DocumentForm: React.FC = () => {
 
   const [formData, setFormData] = useState<DocumentFormData>({
     documentType: type,
-    documentNumber: '',
     expeditionDate: '',
     expiryDate: '',
-    expeditionCity: '',
+
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -89,16 +88,14 @@ const DocumentForm: React.FC = () => {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.documentNumber) newErrors.documentNumber = 'Número de documento requerido';
     if (!formData.expeditionDate) newErrors.expeditionDate = 'Fecha de expedición requerida';
     if (!formData.expiryDate) newErrors.expiryDate = 'Fecha de vencimiento requerida';
-    if (!formData.expeditionCity) newErrors.expeditionCity = 'Ciudad de expedición requerida';
+ 
     if (!formData.frontFile) newErrors.front = 'Foto frontal requerida';
     if (!formData.backFile) newErrors.back = 'Foto posterior requerida';
 
     if (type === 'license') {
-      if (!formData.firstName) newErrors.firstName = 'Nombre requerido';
-      if (!formData.lastName) newErrors.lastName = 'Apellido requerido';
+
       if (!formData.licenseCategory) newErrors.licenseCategory = 'Categoría requerida';
       if (!formData.bloodType) newErrors.bloodType = 'Tipo de sangre requerido';
     }
@@ -157,7 +154,7 @@ const DocumentForm: React.FC = () => {
             <input
               type="text"
               name="documentNumber"
-              value={formData.documentNumber}
+            
               onChange={handleInputChange}
             />
             {errors.documentNumber && <span className={styles.error}>{errors.documentNumber}</span>}

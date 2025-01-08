@@ -46,7 +46,7 @@ const navItems = [
   { icon: Search, label: "Buscar", to: "/reservar" },
   { icon: PlusCircle, label: "Publicar", to: "/publicarviaje" },
   { icon: "logo", label: "", to: "/home" },
-  { icon: Car, label: "Mis Viajes", to: "/ViajesPublicados" },
+  { icon: Car, label: "Actividades", to: "/ViajesPublicados" },
   { icon: User, label: "Mi Cuenta", to: "/perfil" },
 ];
 

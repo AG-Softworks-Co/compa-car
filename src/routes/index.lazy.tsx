@@ -92,9 +92,6 @@ function Index() {
             </Button>
           </Link>
           <Link to="/home" className={styles.noLoginLink}>
-            <Button variant="ghost" className={styles.noLoginButton}>
-              Iniciar sin logueo
-            </Button>
           </Link>
         </div>
       </main>

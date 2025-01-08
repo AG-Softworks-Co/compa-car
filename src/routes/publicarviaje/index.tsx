@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import  { useState, useRef, useCallback, useEffect } from 'react';
 import { createFileRoute, Link, useSearch, useNavigate } from '@tanstack/react-router';
 import {
   Container,
@@ -13,7 +13,8 @@ import {
   Loader,
   ActionIcon,
   Popover,
-  Switch
+  Switch,
+  Image
 } from '@mantine/core';
 import { 
   MapPin, 
@@ -34,11 +35,13 @@ import {
   errorMessages
 } from '../../types/PublicarViaje/TripDataManagement';
 import styles from './index.module.css';
+import Reservar from '/Reservar2.webp'
+
 
 const MARKER_ICONS = {
   origin: {
-    path: window.google?.maps.SymbolPath.CIRCLE ?? '', // Chequeo de google
-    fillColor: "#4CAF50", // Verde oscuro para origen
+    path: window.google?.maps.SymbolPath.CIRCLE ?? '',
+    fillColor: "#4CAF50",
     fillOpacity: 1,
     strokeWeight: 2,
     strokeColor: '#FFFFFF',
@@ -53,7 +56,7 @@ const MARKER_ICONS = {
   },
   destination: {
     path: window.google?.maps.SymbolPath.CIRCLE ?? '',
-    fillColor: "#FF0000", // Rojo oscuro para destino
+    fillColor: "#FF0000",
     fillOpacity: 1,
     strokeWeight: 1,
     strokeColor: '#FFFFFF',
@@ -67,7 +70,6 @@ const MARKER_ICONS = {
     }
   }
 };
-
 
 interface RoutePreferences {
   avoidTolls: boolean;
@@ -327,11 +329,11 @@ const destinationLng = destinationLocation.coords.lng;
     if (routes[selectedRouteIndex]) {
       const selectedRoute = routes[selectedRouteIndex];
       tripStore.updateData({
-        currentStep: 'details',
+        currentStep: 'paradas',
         selectedRoute: selectedRoute
       });
       navigate({ 
-        to: '/DetallesViaje',
+        to: '/Paradas',
         search: {
           routeId: selectedRoute.index.toString()
         }
@@ -349,6 +351,15 @@ const destinationLng = destinationLocation.coords.lng;
       </div>
 
       <Container size="sm" className={styles.content}>
+         <div className={styles.heroSection}>
+          <Image src={Reservar} alt="Carpooling" className={styles.heroImage} />
+          <Title order={2} className={styles.heroTitle}>
+              ¿Listo para compartir tu viaje?
+              </Title>
+              <Text size="md" color="dimmed" className={styles.heroText}>
+               Encuentra la ruta perfecta y ahorra en tus traslados
+                </Text>
+        </div>
         <div className={styles.stepContent}>
           <Title className={styles.stepTitle}>¿Desde dónde sales?</Title>
           <div className={styles.searchBox}>
@@ -583,4 +594,3 @@ const destinationLng = destinationLocation.coords.lng;
   
 }
 export default ReservarView;
-

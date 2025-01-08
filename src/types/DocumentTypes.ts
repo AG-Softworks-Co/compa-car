@@ -1,15 +1,17 @@
+// DocumentTypes.ts
 export type DocumentType = 'property' | 'insurance' | 'license';
 
-export interface DocumentFormData {
-  documentType: DocumentType;
-  documentNumber: string;
+export interface DocumentBase {
   expeditionDate: string;
   expiryDate: string;
-  expeditionCity: string;
   frontFile?: File;
   backFile?: File;
   frontPreview?: string;
   backPreview?: string;
+}
+
+export interface DocumentFormData extends DocumentBase{
+  documentType: DocumentType;
   // Campos específicos para cada tipo de documento
   // Tarjeta de Propiedad
   brand?: string;
@@ -20,16 +22,16 @@ export interface DocumentFormData {
   insuranceCompany?: string;
   policyNumber?: string;
   coverageType?: string;
-  // Licencia
+   // Licencia
+    licenseNumber?: string;
   licenseCategory?: string;
   restrictions?: string;
   bloodType?: string;
-  organDonor?: boolean;
-  firstName?: string;
-  lastName?: string;
-  identificationNumber?: string;
-  address?: string;
+   identificationType?: string;
+   identificationNumber?: string;
 }
+
+
 
 export const LICENSE_CATEGORIES = [
   { value: 'A1', label: 'A1 - Motocicletas hasta 125 cc' },
@@ -48,4 +50,14 @@ export const COVERAGE_TYPES = [
   { value: 'basic', label: 'Básica' },
   { value: 'extended', label: 'Extendida' },
   { value: 'full', label: 'Total' }
+] as const;
+
+export type ServiceType = {
+    value: string;
+    label: string;
+};
+
+export const SERVICE_TYPES: readonly ServiceType[] = [
+    { value: 'private', label: 'Privado' },
+    { value: 'public', label: 'Público' }
 ] as const;

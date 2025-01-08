@@ -225,37 +225,49 @@
 /* Animations */
 @keyframes slideIn {
   from {
-    opacity: 0;
-    transform: translateY(-8px);
+      opacity: 0;
+      transform: translateY(-8px);
   }
   to {
-    opacity: 1;
-    transform: translateY(0);
+      opacity: 1;
+      transform: translateY(0);
   }
 }
 
 @keyframes fadeIn {
   from {
-    opacity: 0;
+      opacity: 0;
   }
   to {
-    opacity: 1;
+      opacity: 1;
   }
 }
 
 /* Responsive styles */
 @media (max-width: 768px) {
   .searchSection {
-    padding: 12px;
+      padding: 12px;
   }
 
   .confirmButton {
-    bottom: 16px !important;
-    width: calc(100% - 32px) !important;
-    min-width: 0 !important;
+      bottom: 16px !important;
+      width: calc(100% - 32px) !important;
+      min-width: 0 !important;
   }
-
-  .mapSection {
-    height: calc(100vh - 180px);
-  }
+    .mapSection {
+      height: calc(100vh - 180px);
+    }
+}
+.noMapContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  border-radius: 5px;
+  text-align: center;
 }

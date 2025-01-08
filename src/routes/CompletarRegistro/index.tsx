@@ -137,7 +137,7 @@ const CompleteProfileView: React.FC = () => {
     loadUserProfile();
   }, []);
 
-  const handleSubmit = async (values: ProfileFormData) => {
+    const handleSubmit = async (values: ProfileFormData) => {
     try {
       setLoading(true);
       setError("");
@@ -186,7 +186,13 @@ const CompleteProfileView: React.FC = () => {
       }
 
       console.log('Perfil guardado exitosamente');
-      navigate({ to: "/perfil" });
+        // Redirección basada en user_type
+        if (values.user_type === "PASSENGER") {
+        navigate({ to: "/" });
+        } else if (values.user_type === "DRIVER") {
+        navigate({ to: "/RegistrarVehiculo" });
+        }
+        
     } catch (error: any) {
       console.error('Error guardando perfil:', error);
       setError(error.message || "Error al guardar los datos");
@@ -196,7 +202,7 @@ const CompleteProfileView: React.FC = () => {
   };
 
   const handleBack = () => {
-    navigate({ to: "/perfil" });
+    navigate({ to: "/Login" });
   };
 
   if (initialLoading) {

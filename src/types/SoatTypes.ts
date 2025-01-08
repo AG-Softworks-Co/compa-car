@@ -1,24 +1,14 @@
 export interface SoatFormData {
     // Información del documento
-    documentNumber: string; // Número de póliza SOAT
+    policyNumber: string; // Número de póliza SOAT
     expeditionDate: string;
     expiryDate: string;
-    expeditionCity: string;
+
   
     // Información de la aseguradora
     insuranceCompany: string;
-    policyNumber: string;
-  
-    // Información de cobertura
-    coverageType: 'basic' | 'full';
-    totalCoverage: string; // Valor total de la cobertura
-    
-    // Coberturas específicas
-    deathCoverage: string; // Muerte y gastos funerarios
-    medicalCoverage: string; // Gastos médicos
-    disabilityCoverage: string; // Incapacidad permanente
-    transportCoverage: string; // Gastos de transporte
-  
+    identificationNumber: string; // numero de cedula del usuario
+
     // Archivos del documento
     frontFile?: File;
     backFile?: File;
@@ -37,15 +27,3 @@ export interface SoatFormData {
     { value: 'previsora', label: 'Previsora Seguros' },
   ] as const;
   
-  export const COVERAGE_TYPES = [
-    { 
-      value: 'basic', 
-      label: 'Cobertura Básica',
-      description: 'Cobertura mínima requerida por ley'
-    },
-    { 
-      value: 'full', 
-      label: 'Cobertura Total',
-      description: 'Cobertura ampliada con beneficios adicionales'
-    }
-  ] as const;

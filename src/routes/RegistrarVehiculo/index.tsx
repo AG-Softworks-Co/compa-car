@@ -5,7 +5,9 @@ import {
   ArrowLeft, 
   Camera, 
   AlertCircle,
-  Edit2
+   FileText,
+    Calendar,
+     Shield,
 } from 'lucide-react';
 import {
   Container,
@@ -22,6 +24,7 @@ import {
 import styles from './index.module.css';
 
 interface VehicleFormData {
+  id?: number;
   user_id: number;
   brand: string;
   model: string;
@@ -140,8 +143,10 @@ const VehicleRegistration: React.FC = () => {
             ...prev,
             ...vehicle,
             photoUrl: vehicle.photo || null,
-            year: vehicle.year?.toString() || ''
+            year: vehicle.year?.toString() || '',
+            id: vehicle.id
           }));
+          setViewMode(false);
         } else {
           console.log('No se encontraron vehículos para este usuario');
           setHasVehicle(false);
@@ -150,7 +155,7 @@ const VehicleRegistration: React.FC = () => {
       } catch (error) {
         console.error('Error durante la carga de datos:', error);
         setError("Error al cargar la información del vehículo");
-        setViewMode(false);
+       setViewMode(false);
       } finally {
         setInitialLoading(false);
       }
@@ -218,7 +223,7 @@ const VehicleRegistration: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = async () => {
+ const handleSubmit = async () => {
     if (!validateForm()) {
       setError("Por favor, complete todos los campos requeridos correctamente");
       return;
@@ -235,22 +240,27 @@ const VehicleRegistration: React.FC = () => {
       }
 
       const formDataToSend = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (key !== 'photoUrl' && value !== null) {
-          formDataToSend.append(key, value.toString());
-        }
-      });
+         Object.entries(formData).forEach(([key, value]) => {
+          if (key !== 'photoUrl' && value !== null) {
+              formDataToSend.append(key, String(value).trim());
+          }
+       });
 
       if (formData.photo) {
         formDataToSend.append('photo', formData.photo);
       }
 
       console.log('Enviando datos al servidor:', Object.fromEntries(formDataToSend));
+        const method = hasVehicle ? 'PUT' : 'POST';
+      const url = hasVehicle
+          ? `${BASE_URL}/vehicles/${formData.id}`
+          : `${BASE_URL}/vehicles`;
 
-      const method = hasVehicle ? 'PUT' : 'POST';
       console.log('Método HTTP:', method);
+      console.log('URL de la petición:', url);
 
-      const response = await fetch(`${BASE_URL}/vehicles`, {
+
+      const response = await fetch(url, {
         method,
         headers: {
           'x-token': token
@@ -278,9 +288,6 @@ const VehicleRegistration: React.FC = () => {
     navigate({ to: '/perfil' });
   };
 
-  const toggleEditMode = () => {
-    setViewMode(!viewMode);
-  };
 
   if (initialLoading) {
     return (
@@ -292,6 +299,7 @@ const VehicleRegistration: React.FC = () => {
 
   return (
     <Container className={styles.container}>
+         <div className={styles.gradientBackground} />
       <LoadingOverlay visible={loading} />
 
       <Group justify="flex-start" mb="xl">
@@ -306,28 +314,22 @@ const VehicleRegistration: React.FC = () => {
             <Text className={styles.title}>
               {hasVehicle ? 'Información del Vehículo' : 'Registrar Vehículo'}
             </Text>
-            {hasVehicle && (
-              <Button
-                variant="subtle"
-                onClick={toggleEditMode}
-                leftSection={<Edit2 size={16} />}
-              >
-                {viewMode ? 'Editar' : 'Cancelar Edición'}
-              </Button>
-            )}
           </Group>
           <Text className={styles.subtitle}>
             {hasVehicle 
-              ? viewMode 
-                ? 'Detalles de tu vehículo registrado'
-                : 'Actualiza la información de tu vehículo'
+                ?  'Actualiza la información de tu vehículo'
               : 'Ingresa los datos de tu vehículo'
             }
           </Text>
         </Box>
 
-        <form className={styles.form}>
-          <div className={styles.photoSection}>
+        <form onSubmit={handleSubmit} className={styles.form}>
+         <div className={styles.formGroup}>
+                <label className={styles.label}>
+                 <Camera size={16} className={styles.labelIcon} />
+                 Foto del vehículo
+              </label>
+            <div className={styles.photoSection}>
             <input
               type="file"
               accept="image/*"
@@ -366,108 +368,137 @@ const VehicleRegistration: React.FC = () => {
                 {errors.photo}
               </Text>
             )}
+           </div>
           </div>
-
-          <Group grow>
-            <TextInput
-              label="Marca"
+         
+           <div className={styles.formGroup}>
+              <label className={styles.label}>
+                 <FileText size={16} className={styles.labelIcon} />
+                  Marca
+                </label>
+             <TextInput
               placeholder="ej. Toyota"
               value={formData.brand}
-              onChange={(e) => handleInputChange('brand', e.currentTarget.value)}
-              error={errors.brand}
-              required
-              disabled={viewMode}
-            />
+                onChange={(e) => handleInputChange('brand', e.currentTarget.value)}
+                 error={errors.brand}
+                disabled={viewMode}
+                 />
+          </div>
+              
+         <div className={styles.formGroup}>
+              <label className={styles.label}>
+                <FileText size={16} className={styles.labelIcon} />
+                  Modelo
+                </label>
+              <TextInput
+                 placeholder="ej. Corolla"
+                 value={formData.model}
+                 onChange={(e) => handleInputChange('model', e.currentTarget.value)}
+                error={errors.model}
+                 disabled={viewMode}
+              />
+          </div>
 
-            <TextInput
-              label="Modelo"
-              placeholder="ej. Corolla"
-              value={formData.model}
-              onChange={(e) => handleInputChange('model', e.currentTarget.value)}
-              error={errors.model}
-              required
-              disabled={viewMode}
-            />
-          </Group>
-
-          <Group grow>
-            <Select
-              label="Año"
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+               <Calendar size={16} className={styles.labelIcon} />
+                  Año
+             </label>
+              <Select
               placeholder="Seleccione año"
-              data={YEARS}
-              value={formData.year}
-              onChange={(value) => handleInputChange('year', value || '')}
+                data={YEARS}
+                value={formData.year}
+                onChange={(value) => handleInputChange('year', value || '')}
               error={errors.year}
-              required
               disabled={viewMode}
             />
-
-            <Select
-              label="Color"
-              placeholder="Seleccione color"
-              data={COLORS}
+          </div>
+          
+           <div className={styles.formGroup}>
+            <label className={styles.label}>
+                 <Shield size={16} className={styles.labelIcon} />
+                Color
+             </label>
+           <Select
+             placeholder="Seleccione color"
+             data={COLORS}
               value={formData.color}
-              onChange={(value) => handleInputChange('color', value || '')}
-              error={errors.color}
-              required
-              disabled={viewMode}
-            />
-          </Group>
+                onChange={(value) => handleInputChange('color', value || '')}
+                 error={errors.color}
+                  disabled={viewMode}
+               />
+          </div>
 
-          <Group grow>
-            <TextInput
-              label="Placa"
-              placeholder="ABC123"
-              value={formData.plate}
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <FileText size={16} className={styles.labelIcon} />
+                Placa
+              </label>
+                <TextInput
+                placeholder="ABC123"
+                value={formData.plate}
               onChange={(e) => handleInputChange('plate', e.currentTarget.value.toUpperCase())}
-              error={errors.plate}
-              required
-              disabled={viewMode}
-            />
+                error={errors.plate}
+                disabled={viewMode}
+              />
+           </div>
 
-            <Select
-              label="Tipo de Vehículo"
-              placeholder="Seleccione tipo"
-              data={BODY_TYPES}
-              value={formData.body_type}
-              onChange={(value) => handleInputChange('body_type', value || '')}
-              error={errors.body_type}
-              required
-              disabled={viewMode}
-            />
-          </Group>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+                <FileText size={16} className={styles.labelIcon} />
+                 Tipo de Vehículo
+              </label>
+             <Select
+                placeholder="Seleccione tipo"
+                data={BODY_TYPES}
+               value={formData.body_type}
+                 onChange={(value) => handleInputChange('body_type', value || '')}
+                  error={errors.body_type}
+                   disabled={viewMode}
+                />
+            </div>
 
-          <Group grow>
-            <TextInput
-              label="Número de Motor"
-              placeholder="Ingrese número de motor"
-              value={formData.engine_number}
-              onChange={(e) => handleInputChange('engine_number', e.currentTarget.value)}
-              error={errors.engine_number}
-              required
-              disabled={viewMode}
-            />
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <FileText size={16} className={styles.labelIcon} />
+                Número de Motor
+              </label>
+                 <TextInput
+                   placeholder="Ingrese número de motor"
+                    value={formData.engine_number}
+                 onChange={(e) => handleInputChange('engine_number', e.currentTarget.value)}
+                   error={errors.engine_number}
+                    disabled={viewMode}
+                  />
+           </div>
 
-            <TextInput
-              label="Número de Chasis"
-              placeholder="Ingrese número de chasis"
-              value={formData.chassis_number}
-              onChange={(e) => handleInputChange('chassis_number', e.currentTarget.value)}
-              error={errors.chassis_number}
-              required
-              disabled={viewMode}
-            />
-          </Group>
+          <div className={styles.formGroup}>
+              <label className={styles.label}>
+                  <FileText size={16} className={styles.labelIcon} />
+                 Número de Chasis
+             </label>
+                <TextInput
+                 placeholder="Ingrese número de chasis"
+                   value={formData.chassis_number}
+                   onChange={(e) => handleInputChange('chassis_number', e.currentTarget.value)}
+                   error={errors.chassis_number}
+                    disabled={viewMode}
+                   />
+          </div>
 
-          <TextInput
-            label="Número VIN"
-            placeholder="Ingrese número VIN"
-            value={formData.vin_number}
-            onChange={(e) => handleInputChange('vin_number', e.currentTarget.value)}
-            error={errors.vin_number}
-            required
-            disabled={viewMode}
-          />
+           <div className={styles.formGroup}>
+             <label className={styles.label}>
+                 <FileText size={16} className={styles.labelIcon} />
+                 Número VIN
+              </label>
+                 <TextInput
+                   placeholder="Ingrese número VIN"
+                     value={formData.vin_number}
+                   onChange={(e) => handleInputChange('vin_number', e.currentTarget.value)}
+                     error={errors.vin_number}
+                     disabled={viewMode}
+                  />
+            </div>
 
           {error && (
             <Text color="red" size="sm" mt="md" className={styles.errorMessage}>
@@ -476,7 +507,7 @@ const VehicleRegistration: React.FC = () => {
             </Text>
           )}
 
-          <Group justify="space-between" mt="xl">
+          <Group justify="space-between" mt="xl" className={styles.buttonGroup}>
             <Button
               variant="outline"
               onClick={handleBack}
