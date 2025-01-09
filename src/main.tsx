@@ -14,7 +14,7 @@ import ReservarView from "./routes/publicarviaje/index";
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyCwGFfr4Bf2z_HqmGIZzG5WoIrXAJbTZis';
+const GOOGLE_MAPS_API_KEY = 'AIzaSyCiXiv2UuIRHulkJtv-tUoEboxWGhnoiys';
 
 // Create a new router instance
 const router = createRouter({ routeTree });

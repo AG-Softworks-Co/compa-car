@@ -34,6 +34,7 @@ import { Route as DateSelectedIndexImport } from './routes/DateSelected/index'
 import { Route as CuponesIndexImport } from './routes/Cupones/index'
 import { Route as ConfirmarCupoIndexImport } from './routes/ConfirmarCupo/index'
 import { Route as CompletarRegistroIndexImport } from './routes/CompletarRegistro/index'
+import { Route as ReservasTripReservationModalImport } from './routes/Reservas/TripReservationModal'
 import { Route as RegistrarVehiculoSoatImport } from './routes/RegistrarVehiculo/Soat'
 import { Route as RegistrarVehiculoPropertyCardImport } from './routes/RegistrarVehiculo/PropertyCard'
 import { Route as RegistrarVehiculoLicenseImport } from './routes/RegistrarVehiculo/License'
@@ -156,6 +157,12 @@ const CompletarRegistroIndexRoute = CompletarRegistroIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const ReservasTripReservationModalRoute =
+  ReservasTripReservationModalImport.update({
+    path: '/Reservas/TripReservationModal',
+    getParentRoute: () => rootRoute,
+  } as any)
+
 const RegistrarVehiculoSoatRoute = RegistrarVehiculoSoatImport.update({
   path: '/RegistrarVehiculo/Soat',
   getParentRoute: () => rootRoute,
@@ -228,6 +235,13 @@ declare module '@tanstack/react-router' {
       path: '/RegistrarVehiculo/Soat'
       fullPath: '/RegistrarVehiculo/Soat'
       preLoaderRoute: typeof RegistrarVehiculoSoatImport
+      parentRoute: typeof rootRoute
+    }
+    '/Reservas/TripReservationModal': {
+      id: '/Reservas/TripReservationModal'
+      path: '/Reservas/TripReservationModal'
+      fullPath: '/Reservas/TripReservationModal'
+      preLoaderRoute: typeof ReservasTripReservationModalImport
       parentRoute: typeof rootRoute
     }
     '/CompletarRegistro/': {
@@ -389,6 +403,7 @@ export interface FileRoutesByFullPath {
   '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
   '/RegistrarVehiculo/PropertyCard': typeof RegistrarVehiculoPropertyCardRoute
   '/RegistrarVehiculo/Soat': typeof RegistrarVehiculoSoatRoute
+  '/Reservas/TripReservationModal': typeof ReservasTripReservationModalRoute
   '/CompletarRegistro': typeof CompletarRegistroIndexRoute
   '/ConfirmarCupo': typeof ConfirmarCupoIndexRoute
   '/Cupones': typeof CuponesIndexRoute
@@ -419,6 +434,7 @@ export interface FileRoutesByTo {
   '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
   '/RegistrarVehiculo/PropertyCard': typeof RegistrarVehiculoPropertyCardRoute
   '/RegistrarVehiculo/Soat': typeof RegistrarVehiculoSoatRoute
+  '/Reservas/TripReservationModal': typeof ReservasTripReservationModalRoute
   '/CompletarRegistro': typeof CompletarRegistroIndexRoute
   '/ConfirmarCupo': typeof ConfirmarCupoIndexRoute
   '/Cupones': typeof CuponesIndexRoute
@@ -450,6 +466,7 @@ export interface FileRoutesById {
   '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
   '/RegistrarVehiculo/PropertyCard': typeof RegistrarVehiculoPropertyCardRoute
   '/RegistrarVehiculo/Soat': typeof RegistrarVehiculoSoatRoute
+  '/Reservas/TripReservationModal': typeof ReservasTripReservationModalRoute
   '/CompletarRegistro/': typeof CompletarRegistroIndexRoute
   '/ConfirmarCupo/': typeof ConfirmarCupoIndexRoute
   '/Cupones/': typeof CuponesIndexRoute
@@ -482,6 +499,7 @@ export interface FileRouteTypes {
     | '/RegistrarVehiculo/License'
     | '/RegistrarVehiculo/PropertyCard'
     | '/RegistrarVehiculo/Soat'
+    | '/Reservas/TripReservationModal'
     | '/CompletarRegistro'
     | '/ConfirmarCupo'
     | '/Cupones'
@@ -511,6 +529,7 @@ export interface FileRouteTypes {
     | '/RegistrarVehiculo/License'
     | '/RegistrarVehiculo/PropertyCard'
     | '/RegistrarVehiculo/Soat'
+    | '/Reservas/TripReservationModal'
     | '/CompletarRegistro'
     | '/ConfirmarCupo'
     | '/Cupones'
@@ -540,6 +559,7 @@ export interface FileRouteTypes {
     | '/RegistrarVehiculo/License'
     | '/RegistrarVehiculo/PropertyCard'
     | '/RegistrarVehiculo/Soat'
+    | '/Reservas/TripReservationModal'
     | '/CompletarRegistro/'
     | '/ConfirmarCupo/'
     | '/Cupones/'
@@ -571,6 +591,7 @@ export interface RootRouteChildren {
   RegistrarVehiculoLicenseRoute: typeof RegistrarVehiculoLicenseRoute
   RegistrarVehiculoPropertyCardRoute: typeof RegistrarVehiculoPropertyCardRoute
   RegistrarVehiculoSoatRoute: typeof RegistrarVehiculoSoatRoute
+  ReservasTripReservationModalRoute: typeof ReservasTripReservationModalRoute
   CompletarRegistroIndexRoute: typeof CompletarRegistroIndexRoute
   ConfirmarCupoIndexRoute: typeof ConfirmarCupoIndexRoute
   CuponesIndexRoute: typeof CuponesIndexRoute
@@ -602,6 +623,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegistrarVehiculoLicenseRoute: RegistrarVehiculoLicenseRoute,
   RegistrarVehiculoPropertyCardRoute: RegistrarVehiculoPropertyCardRoute,
   RegistrarVehiculoSoatRoute: RegistrarVehiculoSoatRoute,
+  ReservasTripReservationModalRoute: ReservasTripReservationModalRoute,
   CompletarRegistroIndexRoute: CompletarRegistroIndexRoute,
   ConfirmarCupoIndexRoute: ConfirmarCupoIndexRoute,
   CuponesIndexRoute: CuponesIndexRoute,
@@ -643,6 +665,7 @@ export const routeTree = rootRoute
         "/RegistrarVehiculo/License",
         "/RegistrarVehiculo/PropertyCard",
         "/RegistrarVehiculo/Soat",
+        "/Reservas/TripReservationModal",
         "/CompletarRegistro/",
         "/ConfirmarCupo/",
         "/Cupones/",
@@ -683,6 +706,9 @@ export const routeTree = rootRoute
     },
     "/RegistrarVehiculo/Soat": {
       "filePath": "RegistrarVehiculo/Soat.tsx"
+    },
+    "/Reservas/TripReservationModal": {
+      "filePath": "Reservas/TripReservationModal.tsx"
     },
     "/CompletarRegistro/": {
       "filePath": "CompletarRegistro/index.tsx"
