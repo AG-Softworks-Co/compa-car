@@ -8,37 +8,37 @@ export interface Coordinates {
   
   export interface TripLocation {
       location_id: number;
-    placeId: string;
-    address: string;
-    coords: Coordinates;
-    mainText: string;
-    secondaryText: string;
-    postalCode?: string; // Código postal opcional
+      placeId: string;
+      address: string;
+      coords: Coordinates;
+      mainText: string;
+      secondaryText: string;
+      postalCode?: string; // Código postal opcional
   }
   
   export interface StopData {
-    location_id: number;
+      location_id: number;
       placeId: string;
       address: string;
       coords: Coordinates;
       mainText: string;
       secondaryText: string;
       postalCode?: string;
-       distance?: string; // Added distance
+      distance?: string; // Added distance
       duration?: string;   // Added duration
   }
   
   export interface TripRoute {
-    route_id: number;
-    index: number;
-    distance: string;
-    duration: string;
-    summary: string;
-    startAddress: string;
-    endAddress: string;
-    bounds: google.maps.LatLngBounds;
-    polyline: string;
-    warnings?: string[];
+      route_id: number;
+      index: number;
+      distance: string;
+      duration: string;
+      summary: string;
+      startAddress: string;
+      endAddress: string;
+      bounds: google.maps.LatLngBounds;
+      polyline: string;
+      warnings?: string[];
   }
   
   export interface TripStopover {
@@ -144,7 +144,10 @@ export interface Coordinates {
     // Establecer origen
     setOrigin(location: TripLocation): void {
         this.updateData({
-            origin: location,
+            origin: {
+              ...location,
+              location_id: 0,
+            },
             currentStep: 'destination'
         });
     },
@@ -152,7 +155,10 @@ export interface Coordinates {
     // Establecer destino
     setDestination(location: TripLocation): void {
         this.updateData({
-            destination: location,
+            destination: {
+              ...location,
+              location_id: 0
+            },
             currentStep: 'routes'
         });
     },
@@ -163,7 +169,10 @@ export interface Coordinates {
     setRoutes(routes: TripRoute[], selectedRoute: TripRoute): void {
         this.updateData({
             routes,
-            selectedRoute,
+             selectedRoute: {
+               ...selectedRoute,
+              route_id: 0
+             },
             currentStep: 'stopovers'
         });
     },

@@ -597,7 +597,7 @@ function DetallesViajeView() {
             setShowSuccessModal(true);
 
              setTimeout(() => {
-                navigate({ to: '/ViajesPublicados' });
+                navigate({ to: '/Actividades' });
             }, 2000);
         } catch (error:any) {
             console.error("Error durante el proceso de publicación del viaje", error.message);

@@ -38,3 +38,4 @@ export interface TripData {
     status?: string;
     createdAt?: string
 }
+

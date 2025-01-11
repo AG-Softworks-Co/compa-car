@@ -1,0 +1,177 @@
+.tripCard {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 255, 157, 0.1);
+    border-radius: 24px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .tripCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(0, 255, 157, 0.3),
+      transparent
+    );
+  }
+  
+  .tripCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 255, 157, 0.15);
+    border-color: rgba(0, 255, 157, 0.2);
+  }
+  
+  .tripTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: rgba(0, 255, 157, 0.9);
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.5px;
+  }
+  
+  .tripText {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 1rem;
+    line-height: 1.4;
+  }
+  
+  .tripBadge {
+    background: rgba(0, 255, 157, 0.1) !important;
+    border: 1px solid rgba(0, 255, 157, 0.2) !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 12px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
+    font-size: 0.8rem !important;
+  }
+  
+  .tripBadge[data-active="true"] {
+    background: linear-gradient(135deg, rgba(0, 255, 157, 0.2), rgba(0, 204, 122, 0.2)) !important;
+    border-color: rgba(0, 255, 157, 0.3) !important;
+  }
+  
+  .tripInfoGroup {
+    margin: 1.5rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+  
+  .tripInfoGroup badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 12px !important;
+    transition: all 0.3s ease;
+  }
+  
+  .tripInfoGroup badge:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    transform: translateY(-2px);
+  }
+  
+  .tripSummary {
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.6;
+    margin: 1rem 0;
+    padding: 0.5rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .tripActions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .tripActions button {
+    flex: 1;
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    padding: 0.8rem 1.5rem !important;
+    border-radius: 12px !important;
+    transition: all 0.3s ease !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    font-weight: 500 !important;
+  }
+  
+  .tripActions button:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(0, 255, 157, 0.3) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0, 255, 157, 0.1) !important;
+  }
+  
+  .tripActions button:active {
+    transform: translateY(0) !important;
+  }
+  
+  /* Edit button specific styles */
+  .tripActions button:first-child:hover {
+    border-color: rgba(66, 153, 225, 0.5) !important;
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.1) !important;
+  }
+  
+  /* Delete button specific styles */
+  .tripActions button:last-child:hover {
+    border-color: rgba(245, 101, 101, 0.5) !important;
+    box-shadow: 0 4px 12px rgba(245, 101, 101, 0.1) !important;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .tripCard {
+      padding: 1rem;
+    }
+  
+    .tripInfoGroup {
+      gap: 0.5rem;
+    }
+  
+    .tripInfoGroup badge {
+      padding: 0.4rem 0.8rem !important;
+      font-size: 0.75rem !important;
+    }
+  
+    .tripActions {
+      flex-direction: column;
+    }
+  
+    .tripActions button {
+      width: 100%;
+    }
+  }
+  
+  /* Animation for new cards */
+  @keyframes cardEntrance {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .tripCard {
+    animation: cardEntrance 0.5s ease-out;
+  }

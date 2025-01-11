@@ -374,7 +374,7 @@ const ConfirmarCupoView = () => {
           variant="outline"
           fullWidth
           mt="xl"
-          onClick={() => navigate({ to: '/ViajesPublicados' })}
+          onClick={() => navigate({ to: '/Actividades' })}
           className={styles.viewTripsButton}
         >
           Ver Mis Viajes

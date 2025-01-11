@@ -1,4 +1,4 @@
-import  { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { createFileRoute, Link, useSearch, useNavigate } from '@tanstack/react-router';
 import {
   Container,
@@ -123,6 +123,11 @@ function ReservarView({ isLoaded }: ReservarViewProps){
 
   // Función para calcular rutas con manejo de marcadores
   const calculateRoute = useCallback(async () => {
+      
+    const generateUniqueId = (): number => {
+      return Math.floor(Math.random() * 1000000);
+    };
+
     if (!selectedAddress || !selectedDestination) {
       setError('Se requieren ambas direcciones');
       return;
@@ -146,6 +151,7 @@ function ReservarView({ isLoaded }: ReservarViewProps){
       }
 
       const originLocation: TripLocation = {
+        location_id: generateUniqueId(), // ID unico generado
         placeId: origin.place_id,
         address: selectedAddress,
         coords: {
@@ -157,6 +163,7 @@ function ReservarView({ isLoaded }: ReservarViewProps){
       };
 
       const destinationLocation: TripLocation = {
+        location_id: generateUniqueId(), // ID unico generado
         placeId: destination.place_id,
         address: selectedDestination,
         coords: {
@@ -228,8 +235,9 @@ const destinationLng = destinationLocation.coords.lng;
           }
         });
       });
-
-      const processedRoutes: TripRoute[] = result.routes.map((route, index) => ({
+    
+        const processedRoutes: TripRoute[] = result.routes.map((route, index) => ({
+        route_id: generateUniqueId(),  // Agregar el route_id generado
         index,
         distance: route.legs[0].distance?.text || '',
         duration: route.legs[0].duration?.text || '',
