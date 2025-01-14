@@ -2,7 +2,7 @@ import React from 'react';
 import TripCard from './TripCard';
 import { Stack, Text } from '@mantine/core';
 import styles from './index.module.css';
-import { Trip } from './Actividades';
+import { Trip } from './Actividades.tsx';
 
 interface TripListProps {
   trips: Trip[];

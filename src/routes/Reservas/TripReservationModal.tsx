@@ -1,17 +1,17 @@
-// TripReservationModal.tsx (Corrected)
 import React from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import {
-    Card,
-    Group,
-    Stack,
-    Text,
-    Badge,
-    Modal,
-    NumberInput,
-    Textarea,
-    Divider,
-    Button
+  Card,
+  Group,
+  Stack,
+  Text,
+  Badge,
+  Modal,
+  NumberInput,
+  Textarea,
+  Divider,
+  Button,
+  Center,
 } from '@mantine/core';
 import { Clock, Navigation, User, Check } from 'lucide-react';
 import { saveToLocalStorage, getFromLocalStorage } from '../../types/PublicarViaje/localStorageHelper';
@@ -20,8 +20,8 @@ import styles from './index.module.css';
 
 interface Trip {
   id: string;
-  origin: { address: string, secondaryText:string };
-  destination: { address: string, secondaryText:string };
+  origin: { address: string; secondaryText: string };
+  destination: { address: string; secondaryText: string };
   dateTime: string;
   seats: number;
   pricePerSeat: number;
@@ -61,13 +61,13 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
       totalPrice: passengersCount * trip.pricePerSeat,
       comment,
       status: 'pending',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     const existingReservations = getFromLocalStorage<ReservationData[]>('tripReservations') || [];
     saveToLocalStorage('tripReservations', [...existingReservations, reservation]);
     saveToLocalStorage('currentReservation', reservation);
-    
+
     setShowConfirmation(true);
     setTimeout(() => {
       setShowConfirmation(false);
@@ -77,8 +77,8 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
 
   return (
     <>
-      <Modal 
-        opened={isOpen && !showConfirmation} 
+      <Modal
+        opened={isOpen && !showConfirmation}
         onClose={onClose}
         title="Reservar Viaje"
         size="lg"
@@ -86,7 +86,8 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
         closeOnClickOutside={false}
       >
         <Stack gap="xl">
-          <Card className={styles.tripSummary}>
+           <Center>
+              <Card className={styles.tripSummary} shadow="sm" withBorder >
             <Group gap="apart">
               <Text fw={500} size="lg">
                 {dayjs(trip.dateTime).format('DD MMM YYYY, hh:mm A')}
@@ -97,10 +98,14 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
             </Group>
 
             <div className={styles.routeInfo}>
-              <Text c="dimmed" size="sm">Origen</Text>
+              <Text c="dimmed" size="sm">
+                Origen
+              </Text>
               <Text fw={500}>{trip.origin.address}</Text>
               <div className={styles.routeDivider} />
-              <Text c="dimmed" size="sm">Destino</Text>
+              <Text c="dimmed" size="sm">
+                Destino
+              </Text>
               <Text fw={500}>{trip.destination.address}</Text>
             </div>
 
@@ -117,14 +122,15 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
             </Group>
 
             <Group mt="md">
-              <Badge color={trip.allowPets ? "green" : "red"} variant="light">
-                {trip.allowPets ? "Mascotas permitidas" : "No mascotas"}
+              <Badge color={trip.allowPets ? 'green' : 'red'} variant="light">
+                {trip.allowPets ? 'Mascotas permitidas' : 'No mascotas'}
               </Badge>
-              <Badge color={trip.allowSmoking ? "green" : "red"} variant="light">
-                {trip.allowSmoking ? "Fumar permitido" : "No fumar"}
+              <Badge color={trip.allowSmoking ? 'green' : 'red'} variant="light">
+                {trip.allowSmoking ? 'Fumar permitido' : 'No fumar'}
               </Badge>
             </Group>
           </Card>
+           </Center>
 
           <NumberInput
             label="Número de asientos"
@@ -134,10 +140,14 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
             min={1}
             max={trip.seats}
             required
-            error={passengersCount > trip.seats ? "No hay suficientes asientos disponibles" : null}
+            error={
+              passengersCount > trip.seats
+                ? 'No hay suficientes asientos disponibles'
+                : null
+            }
           />
 
-          <Card className={styles.priceCard}>
+          <Card className={styles.priceCard} shadow="sm" withBorder>
             <Group gap="apart">
               <Text>Precio por asiento</Text>
               <Text>${trip.pricePerSeat.toLocaleString()}</Text>
@@ -200,5 +210,5 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
 };
 
 export const Route = createFileRoute('/Reservas/TripReservationModal')({
-  component: TripReservationModal
+  component: TripReservationModal,
 });
