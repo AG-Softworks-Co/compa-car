@@ -25,6 +25,8 @@ interface PassengerData {
     fullName: string;
     identification: string;
     seatNumber: number;
+       booking_qr?:string,
+       passenger_id?:number
 }
 
 interface TripData {
@@ -269,16 +271,18 @@ const ConfirmarCupoView = () => {
             const bookingData = await fetchBooking(parseInt(userId), token);
             if (bookingData) {
                 setPaymentId(bookingData.booking_id);
+                 let updatedPassengers: PassengerData[] = [];
                 // Loop through each passenger and make a separate request
                 for (const passenger of passengers) {
-                   const passengerData =  {
-                       booking_id: bookingData.booking_id,
-                           full_name: passenger.fullName,
-                            identification_number: passenger.identification,
-                            booking_qr: '123',
-                            payment_id: bookingData.booking_id,
+                   const bookingQr = `${passenger.fullName}+${passenger.identification}+${bookingData.booking_id}+${Date.now()}`;
+                    const passengerData = {
+                        booking_id: bookingData.booking_id,
+                        full_name: passenger.fullName,
+                        identification_number: passenger.identification,
+                        booking_qr: bookingQr, // Generate QR here
+                        payment_id: bookingData.booking_id,
                     };
-                  console.log('Data to send in /api/passengers:', passengerData);
+                    console.log('Data to send in /api/passengers:', passengerData);
 
                     const passengersResponse = await fetch('https://rest-sorella-production.up.railway.app/api/passengers', {
                         method: 'POST',
@@ -294,14 +298,28 @@ const ConfirmarCupoView = () => {
                         console.error('passengers Response Error:', errorText);
                         throw new Error(`HTTP error! status: ${passengersResponse.status}`);
                     }
-                   const passengersDataResponse = await passengersResponse.json();
-                   console.log('Response data from /api/passengers:', passengersDataResponse);
+                      const passengersDataResponse = await passengersResponse.json();
+                     console.log('Response data from /api/passengers:', passengersDataResponse);
+
+                     if(passengersDataResponse.data){
+                            const  passengerId = passengersDataResponse.data.passenger_id;
+                             updatedPassengers = [
+                                    ...updatedPassengers,
+                                    { ...passenger, booking_qr: bookingQr, passenger_id: passengerId },
+                                ]
+                         }else{
+                                updatedPassengers = [
+                                    ...updatedPassengers,
+                                    { ...passenger, booking_qr: ``, passenger_id: 0 },
+                                ]
+                            }
                 }
                 if (trip) {
                     await updateTripSeats(parseInt(trip.id), passengers.length, token);
                 }
-              saveToLocalStorage('passengers', passengers);
-                setCurrentStep('qr');
+                setPassengers(updatedPassengers);
+              saveToLocalStorage('passengers', updatedPassengers);
+              setCurrentStep('qr');
             }
         } catch (error) {
             console.error('Error creating passengers:', error);
