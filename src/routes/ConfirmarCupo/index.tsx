@@ -143,23 +143,22 @@ const ConfirmarCupoView = () => {
     const [reservation, setReservation] = useState<ReservationData | null>(null);
     const [trip, setTrip] = useState<TripData | null>(null);
     const [errors, setErrors] = useState<{[key: string]: string}>({});
-     const [paymentId, setPaymentId] = useState<number | null>(null);
-      const [isLoading, setIsLoading] = useState(false);
+     const [isLoading, setIsLoading] = useState(false);
 
-
-    useEffect(() => {
+     useEffect(() => {
         const loadedReservation = getFromLocalStorage<ReservationData>('currentReservation');
         const loadedTrip = getFromLocalStorage<TripData>('currentTrip');
+          console.log('ConfirmarCupoView: Loaded Reservation Data:', loadedReservation);
+         console.log('ConfirmarCupoView: Loaded Trip Data:', loadedTrip);
 
         if (!loadedReservation || !loadedTrip) {
-            navigate({ to: '/reservar' });
+           navigate({ to: '/reservar' });
+           console.log('ConfirmarCupoView: Redirecting to /reservar because reservation or trip data is missing');
             return;
         }
-
-        setReservation(loadedReservation);
+          setReservation(loadedReservation);
         setTrip(loadedTrip);
-        // Initialize passenger array based on count
-        setPassengers(Array(loadedReservation.passengersCount).fill(null).map((_, index) => ({
+       setPassengers(Array(loadedReservation.passengersCount).fill(null).map((_, index) => ({
             fullName: '',
             identification: '',
             seatNumber: index + 1
@@ -202,89 +201,62 @@ const ConfirmarCupoView = () => {
     };
 
 
-     const fetchBooking = async (userId:number, token: string) => {
-       try{
-           const bookingResponse = await fetch(`https://rest-sorella-production.up.railway.app/api/bookings/userid/${userId}`, {
-                method: 'GET',
-                 headers: {
-                 'Content-Type': 'application/json',
-                  'x-token': token,
-                 },
-              });
-                 console.log('Response from /api/bookings/userid:', bookingResponse);
-            if (!bookingResponse.ok) {
-                const errorText = await bookingResponse.text();
-                 console.error('bookings Response Error:', errorText);
-                  throw new Error(`HTTP error! status: ${bookingResponse.status}`);
-            }
-            const bookingDataResponse = await bookingResponse.json();
-             console.log('Response data from /api/bookings/userid:', bookingDataResponse);
-             if(bookingDataResponse.data && bookingDataResponse.data.length > 0){
-                return bookingDataResponse.data[0]
-            }else{
-                console.log("no se encontro una reserva para este usuario");
-                 return null
-            }
-        } catch (error) {
-               console.error('Error fetching  booking:', error);
-                throw error;
-        }
-     };
     const updateTripSeats = async (tripId: number, seatsToSubtract:number, token: string) => {
-         try {
-             if(trip){
+          try {
+               if (trip) {
                 const tripResponse = await fetch(`https://rest-sorella-production.up.railway.app/api/trips/${tripId}`, {
                     method: 'PUT',
-                        headers: {
+                    headers: {
                         'Content-Type': 'application/json',
-                            'x-token': token,
-                        },
+                        'x-token': token,
+                    },
                     body: JSON.stringify({
-                            "seats": trip.seats - seatsToSubtract
-                      })
-                  });
-                if (!tripResponse.ok) {
+                        "seats": trip.seats - seatsToSubtract
+                    })
+                });
+                 if (!tripResponse.ok) {
                     const errorText = await tripResponse.text();
-                     console.error('Update Trip Response Error:', errorText);
-                     throw new Error(`HTTP error! status: ${tripResponse.status}`);
+                    console.error('Update Trip Response Error:', errorText);
+                    throw new Error(`HTTP error! status: ${tripResponse.status}`);
                    }
-                   console.log('Response from /api/trips updated trip:', tripResponse);
-                   const tripDataResponse = await tripResponse.json();
-                  console.log('Response data from /api/trips updated trip:', tripDataResponse);
-              }
-      } catch (error) {
-            console.error('Error updating  trip:', error);
-            throw error;
-       }
-    };
+                console.log('Response from /api/trips updated trip:', tripResponse);
+                const tripDataResponse = await tripResponse.json();
+                console.log('Response data from /api/trips updated trip:', tripDataResponse);
+            }
+        } catch (error) {
+           console.error('Error updating  trip:', error);
+           throw error;
+        }
+     };
 
-     const handleSubmit = async () => {
-        if (!validateForm() || !reservation || !trip) return;
+
+    const handleSubmit = async () => {
+       if (!validateForm() || !reservation || !trip) return;
         const token = localStorage.getItem('token');
         const userId = localStorage.getItem('userId');
-        if (!token || !userId) {
-            console.error('No authentication token found in localStorage. Please log in.');
+
+        if (!token || !userId || !reservation.payment_id) {
+            console.error('No authentication token or userId found in localStorage, or payment_id is not found.');
             return;
         }
         setIsLoading(true);
+
         try {
-            const bookingData = await fetchBooking(parseInt(userId), token);
-            if (bookingData) {
-                setPaymentId(bookingData.booking_id);
-                 let updatedPassengers: PassengerData[] = [];
+             let updatedPassengers: PassengerData[] = [];
                 // Loop through each passenger and make a separate request
                 for (const passenger of passengers) {
-                   const bookingQr = `${passenger.fullName}+${passenger.identification}+${bookingData.booking_id}+${Date.now()}`;
-                    const passengerData = {
-                        booking_id: bookingData.booking_id,
-                        full_name: passenger.fullName,
+                   const bookingQr = `${passenger.fullName}+${passenger.identification}+${reservation.bookingId}+${Date.now()}`;
+                   const passengerData = {
+                      booking_id: reservation.bookingId,
+                       full_name: passenger.fullName,
                         identification_number: passenger.identification,
-                        booking_qr: bookingQr, // Generate QR here
-                        payment_id: bookingData.booking_id,
-                    };
-                    console.log('Data to send in /api/passengers:', passengerData);
+                       booking_qr: bookingQr, // Generate QR here
+                         payment_id: reservation.payment_id,
+                   };
 
-                    const passengersResponse = await fetch('https://rest-sorella-production.up.railway.app/api/passengers', {
+                   console.log('ConfirmarCupoView: Data to send in /api/passengers:', passengerData);
+
+                  const passengersResponse = await fetch('https://rest-sorella-production.up.railway.app/api/passengers', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -292,35 +264,32 @@ const ConfirmarCupoView = () => {
                         },
                         body: JSON.stringify(passengerData),
                     });
-                    console.log('Response from /api/passengers:', passengersResponse);
+                    console.log('ConfirmarCupoView: Response from /api/passengers:', passengersResponse);
                     if (!passengersResponse.ok) {
                         const errorText = await passengersResponse.text();
                         console.error('passengers Response Error:', errorText);
                         throw new Error(`HTTP error! status: ${passengersResponse.status}`);
                     }
-                      const passengersDataResponse = await passengersResponse.json();
-                     console.log('Response data from /api/passengers:', passengersDataResponse);
+                     const passengersDataResponse = await passengersResponse.json();
+                     console.log('ConfirmarCupoView: Response data from /api/passengers:', passengersDataResponse);
 
-                     if(passengersDataResponse.data){
-                            const  passengerId = passengersDataResponse.data.passenger_id;
-                             updatedPassengers = [
-                                    ...updatedPassengers,
-                                    { ...passenger, booking_qr: bookingQr, passenger_id: passengerId },
-                                ]
-                         }else{
-                                updatedPassengers = [
-                                    ...updatedPassengers,
-                                    { ...passenger, booking_qr: ``, passenger_id: 0 },
-                                ]
-                            }
+                    if(passengersDataResponse.data){
+                       const  passengerId = passengersDataResponse.data.passenger_id;
+                            updatedPassengers = [
+                                   ...updatedPassengers,
+                                 { ...passenger, booking_qr: bookingQr, passenger_id: passengerId },
+                            ]
+                      }else{
+                           updatedPassengers = [
+                                   ...updatedPassengers,
+                                 { ...passenger, booking_qr: ``, passenger_id: 0 },
+                            ]
+                       }
                 }
-                if (trip) {
-                    await updateTripSeats(parseInt(trip.id), passengers.length, token);
-                }
+
                 setPassengers(updatedPassengers);
-              saveToLocalStorage('passengers', updatedPassengers);
-              setCurrentStep('qr');
-            }
+                saveToLocalStorage('passengers', updatedPassengers);
+                 setCurrentStep('qr');
         } catch (error) {
             console.error('Error creating passengers:', error);
         } finally {
