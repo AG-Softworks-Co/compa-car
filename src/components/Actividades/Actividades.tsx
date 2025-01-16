@@ -1,3 +1,4 @@
+// Actividades.tsx
 import React, { useState, useEffect } from 'react';
 import { Container, Title, Text, LoadingOverlay, Button } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
@@ -7,6 +8,7 @@ import TripList from './TripList';
 import TripFilter from './TripFilter';
 import EditTripModal from './EditTripModal';
 import DeleteTripModal from './DeleteTripModal';
+import Cupos from '../../routes/Cupos'; // Import Cupos
 import styles from './index.module.css';
 
 export interface Trip {
@@ -75,11 +77,11 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
     const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
+
     const handleActivitySelect = (activity: string) => {
         console.log('Selected Activity:', activity);
         setSelectedActivity(activity);
     };
-
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -116,11 +118,9 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
             }
         };
 
-
         console.log('selectedActivity before fetchUserRole:', selectedActivity);
         fetchUserProfile();
     }, [userId, token]);
-
 
     useEffect(() => {
         const fetchTrips = async () => {
@@ -183,17 +183,18 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
                         allowSmoking: tripData.allow_smoking === 1,
                         is_active: tripData.status === 'active',
                         user_id: tripData.user_id,
-                        date_time: tripData.date_time,
+                         date_time: tripData.date_time,
                     }))
-                    .filter((trip: Trip) => {
-                        const userMatch = trip.user_id === userId;
-                        console.log(`Checking if user_id ${trip.user_id} matches userId ${userId}: ${userMatch}`);
+                     .filter((trip: Trip) => {
+                         const userMatch = trip.user_id === userId;
+                           console.log(`Checking if user_id ${trip.user_id} matches userId ${userId}: ${userMatch}`);
                         return userMatch;
                     })
-                    .map((trip: Trip) => {
-                        const isPast = dayjs(trip.date_time).isBefore(dayjs(), 'day');
-                        return { ...trip, is_active: isPast ? false : trip.is_active };
-                    });
+                     .map((trip: Trip) => {
+                         const isPast = dayjs(trip.date_time).isBefore(dayjs(), 'day');
+                         return { ...trip, is_active: isPast ? false : trip.is_active };
+                     });
+
 
                 setTrips(apiTrips);
                 setFilteredTrips(apiTrips);
@@ -209,8 +210,8 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
                 setLoading(false);
             }
         };
-        console.log('selectedActivity before trips fetch:', selectedActivity);
-        if (selectedActivity === "Viajes Publicados" && userProfile?.user_type === "DRIVER") {
+          console.log('selectedActivity before trips fetch:', selectedActivity);
+         if (selectedActivity === "Viajes Publicados" && userProfile?.user_type === "DRIVER") {
             console.log('fetching trips for drivers');
             fetchTrips();
         }
@@ -267,10 +268,10 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
                     'x-token': token, // Using the token from props
                 },
             });
-            console.log('Response status:', response.status);
+             console.log('Response status:', response.status);
             if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Error deleting trip:', errorData);
+                 const errorData = await response.json();
+                 console.error('Error deleting trip:', errorData);
                 showNotification({
                     title: 'Error al eliminar el viaje',
                     message: `Hubo un error al intentar eliminar el viaje. Detalle: ${errorData.msj || "Desconocido"}`,
@@ -293,7 +294,7 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
             });
         } catch (error: any) {
             console.error('Error deleting trip:', error.message);
-            showNotification({
+           showNotification({
                 title: 'Error al eliminar el viaje',
                 message:
                     'Hubo un error al intentar eliminar el viaje. Intenta de nuevo más tarde.',
@@ -353,7 +354,7 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
                 color: 'green',
             });
         } catch (error) {
-            console.error('Error updating trip:', error);
+             console.error('Error updating trip:', error);
             showNotification({
                 title: 'Error al editar el viaje',
                 message:
@@ -363,9 +364,9 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
         }
     };
 
-    const handleFilterChange = (value: string | null) => {
-        setFilterValue(value || '');
-    };
+     const handleFilterChange = (value: string | null) => {
+         setFilterValue(value || '');
+     };
 
     const handleStatusFilterChange = (value: string | null) => {
         setStatusFilter(value);
@@ -374,21 +375,19 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
     const handleDateFilterChange = (date: Date | null) => {
         setDateFilter(date);
     };
-
-    const handleEditedTripChange = (newEditedTrip: Trip) => {
+     const handleEditedTripChange = (newEditedTrip: Trip) => {
         setEditedTrip(newEditedTrip)
-    }
+     }
 
-    if (loading) {
+     if (loading) {
         return (
             <Container className={styles.container}>
                 <LoadingOverlay visible />
                 <Title className={styles.title}>Mis Actividades</Title>
-                <Text className={styles.noTripsText}>Cargando tus actividades...</Text>
+                 <Text className={styles.noTripsText}>Cargando tus actividades...</Text>
             </Container>
         );
     }
-
 
     return (
         <Container className={styles.container}>
@@ -398,8 +397,8 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
                         ? <>Tus viajes, <span className={styles.userName}>{userProfile?.first_name || 'Cliente'}</span></>
                         : 'Mis Actividades'}
                 </Title>
-                {userProfile && (
-                    <RolSelector userId={userId} token={token} onSelect={handleActivitySelect} role={userProfile?.user_type ?? null} />
+                 {userProfile && (
+                     <RolSelector userId={userId} token={token} onSelect={handleActivitySelect} role={userProfile?.user_type ?? null} />
                 )}
             </div>
 
@@ -411,29 +410,22 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
                         onFilterChange={handleFilterChange}
                         statusFilter={statusFilter}
                         onStatusFilterChange={handleStatusFilterChange}
-                        dateFilter={dateFilter}
+                         dateFilter={dateFilter}
                         onDateFilterChange={handleDateFilterChange}
                     />
-                    <TripList
+                     <TripList
                         trips={filteredTrips}
                         onEdit={handleEdit}
-                        onDelete={(index) => {
+                       onDelete={(index) => {
                             setSelectedTripIndex(index);
                             setDeleteModalOpen(true);
                         }}
-                    />
-                </>
-            )}
+                     />
+               </>
+           )}
 
-            {selectedActivity === 'Cupos Creados' && userProfile?.user_type === "DRIVER" && (
-                <Text className={styles.noTripsText}>
-                    Aun no has creado un cupo.
-                </Text>
-            )}
-            {selectedActivity === 'Cupos Creados' && userProfile?.user_type === "PASSENGER" && (
-                <Text className={styles.noTripsText}>
-                    Aun no has comprado cupos.
-                </Text>
+            {selectedActivity === 'Cupos Creados' && (
+                <Cupos userId={userId} token={token} />
             )}
             {selectedActivity === 'Viajes Publicados' && userProfile?.user_type === "PASSENGER" && (
                 <Text className={styles.noTripsText}>
@@ -443,31 +435,30 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
             <EditTripModal
                 opened={editModalOpen}
                 onClose={() => setEditModalOpen(false)}
-                editedTrip={editedTrip}
-                onEditSubmit={handleEditSubmit}
-                onEditedTripChange={handleEditedTripChange}
+                 editedTrip={editedTrip}
+                 onEditSubmit={handleEditSubmit}
+                 onEditedTripChange={handleEditedTripChange}
+           />
+
+           <DeleteTripModal
+               opened={deleteModalOpen}
+               onClose={() => setDeleteModalOpen(false)}
+               onDelete={handleDelete}
             />
 
-            <DeleteTripModal
-                opened={deleteModalOpen}
-                onClose={() => setDeleteModalOpen(false)}
-                onDelete={handleDelete}
-            />
-
-
-            {trips.length === 0 && selectedActivity === "Viajes Publicados" && userProfile?.user_type === "DRIVER" && (
+            {trips.length === 0 && selectedActivity === "Viajes Publicados" && userProfile?.user_type === "DRIVER" &&(
                 <Container className={styles.container}>
                     <Text className={styles.noTripsText}>No tienes viajes publicados.</Text>
-                    <Button
+                      <Button
                         className={styles.publishButton}
                         component="a"
                         href="/publicarviaje"
                     >
                         Publica tu primer viaje
                     </Button>
-                </Container>
+                 </Container>
             )}
-            {selectedActivity && <p>Has seleccionado: {selectedActivity}</p>}
+           {selectedActivity && <p>Has seleccionado: {selectedActivity}</p>}
         </Container>
     );
 };

@@ -30,6 +30,7 @@ import { Route as LoginIndexImport } from './routes/Login/index'
 import { Route as DetallesViajeIndexImport } from './routes/DetallesViaje/index'
 import { Route as DestinoIndexImport } from './routes/Destino/index'
 import { Route as DateSelectedIndexImport } from './routes/DateSelected/index'
+import { Route as CuposIndexImport } from './routes/Cupos/index'
 import { Route as CuponesIndexImport } from './routes/Cupones/index'
 import { Route as ConfirmarCupoIndexImport } from './routes/ConfirmarCupo/index'
 import { Route as CompletarRegistroIndexImport } from './routes/CompletarRegistro/index'
@@ -136,6 +137,11 @@ const DestinoIndexRoute = DestinoIndexImport.update({
 
 const DateSelectedIndexRoute = DateSelectedIndexImport.update({
   path: '/DateSelected/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CuposIndexRoute = CuposIndexImport.update({
+  path: '/Cupos/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -300,6 +306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CuponesIndexImport
       parentRoute: typeof rootRoute
     }
+    '/Cupos/': {
+      id: '/Cupos/'
+      path: '/Cupos'
+      fullPath: '/Cupos'
+      preLoaderRoute: typeof CuposIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/DateSelected/': {
       id: '/DateSelected/'
       path: '/DateSelected'
@@ -438,6 +451,7 @@ export interface FileRoutesByFullPath {
   '/CompletarRegistro': typeof CompletarRegistroIndexRoute
   '/ConfirmarCupo': typeof ConfirmarCupoIndexRoute
   '/Cupones': typeof CuponesIndexRoute
+  '/Cupos': typeof CuposIndexRoute
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Destino': typeof DestinoIndexRoute
   '/DetallesViaje': typeof DetallesViajeIndexRoute
@@ -471,6 +485,7 @@ export interface FileRoutesByTo {
   '/CompletarRegistro': typeof CompletarRegistroIndexRoute
   '/ConfirmarCupo': typeof ConfirmarCupoIndexRoute
   '/Cupones': typeof CuponesIndexRoute
+  '/Cupos': typeof CuposIndexRoute
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Destino': typeof DestinoIndexRoute
   '/DetallesViaje': typeof DetallesViajeIndexRoute
@@ -505,6 +520,7 @@ export interface FileRoutesById {
   '/CompletarRegistro/': typeof CompletarRegistroIndexRoute
   '/ConfirmarCupo/': typeof ConfirmarCupoIndexRoute
   '/Cupones/': typeof CuponesIndexRoute
+  '/Cupos/': typeof CuposIndexRoute
   '/DateSelected/': typeof DateSelectedIndexRoute
   '/Destino/': typeof DestinoIndexRoute
   '/DetallesViaje/': typeof DetallesViajeIndexRoute
@@ -540,6 +556,7 @@ export interface FileRouteTypes {
     | '/CompletarRegistro'
     | '/ConfirmarCupo'
     | '/Cupones'
+    | '/Cupos'
     | '/DateSelected'
     | '/Destino'
     | '/DetallesViaje'
@@ -572,6 +589,7 @@ export interface FileRouteTypes {
     | '/CompletarRegistro'
     | '/ConfirmarCupo'
     | '/Cupones'
+    | '/Cupos'
     | '/DateSelected'
     | '/Destino'
     | '/DetallesViaje'
@@ -604,6 +622,7 @@ export interface FileRouteTypes {
     | '/CompletarRegistro/'
     | '/ConfirmarCupo/'
     | '/Cupones/'
+    | '/Cupos/'
     | '/DateSelected/'
     | '/Destino/'
     | '/DetallesViaje/'
@@ -638,6 +657,7 @@ export interface RootRouteChildren {
   CompletarRegistroIndexRoute: typeof CompletarRegistroIndexRoute
   ConfirmarCupoIndexRoute: typeof ConfirmarCupoIndexRoute
   CuponesIndexRoute: typeof CuponesIndexRoute
+  CuposIndexRoute: typeof CuposIndexRoute
   DateSelectedIndexRoute: typeof DateSelectedIndexRoute
   DestinoIndexRoute: typeof DestinoIndexRoute
   DetallesViajeIndexRoute: typeof DetallesViajeIndexRoute
@@ -672,6 +692,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompletarRegistroIndexRoute: CompletarRegistroIndexRoute,
   ConfirmarCupoIndexRoute: ConfirmarCupoIndexRoute,
   CuponesIndexRoute: CuponesIndexRoute,
+  CuposIndexRoute: CuposIndexRoute,
   DateSelectedIndexRoute: DateSelectedIndexRoute,
   DestinoIndexRoute: DestinoIndexRoute,
   DetallesViajeIndexRoute: DetallesViajeIndexRoute,
@@ -716,6 +737,7 @@ export const routeTree = rootRoute
         "/CompletarRegistro/",
         "/ConfirmarCupo/",
         "/Cupones/",
+        "/Cupos/",
         "/DateSelected/",
         "/Destino/",
         "/DetallesViaje/",
@@ -773,6 +795,9 @@ export const routeTree = rootRoute
     },
     "/Cupones/": {
       "filePath": "Cupones/index.tsx"
+    },
+    "/Cupos/": {
+      "filePath": "Cupos/index.tsx"
     },
     "/DateSelected/": {
       "filePath": "DateSelected/index.tsx"
