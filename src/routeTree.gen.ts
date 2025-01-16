@@ -40,6 +40,7 @@ import { Route as RegistrarVehiculoPropertyCardImport } from './routes/Registrar
 import { Route as RegistrarVehiculoLicenseImport } from './routes/RegistrarVehiculo/License'
 import { Route as RegistrarVehiculoDocumentsRequiredImport } from './routes/RegistrarVehiculo/DocumentsRequired'
 import { Route as RegistrarVehiculoDocumentFormImport } from './routes/RegistrarVehiculo/DocumentForm'
+import { Route as PagarCupoUpdateTripSeatsImport } from './routes/PagarCupo/updateTripSeats'
 import { Route as ActividadesActividadesPageImport } from './routes/Actividades/ActividadesPage'
 
 // Create Virtual Routes
@@ -192,6 +193,11 @@ const RegistrarVehiculoDocumentFormRoute =
     getParentRoute: () => rootRoute,
   } as any)
 
+const PagarCupoUpdateTripSeatsRoute = PagarCupoUpdateTripSeatsImport.update({
+  path: '/PagarCupo/updateTripSeats',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const ActividadesActividadesPageRoute = ActividadesActividadesPageImport.update(
   {
     path: '/Actividades/ActividadesPage',
@@ -215,6 +221,13 @@ declare module '@tanstack/react-router' {
       path: '/Actividades/ActividadesPage'
       fullPath: '/Actividades/ActividadesPage'
       preLoaderRoute: typeof ActividadesActividadesPageImport
+      parentRoute: typeof rootRoute
+    }
+    '/PagarCupo/updateTripSeats': {
+      id: '/PagarCupo/updateTripSeats'
+      path: '/PagarCupo/updateTripSeats'
+      fullPath: '/PagarCupo/updateTripSeats'
+      preLoaderRoute: typeof PagarCupoUpdateTripSeatsImport
       parentRoute: typeof rootRoute
     }
     '/RegistrarVehiculo/DocumentForm': {
@@ -414,6 +427,7 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/Actividades/ActividadesPage': typeof ActividadesActividadesPageRoute
+  '/PagarCupo/updateTripSeats': typeof PagarCupoUpdateTripSeatsRoute
   '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
   '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
   '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
@@ -446,6 +460,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/Actividades/ActividadesPage': typeof ActividadesActividadesPageRoute
+  '/PagarCupo/updateTripSeats': typeof PagarCupoUpdateTripSeatsRoute
   '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
   '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
   '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
@@ -479,6 +494,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/Actividades/ActividadesPage': typeof ActividadesActividadesPageRoute
+  '/PagarCupo/updateTripSeats': typeof PagarCupoUpdateTripSeatsRoute
   '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
   '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
   '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
@@ -513,6 +529,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/Actividades/ActividadesPage'
+    | '/PagarCupo/updateTripSeats'
     | '/RegistrarVehiculo/DocumentForm'
     | '/RegistrarVehiculo/DocumentsRequired'
     | '/RegistrarVehiculo/License'
@@ -544,6 +561,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/Actividades/ActividadesPage'
+    | '/PagarCupo/updateTripSeats'
     | '/RegistrarVehiculo/DocumentForm'
     | '/RegistrarVehiculo/DocumentsRequired'
     | '/RegistrarVehiculo/License'
@@ -575,6 +593,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/Actividades/ActividadesPage'
+    | '/PagarCupo/updateTripSeats'
     | '/RegistrarVehiculo/DocumentForm'
     | '/RegistrarVehiculo/DocumentsRequired'
     | '/RegistrarVehiculo/License'
@@ -608,6 +627,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   ActividadesActividadesPageRoute: typeof ActividadesActividadesPageRoute
+  PagarCupoUpdateTripSeatsRoute: typeof PagarCupoUpdateTripSeatsRoute
   RegistrarVehiculoDocumentFormRoute: typeof RegistrarVehiculoDocumentFormRoute
   RegistrarVehiculoDocumentsRequiredRoute: typeof RegistrarVehiculoDocumentsRequiredRoute
   RegistrarVehiculoLicenseRoute: typeof RegistrarVehiculoLicenseRoute
@@ -640,6 +660,7 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   ActividadesActividadesPageRoute: ActividadesActividadesPageRoute,
+  PagarCupoUpdateTripSeatsRoute: PagarCupoUpdateTripSeatsRoute,
   RegistrarVehiculoDocumentFormRoute: RegistrarVehiculoDocumentFormRoute,
   RegistrarVehiculoDocumentsRequiredRoute:
     RegistrarVehiculoDocumentsRequiredRoute,
@@ -684,6 +705,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/Actividades/ActividadesPage",
+        "/PagarCupo/updateTripSeats",
         "/RegistrarVehiculo/DocumentForm",
         "/RegistrarVehiculo/DocumentsRequired",
         "/RegistrarVehiculo/License",
@@ -718,6 +740,9 @@ export const routeTree = rootRoute
     },
     "/Actividades/ActividadesPage": {
       "filePath": "Actividades/ActividadesPage.tsx"
+    },
+    "/PagarCupo/updateTripSeats": {
+      "filePath": "PagarCupo/updateTripSeats.tsx"
     },
     "/RegistrarVehiculo/DocumentForm": {
       "filePath": "RegistrarVehiculo/DocumentForm.tsx"
