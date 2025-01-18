@@ -1,0 +1,104 @@
+.ticketContainer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.ticketCard {
+  background-color: #18181b;
+  color: white;
+  border-radius: 8px;
+  padding: 1rem;
+   max-width: 500px;
+}
+.ticketWrapper{
+      margin: 0 auto;
+}
+.downloadButton {
+    background-color: #3a3a3f !important;
+    color: white !important;
+    transition: background-color 0.3s ease !important;
+      border: 1px solid #4b4b4f;
+    &:hover {
+        background-color: #4b4b4f !important;
+    }
+}
+.ticketTemplate {
+  display: flex;
+  flex-direction: column;
+    width: 450px;
+     margin: 0 auto;
+}
+
+.ticketHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.ticketLogo {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  max-width: 80px;
+    height: auto;
+}
+.ticketTitle{
+    margin: 0 10px;
+}
+.ticketSubtitle{
+    font-size: .9em;
+    margin: 0 10px;
+    color: #999;
+    font-weight: 500;
+}
+
+
+.ticketContent{
+      padding: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+
+.passengerInfo{
+    grid-column: 1/2;
+}
+.passengerName{
+    margin-bottom: 5px;
+    font-size: 1.2em;
+}
+.idNumber,
+.seatNumber{
+      font-size: .9em;
+       color: #999;
+    font-weight: 500;
+}
+
+.qrSection{
+      grid-column: 2/3;
+      display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.tripDetails{
+    grid-column: 1/3;
+     border-top: 1px solid #2a2a2e;
+    padding-top: 1rem;
+
+}
+
+.tripDetails  .icon{
+    margin-right: 8px;
+    color: #999;
+}
+.ticketFooter{
+    text-align: center;
+        padding: 1rem;
+     border-top: 1px solid #2a2a2e;
+}

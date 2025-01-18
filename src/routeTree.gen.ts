@@ -42,6 +42,9 @@ import { Route as RegistrarVehiculoLicenseImport } from './routes/RegistrarVehic
 import { Route as RegistrarVehiculoDocumentsRequiredImport } from './routes/RegistrarVehiculo/DocumentsRequired'
 import { Route as RegistrarVehiculoDocumentFormImport } from './routes/RegistrarVehiculo/DocumentForm'
 import { Route as PagarCupoUpdateTripSeatsImport } from './routes/PagarCupo/updateTripSeats'
+import { Route as CuposViewTicketImport } from './routes/Cupos/ViewTicket'
+import { Route as CuposViewPassengersImport } from './routes/Cupos/ViewPassengers'
+import { Route as CuposViewBookingDetailsImport } from './routes/Cupos/ViewBookingDetails'
 import { Route as ActividadesActividadesPageImport } from './routes/Actividades/ActividadesPage'
 
 // Create Virtual Routes
@@ -204,6 +207,21 @@ const PagarCupoUpdateTripSeatsRoute = PagarCupoUpdateTripSeatsImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const CuposViewTicketRoute = CuposViewTicketImport.update({
+  path: '/Cupos/ViewTicket',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CuposViewPassengersRoute = CuposViewPassengersImport.update({
+  path: '/Cupos/ViewPassengers',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CuposViewBookingDetailsRoute = CuposViewBookingDetailsImport.update({
+  path: '/Cupos/ViewBookingDetails',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const ActividadesActividadesPageRoute = ActividadesActividadesPageImport.update(
   {
     path: '/Actividades/ActividadesPage',
@@ -227,6 +245,27 @@ declare module '@tanstack/react-router' {
       path: '/Actividades/ActividadesPage'
       fullPath: '/Actividades/ActividadesPage'
       preLoaderRoute: typeof ActividadesActividadesPageImport
+      parentRoute: typeof rootRoute
+    }
+    '/Cupos/ViewBookingDetails': {
+      id: '/Cupos/ViewBookingDetails'
+      path: '/Cupos/ViewBookingDetails'
+      fullPath: '/Cupos/ViewBookingDetails'
+      preLoaderRoute: typeof CuposViewBookingDetailsImport
+      parentRoute: typeof rootRoute
+    }
+    '/Cupos/ViewPassengers': {
+      id: '/Cupos/ViewPassengers'
+      path: '/Cupos/ViewPassengers'
+      fullPath: '/Cupos/ViewPassengers'
+      preLoaderRoute: typeof CuposViewPassengersImport
+      parentRoute: typeof rootRoute
+    }
+    '/Cupos/ViewTicket': {
+      id: '/Cupos/ViewTicket'
+      path: '/Cupos/ViewTicket'
+      fullPath: '/Cupos/ViewTicket'
+      preLoaderRoute: typeof CuposViewTicketImport
       parentRoute: typeof rootRoute
     }
     '/PagarCupo/updateTripSeats': {
@@ -440,6 +479,9 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/Actividades/ActividadesPage': typeof ActividadesActividadesPageRoute
+  '/Cupos/ViewBookingDetails': typeof CuposViewBookingDetailsRoute
+  '/Cupos/ViewPassengers': typeof CuposViewPassengersRoute
+  '/Cupos/ViewTicket': typeof CuposViewTicketRoute
   '/PagarCupo/updateTripSeats': typeof PagarCupoUpdateTripSeatsRoute
   '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
   '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
@@ -474,6 +516,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/Actividades/ActividadesPage': typeof ActividadesActividadesPageRoute
+  '/Cupos/ViewBookingDetails': typeof CuposViewBookingDetailsRoute
+  '/Cupos/ViewPassengers': typeof CuposViewPassengersRoute
+  '/Cupos/ViewTicket': typeof CuposViewTicketRoute
   '/PagarCupo/updateTripSeats': typeof PagarCupoUpdateTripSeatsRoute
   '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
   '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
@@ -509,6 +554,9 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/Actividades/ActividadesPage': typeof ActividadesActividadesPageRoute
+  '/Cupos/ViewBookingDetails': typeof CuposViewBookingDetailsRoute
+  '/Cupos/ViewPassengers': typeof CuposViewPassengersRoute
+  '/Cupos/ViewTicket': typeof CuposViewTicketRoute
   '/PagarCupo/updateTripSeats': typeof PagarCupoUpdateTripSeatsRoute
   '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
   '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
@@ -545,6 +593,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/Actividades/ActividadesPage'
+    | '/Cupos/ViewBookingDetails'
+    | '/Cupos/ViewPassengers'
+    | '/Cupos/ViewTicket'
     | '/PagarCupo/updateTripSeats'
     | '/RegistrarVehiculo/DocumentForm'
     | '/RegistrarVehiculo/DocumentsRequired'
@@ -578,6 +629,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/Actividades/ActividadesPage'
+    | '/Cupos/ViewBookingDetails'
+    | '/Cupos/ViewPassengers'
+    | '/Cupos/ViewTicket'
     | '/PagarCupo/updateTripSeats'
     | '/RegistrarVehiculo/DocumentForm'
     | '/RegistrarVehiculo/DocumentsRequired'
@@ -611,6 +665,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/Actividades/ActividadesPage'
+    | '/Cupos/ViewBookingDetails'
+    | '/Cupos/ViewPassengers'
+    | '/Cupos/ViewTicket'
     | '/PagarCupo/updateTripSeats'
     | '/RegistrarVehiculo/DocumentForm'
     | '/RegistrarVehiculo/DocumentsRequired'
@@ -646,6 +703,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   ActividadesActividadesPageRoute: typeof ActividadesActividadesPageRoute
+  CuposViewBookingDetailsRoute: typeof CuposViewBookingDetailsRoute
+  CuposViewPassengersRoute: typeof CuposViewPassengersRoute
+  CuposViewTicketRoute: typeof CuposViewTicketRoute
   PagarCupoUpdateTripSeatsRoute: typeof PagarCupoUpdateTripSeatsRoute
   RegistrarVehiculoDocumentFormRoute: typeof RegistrarVehiculoDocumentFormRoute
   RegistrarVehiculoDocumentsRequiredRoute: typeof RegistrarVehiculoDocumentsRequiredRoute
@@ -680,6 +740,9 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   ActividadesActividadesPageRoute: ActividadesActividadesPageRoute,
+  CuposViewBookingDetailsRoute: CuposViewBookingDetailsRoute,
+  CuposViewPassengersRoute: CuposViewPassengersRoute,
+  CuposViewTicketRoute: CuposViewTicketRoute,
   PagarCupoUpdateTripSeatsRoute: PagarCupoUpdateTripSeatsRoute,
   RegistrarVehiculoDocumentFormRoute: RegistrarVehiculoDocumentFormRoute,
   RegistrarVehiculoDocumentsRequiredRoute:
@@ -726,6 +789,9 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/Actividades/ActividadesPage",
+        "/Cupos/ViewBookingDetails",
+        "/Cupos/ViewPassengers",
+        "/Cupos/ViewTicket",
         "/PagarCupo/updateTripSeats",
         "/RegistrarVehiculo/DocumentForm",
         "/RegistrarVehiculo/DocumentsRequired",
@@ -762,6 +828,15 @@ export const routeTree = rootRoute
     },
     "/Actividades/ActividadesPage": {
       "filePath": "Actividades/ActividadesPage.tsx"
+    },
+    "/Cupos/ViewBookingDetails": {
+      "filePath": "Cupos/ViewBookingDetails.tsx"
+    },
+    "/Cupos/ViewPassengers": {
+      "filePath": "Cupos/ViewPassengers.tsx"
+    },
+    "/Cupos/ViewTicket": {
+      "filePath": "Cupos/ViewTicket.tsx"
     },
     "/PagarCupo/updateTripSeats": {
       "filePath": "PagarCupo/updateTripSeats.tsx"
