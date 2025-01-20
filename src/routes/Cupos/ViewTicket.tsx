@@ -25,6 +25,8 @@ interface PassengerData {
 interface LocationState {
     booking?: Booking;
     passenger?: Passenger;
+    selectedBooking?:Booking;
+    showPassengers?: boolean
 }
 
 const ViewTicket = () => {
@@ -94,49 +96,55 @@ const ViewTicket = () => {
         );
     }
 
-    return (
+     return (
         <Container className={styles.ticketContainer}>
-            <Card className={styles.ticketCard}>
-                <div id={`ticket-${parsedPassenger.passenger_id}`} className={styles.ticketWrapper}>
-                    <div className={styles.ticketHeader}>
-                        <div className={styles.ticketLogo}>
-                            <img src="/Logo.png" alt="CompaCar" className={styles.logo} />
-                        </div>
-                        <Title order={3} className={styles.ticketTitle}>Tu tiquete en Cupo</Title>
-                       
-                    </div>
-                    <Center>
-                        <QRCodeCanvas
-                            value={parsedPassenger.booking_qr || ""}
-                            size={250}
-                            level="L"
-                            includeMargin={true}
-                        />
-                    </Center>
-                    <Center>
-                        <Text size="lg" mt="md" fw={500}>
-                            {parsedPassenger.full_name}
-                        </Text>
-                           <Text size="md" mt="xs" fw={400}>
+           <Card className={styles.ticketCard}>
+               <div id={`ticket-${parsedPassenger.passenger_id}`} className={styles.ticketWrapper} style={{ position: 'relative', overflow: 'hidden' }}>
+                 <div className={styles.ticketHeader}>
+                     <div className={styles.ticketLogo}>
+                         <img src="/Logo.png" alt="CompaCar" className={styles.logo} />
+                     </div>
+                      <Title order={3} className={styles.ticketTitle}>Tu tiquete en Cupo</Title>
+                 </div>
+                <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom:'15px', position: 'relative', zIndex:1 }}>
+                    <Text size="md"  c="#34D399" fw={700} style={{ marginBottom: '10px', display: 'block', textAlign:'center' }}>
+                       Viaja seguro con Cupo
+                     </Text>
+                     <div style={{ display: 'block', textAlign:'center', padding:'10px', borderRadius:'8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', border: '1px solid #eee'}}>
+                           <QRCodeCanvas
+                                 value={parsedPassenger.booking_qr || ""}
+                                 size={250}
+                                 level="L"
+                                 includeMargin={true}
+                            />
+                      </div>
+                   </div>
+                  <Center>
+                      <Text size="lg" mt="md" fw={600} style={{color:"#333"}}>
+                          {parsedPassenger.full_name}
+                      </Text>
+                        <Text size="md" mt="xs" fw={500} style={{color:"#555"}}>
                             {parsedPassenger.identification_number}
                         </Text>
                     </Center>
-                       <Text size="xs" mt="xl" ta="center" c="dimmed">
-                            Términos y Condiciones
-                        </Text>
-                </div>
-                <Button
-                    variant="light"
-                    leftSection={<Download size={16} />}
-                    onClick={handleDownload}
-                    fullWidth
-                    className={styles.downloadButton}
-                    mt="md"
-                >
-                    Descargar Tiquete
-                </Button>
-            </Card>
-        </Container>
+                  <div style={{marginTop:'20px',  marginBottom: '10px', textAlign: 'center' }}>
+                     <Text size="xs" c="dimmed" style={{display:'block', padding: '5px 10px', verticalAlign:'middle'}}>
+                          Términos y Condiciones
+                      </Text>
+                   </div>
+               </div>
+               <Button
+                variant="light"
+                  leftSection={<Download size={16} />}
+                   onClick={handleDownload}
+                   fullWidth
+                   className={styles.downloadButton}
+                   mt="md"
+               >
+                 Descargar Tiquete
+               </Button>
+           </Card>
+       </Container>
     );
 };
 

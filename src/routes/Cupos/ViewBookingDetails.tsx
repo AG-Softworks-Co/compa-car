@@ -1,4 +1,3 @@
-// ViewBookingDetails.tsx
 import React, { useState, useEffect } from 'react';
 import { Card, Stack, Group, Text, Button, LoadingOverlay, Badge } from '@mantine/core';
 import styles from './index.module.css';
@@ -178,50 +177,53 @@ const ViewBookingDetails: React.FC<ViewBookingDetailsProps> = ({ booking, onClos
     if (!booking) return null;
 
     return (
-        <Card className={`${styles.cupoCard} ${detailStyles.detailsCard}`}>
-            <LoadingOverlay visible={tripDetails.loading} />
+        <Card className={`${styles.cupoCard} ${detailStyles.detailsCard}`} style={{  borderRadius: '12px',  background: 'linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))', border: '1px solid rgba(0, 255, 157, 0.1)', boxShadow:'0 4px 10px rgba(0, 255, 157, 0.05)' }}>
+            <LoadingOverlay visible={tripDetails.loading}      />
             <Stack gap="xs">
                    <Group gap="apart" className={detailStyles.detailItem}>
-                    <Text fw={600} className={detailStyles.detailLabel}>ID de la reserva:</Text>
-                     <Text className={detailStyles.detailValue}>{booking.booking_id}</Text>
+                    <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>ID de la reserva:</Text>
+                     <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{booking.booking_id}</Text>
                 </Group>
                  <Group gap="apart" className={detailStyles.detailItem}>
-                       <Text fw={600} className={detailStyles.detailLabel}>ID del viaje:</Text>
-                       <Text className={detailStyles.detailValue}>{booking.trip_id}</Text>
+                       <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>ID del viaje:</Text>
+                       <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{booking.trip_id}</Text>
                   </Group>
                 <Group gap="apart" className={detailStyles.detailItem}>
-                   <Text fw={600} className={detailStyles.detailLabel}>Conductor:</Text>
-                     <Text className={detailStyles.detailValue}>{tripDetails.driverName}</Text>
+                   <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Conductor:</Text>
+                     <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{tripDetails.driverName}</Text>
                 </Group>
                 <Group gap="apart" className={detailStyles.detailItem}>
-                    <Text fw={600} className={detailStyles.detailLabel}>Origen:</Text>
-                     <Text className={detailStyles.detailValue}>{tripDetails.main_text_origen}</Text>
+                    <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Origen:</Text>
+                     <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{tripDetails.main_text_origen}</Text>
                  </Group>
                 <Group gap="apart" className={detailStyles.detailItem}>
-                   <Text fw={600} className={detailStyles.detailLabel}>Destino:</Text>
-                   <Text className={detailStyles.detailValue}>{tripDetails.main_text_destination}</Text>
+                   <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Destino:</Text>
+                   <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{tripDetails.main_text_destination}</Text>
                 </Group>
                  <Group gap="apart" className={detailStyles.detailItem}>
-                   <Text fw={600} className={detailStyles.detailLabel}>Fecha y Hora:</Text>
-                    <Text className={detailStyles.detailValue}>{tripDetails.date_time ? dayjs(tripDetails.date_time).format('DD/MM/YYYY HH:mm') : 'No disponible'}</Text>
+                   <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Fecha y Hora:</Text>
+                    <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{tripDetails.date_time ? dayjs(tripDetails.date_time).format('DD/MM/YYYY HH:mm') : 'No disponible'}</Text>
                 </Group>
-                <Group gap="apart" className={detailStyles.detailItem}>
-                     <Text fw={600} className={detailStyles.detailLabel}>Mensaje:</Text>
-                     <Text className={detailStyles.detailValue}>{booking.booking_message}</Text>
+                  <Group gap="apart" className={detailStyles.detailItem}>
+                     <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Mensaje:</Text>
+                     <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{booking.booking_message}</Text>
                  </Group>
                 <Group gap="apart" className={detailStyles.detailItem}>
-                     <Text fw={600} className={detailStyles.detailLabel}>Estado:</Text>
+                     <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Estado:</Text>
                     <Badge color={tripDetails.tripStatus === 'active' ? 'green' : 'yellow'} variant="filled">{booking.booking_status}</Badge>
                  </Group>
                 <Group gap="apart" className={detailStyles.detailItem}>
-                     <Text fw={600} className={detailStyles.detailLabel}>Precio Total:</Text>
-                      <Text className={detailStyles.detailValue}>${booking.total_price?.toLocaleString()}</Text>
+                     <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Precio Total:</Text>
+                      <Text className={detailStyles.detailValue} style={{color:'#fff'}}>${booking.total_price?.toLocaleString()}</Text>
                  </Group>
                 <Group gap="apart" className={detailStyles.detailItem}>
-                   <Text fw={600} className={detailStyles.detailLabel}>Vehiculo:</Text>
-                    <Text className={detailStyles.detailValue}>{`${tripDetails.vehicle.brand} ${tripDetails.vehicle.model} (${tripDetails.vehicle.year}) - ${tripDetails.vehicle.plate} - ${tripDetails.vehicle.color}`}</Text>
+                   <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Vehiculo:</Text>
+                    <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{`${tripDetails.vehicle.brand} ${tripDetails.vehicle.model} (${tripDetails.vehicle.year}) - ${tripDetails.vehicle.plate} - ${tripDetails.vehicle.color}`}</Text>
                 </Group>
-                <Button onClick={onClose} mt="md" size="xs" className={detailStyles.closeButton}>
+                  <Button onClick={onClose} mt="md" size="xs"  style={{ borderRadius:'8px',  borderColor:'#ccc' , transition: 'background-color 0.3s, color 0.3s',  '&:hover': {
+                    backgroundColor: '#f0f0f0',
+                    color: '#333'
+                  }}}>
                     Cerrar Detalles
                 </Button>
             </Stack>
