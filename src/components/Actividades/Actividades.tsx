@@ -1,4 +1,3 @@
-// Actividades.tsx
 import React, { useState, useEffect } from 'react';
 import { Container, Title, Text, LoadingOverlay, Button } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
@@ -10,6 +9,7 @@ import EditTripModal from './EditTripModal';
 import DeleteTripModal from './DeleteTripModal';
 import Cupos from '../../routes/Cupos'; // Import Cupos
 import styles from './index.module.css';
+import TripCard from './TripCard';
 
 export interface Trip {
     id: number;
@@ -123,10 +123,9 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
     }, [userId, token]);
 
     useEffect(() => {
-        const fetchTrips = async () => {
+       const fetchTrips = async () => {
             console.log('Fetching trips...');
             try {
-
                 const response = await fetch(`${BASE_URL}/trips/user_id/${userId}`, {
                     headers: {
                         'x-token': token,
@@ -147,7 +146,7 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
                     return;
                 }
                 const responseData = await response.json();
-                if (!responseData.data || !Array.isArray(responseData.data)) {
+                 if (!responseData.data || !Array.isArray(responseData.data)) {
                     console.error(
                         'Invalid response from API: data array not found',
                         responseData,
@@ -163,59 +162,60 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
 
                 const tripsData = responseData.data;
                 console.log('Trips data:', tripsData);
-
                 const apiTrips = tripsData
-                    .map((tripData: ApiTrip) => ({
-                        id: tripData.trip_id,
-                        origin: { address: tripData.main_text_origen },
-                        destination: { address: tripData.main_text_destination },
-                        date: new Date(tripData.date_time).toLocaleDateString(),
-                        time: new Date(tripData.date_time).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                        }),
-                        duration: tripData.duration,
-                        distance: tripData.distance,
-                        seats: tripData.seats,
-                        pricePerSeat: tripData.price_per_seat,
-                        description: tripData.description,
-                        allowPets: tripData.allow_pets === 1,
-                        allowSmoking: tripData.allow_smoking === 1,
-                        is_active: tripData.status === 'active',
-                        user_id: tripData.user_id,
-                         date_time: tripData.date_time,
-                    }))
-                     .filter((trip: Trip) => {
-                         const userMatch = trip.user_id === userId;
-                           console.log(`Checking if user_id ${trip.user_id} matches userId ${userId}: ${userMatch}`);
-                        return userMatch;
-                    })
-                     .map((trip: Trip) => {
-                         const isPast = dayjs(trip.date_time).isBefore(dayjs(), 'day');
-                         return { ...trip, is_active: isPast ? false : trip.is_active };
-                     });
-
+                .map((tripData: ApiTrip) => ({
+                    id: tripData.trip_id,
+                    origin: { address: tripData.main_text_origen },
+                    destination: { address: tripData.main_text_destination },
+                    date: new Date(tripData.date_time).toLocaleDateString(),
+                     time: new Date(tripData.date_time).toLocaleTimeString([], {
+                         hour: '2-digit',
+                        minute: '2-digit',
+                    }),
+                     duration: tripData.duration,
+                    distance: tripData.distance,
+                    seats: tripData.seats,
+                    pricePerSeat: tripData.price_per_seat,
+                     description: tripData.description,
+                     allowPets: tripData.allow_pets === 1,
+                    allowSmoking: tripData.allow_smoking === 1,
+                    is_active: tripData.status === 'active',
+                    user_id: tripData.user_id,
+                    date_time: tripData.date_time,
+                }))
+                .filter((trip: Trip) => {
+                     const userMatch = trip.user_id === userId;
+                    console.log(`Checking if user_id ${trip.user_id} matches userId ${userId}: ${userMatch}`);
+                    return userMatch;
+                })
+                .sort((a: Trip, b: Trip) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime())
+                .map((trip: Trip) => {
+                    const isPast = dayjs(trip.date_time).isBefore(dayjs(), 'day');
+                     return { ...trip, is_active: isPast ? false : trip.is_active };
+                 });
 
                 setTrips(apiTrips);
                 setFilteredTrips(apiTrips);
                 setLoading(false);
+
             } catch (error) {
                 console.error('Error fetching trips:', error);
-                showNotification({
+                 showNotification({
                     title: 'Error al obtener los viajes',
                     message:
                         'Hubo un error al cargar los viajes desde el servidor. Intenta de nuevo más tarde.',
-                    color: 'red',
-                });
+                     color: 'red',
+                 });
                 setLoading(false);
             }
-        };
-          console.log('selectedActivity before trips fetch:', selectedActivity);
+         };
+         console.log('selectedActivity before trips fetch:', selectedActivity);
          if (selectedActivity === "Viajes Publicados" && userProfile?.user_type === "DRIVER") {
             console.log('fetching trips for drivers');
             fetchTrips();
         }
     }, [userId, token, selectedActivity, userProfile?.user_type]);
+
 
     useEffect(() => {
         let filtered = [...trips];
@@ -413,14 +413,21 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
                          dateFilter={dateFilter}
                         onDateFilterChange={handleDateFilterChange}
                     />
-                     <TripList
-                        trips={filteredTrips}
-                        onEdit={handleEdit}
-                       onDelete={(index) => {
-                            setSelectedTripIndex(index);
-                            setDeleteModalOpen(true);
-                        }}
-                     />
+                        <div className={styles.tripListContainer}>
+                            {filteredTrips.map((trip, index) => (
+                                <TripCard
+                                    key={trip.id}
+                                    trip={trip}
+                                    onEdit={() => handleEdit(index)}
+                                    onDelete={() => {
+                                        setSelectedTripIndex(index);
+                                        setDeleteModalOpen(true);
+                                    }}
+                                    token={token}
+                                    userId={userId}
+                                />
+                            ))}
+                        </div>
                </>
            )}
 

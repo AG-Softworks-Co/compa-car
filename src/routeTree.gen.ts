@@ -18,6 +18,7 @@ import { Route as PublicarviajeIndexImport } from './routes/publicarviaje/index'
 import { Route as PerfilIndexImport } from './routes/perfil/index'
 import { Route as HomeIndexImport } from './routes/home/index'
 import { Route as AccountIndexImport } from './routes/account/index'
+import { Route as ValidarCuposIndexImport } from './routes/ValidarCupos/index'
 import { Route as ReservasIndexImport } from './routes/Reservas/index'
 import { Route as RegistroIndexImport } from './routes/Registro/index'
 import { Route as RegistrarVehiculoIndexImport } from './routes/RegistrarVehiculo/index'
@@ -27,9 +28,11 @@ import { Route as ParadasIndexImport } from './routes/Paradas/index'
 import { Route as PagarCupoIndexImport } from './routes/PagarCupo/index'
 import { Route as OrigenIndexImport } from './routes/Origen/index'
 import { Route as LoginIndexImport } from './routes/Login/index'
+import { Route as EmpezarViajeIndexImport } from './routes/EmpezarViaje/index'
 import { Route as DetallesViajeIndexImport } from './routes/DetallesViaje/index'
 import { Route as DestinoIndexImport } from './routes/Destino/index'
 import { Route as DateSelectedIndexImport } from './routes/DateSelected/index'
+import { Route as CuposReservadosIndexImport } from './routes/CuposReservados/index'
 import { Route as CuposIndexImport } from './routes/Cupos/index'
 import { Route as CuponesIndexImport } from './routes/Cupones/index'
 import { Route as ConfirmarCupoIndexImport } from './routes/ConfirmarCupo/index'
@@ -83,6 +86,11 @@ const AccountIndexRoute = AccountIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const ValidarCuposIndexRoute = ValidarCuposIndexImport.update({
+  path: '/ValidarCupos/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const ReservasIndexRoute = ReservasIndexImport.update({
   path: '/Reservas/',
   getParentRoute: () => rootRoute,
@@ -128,6 +136,11 @@ const LoginIndexRoute = LoginIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const EmpezarViajeIndexRoute = EmpezarViajeIndexImport.update({
+  path: '/EmpezarViaje/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const DetallesViajeIndexRoute = DetallesViajeIndexImport.update({
   path: '/DetallesViaje/',
   getParentRoute: () => rootRoute,
@@ -140,6 +153,11 @@ const DestinoIndexRoute = DestinoIndexImport.update({
 
 const DateSelectedIndexRoute = DateSelectedIndexImport.update({
   path: '/DateSelected/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CuposReservadosIndexRoute = CuposReservadosIndexImport.update({
+  path: '/CuposReservados/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -352,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CuposIndexImport
       parentRoute: typeof rootRoute
     }
+    '/CuposReservados/': {
+      id: '/CuposReservados/'
+      path: '/CuposReservados'
+      fullPath: '/CuposReservados'
+      preLoaderRoute: typeof CuposReservadosIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/DateSelected/': {
       id: '/DateSelected/'
       path: '/DateSelected'
@@ -371,6 +396,13 @@ declare module '@tanstack/react-router' {
       path: '/DetallesViaje'
       fullPath: '/DetallesViaje'
       preLoaderRoute: typeof DetallesViajeIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/EmpezarViaje/': {
+      id: '/EmpezarViaje/'
+      path: '/EmpezarViaje'
+      fullPath: '/EmpezarViaje'
+      preLoaderRoute: typeof EmpezarViajeIndexImport
       parentRoute: typeof rootRoute
     }
     '/Login/': {
@@ -436,6 +468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReservasIndexImport
       parentRoute: typeof rootRoute
     }
+    '/ValidarCupos/': {
+      id: '/ValidarCupos/'
+      path: '/ValidarCupos'
+      fullPath: '/ValidarCupos'
+      preLoaderRoute: typeof ValidarCuposIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/account/': {
       id: '/account/'
       path: '/account'
@@ -494,9 +533,11 @@ export interface FileRoutesByFullPath {
   '/ConfirmarCupo': typeof ConfirmarCupoIndexRoute
   '/Cupones': typeof CuponesIndexRoute
   '/Cupos': typeof CuposIndexRoute
+  '/CuposReservados': typeof CuposReservadosIndexRoute
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Destino': typeof DestinoIndexRoute
   '/DetallesViaje': typeof DetallesViajeIndexRoute
+  '/EmpezarViaje': typeof EmpezarViajeIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
   '/PagarCupo': typeof PagarCupoIndexRoute
@@ -506,6 +547,7 @@ export interface FileRoutesByFullPath {
   '/RegistrarVehiculo': typeof RegistrarVehiculoIndexRoute
   '/Registro': typeof RegistroIndexRoute
   '/Reservas': typeof ReservasIndexRoute
+  '/ValidarCupos': typeof ValidarCuposIndexRoute
   '/account': typeof AccountIndexRoute
   '/home': typeof HomeIndexRoute
   '/perfil': typeof PerfilIndexRoute
@@ -531,9 +573,11 @@ export interface FileRoutesByTo {
   '/ConfirmarCupo': typeof ConfirmarCupoIndexRoute
   '/Cupones': typeof CuponesIndexRoute
   '/Cupos': typeof CuposIndexRoute
+  '/CuposReservados': typeof CuposReservadosIndexRoute
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Destino': typeof DestinoIndexRoute
   '/DetallesViaje': typeof DetallesViajeIndexRoute
+  '/EmpezarViaje': typeof EmpezarViajeIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
   '/PagarCupo': typeof PagarCupoIndexRoute
@@ -543,6 +587,7 @@ export interface FileRoutesByTo {
   '/RegistrarVehiculo': typeof RegistrarVehiculoIndexRoute
   '/Registro': typeof RegistroIndexRoute
   '/Reservas': typeof ReservasIndexRoute
+  '/ValidarCupos': typeof ValidarCuposIndexRoute
   '/account': typeof AccountIndexRoute
   '/home': typeof HomeIndexRoute
   '/perfil': typeof PerfilIndexRoute
@@ -569,9 +614,11 @@ export interface FileRoutesById {
   '/ConfirmarCupo/': typeof ConfirmarCupoIndexRoute
   '/Cupones/': typeof CuponesIndexRoute
   '/Cupos/': typeof CuposIndexRoute
+  '/CuposReservados/': typeof CuposReservadosIndexRoute
   '/DateSelected/': typeof DateSelectedIndexRoute
   '/Destino/': typeof DestinoIndexRoute
   '/DetallesViaje/': typeof DetallesViajeIndexRoute
+  '/EmpezarViaje/': typeof EmpezarViajeIndexRoute
   '/Login/': typeof LoginIndexRoute
   '/Origen/': typeof OrigenIndexRoute
   '/PagarCupo/': typeof PagarCupoIndexRoute
@@ -581,6 +628,7 @@ export interface FileRoutesById {
   '/RegistrarVehiculo/': typeof RegistrarVehiculoIndexRoute
   '/Registro/': typeof RegistroIndexRoute
   '/Reservas/': typeof ReservasIndexRoute
+  '/ValidarCupos/': typeof ValidarCuposIndexRoute
   '/account/': typeof AccountIndexRoute
   '/home/': typeof HomeIndexRoute
   '/perfil/': typeof PerfilIndexRoute
@@ -608,9 +656,11 @@ export interface FileRouteTypes {
     | '/ConfirmarCupo'
     | '/Cupones'
     | '/Cupos'
+    | '/CuposReservados'
     | '/DateSelected'
     | '/Destino'
     | '/DetallesViaje'
+    | '/EmpezarViaje'
     | '/Login'
     | '/Origen'
     | '/PagarCupo'
@@ -620,6 +670,7 @@ export interface FileRouteTypes {
     | '/RegistrarVehiculo'
     | '/Registro'
     | '/Reservas'
+    | '/ValidarCupos'
     | '/account'
     | '/home'
     | '/perfil'
@@ -644,9 +695,11 @@ export interface FileRouteTypes {
     | '/ConfirmarCupo'
     | '/Cupones'
     | '/Cupos'
+    | '/CuposReservados'
     | '/DateSelected'
     | '/Destino'
     | '/DetallesViaje'
+    | '/EmpezarViaje'
     | '/Login'
     | '/Origen'
     | '/PagarCupo'
@@ -656,6 +709,7 @@ export interface FileRouteTypes {
     | '/RegistrarVehiculo'
     | '/Registro'
     | '/Reservas'
+    | '/ValidarCupos'
     | '/account'
     | '/home'
     | '/perfil'
@@ -680,9 +734,11 @@ export interface FileRouteTypes {
     | '/ConfirmarCupo/'
     | '/Cupones/'
     | '/Cupos/'
+    | '/CuposReservados/'
     | '/DateSelected/'
     | '/Destino/'
     | '/DetallesViaje/'
+    | '/EmpezarViaje/'
     | '/Login/'
     | '/Origen/'
     | '/PagarCupo/'
@@ -692,6 +748,7 @@ export interface FileRouteTypes {
     | '/RegistrarVehiculo/'
     | '/Registro/'
     | '/Reservas/'
+    | '/ValidarCupos/'
     | '/account/'
     | '/home/'
     | '/perfil/'
@@ -718,9 +775,11 @@ export interface RootRouteChildren {
   ConfirmarCupoIndexRoute: typeof ConfirmarCupoIndexRoute
   CuponesIndexRoute: typeof CuponesIndexRoute
   CuposIndexRoute: typeof CuposIndexRoute
+  CuposReservadosIndexRoute: typeof CuposReservadosIndexRoute
   DateSelectedIndexRoute: typeof DateSelectedIndexRoute
   DestinoIndexRoute: typeof DestinoIndexRoute
   DetallesViajeIndexRoute: typeof DetallesViajeIndexRoute
+  EmpezarViajeIndexRoute: typeof EmpezarViajeIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   OrigenIndexRoute: typeof OrigenIndexRoute
   PagarCupoIndexRoute: typeof PagarCupoIndexRoute
@@ -730,6 +789,7 @@ export interface RootRouteChildren {
   RegistrarVehiculoIndexRoute: typeof RegistrarVehiculoIndexRoute
   RegistroIndexRoute: typeof RegistroIndexRoute
   ReservasIndexRoute: typeof ReservasIndexRoute
+  ValidarCuposIndexRoute: typeof ValidarCuposIndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
   PerfilIndexRoute: typeof PerfilIndexRoute
@@ -756,9 +816,11 @@ const rootRouteChildren: RootRouteChildren = {
   ConfirmarCupoIndexRoute: ConfirmarCupoIndexRoute,
   CuponesIndexRoute: CuponesIndexRoute,
   CuposIndexRoute: CuposIndexRoute,
+  CuposReservadosIndexRoute: CuposReservadosIndexRoute,
   DateSelectedIndexRoute: DateSelectedIndexRoute,
   DestinoIndexRoute: DestinoIndexRoute,
   DetallesViajeIndexRoute: DetallesViajeIndexRoute,
+  EmpezarViajeIndexRoute: EmpezarViajeIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   OrigenIndexRoute: OrigenIndexRoute,
   PagarCupoIndexRoute: PagarCupoIndexRoute,
@@ -768,6 +830,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegistrarVehiculoIndexRoute: RegistrarVehiculoIndexRoute,
   RegistroIndexRoute: RegistroIndexRoute,
   ReservasIndexRoute: ReservasIndexRoute,
+  ValidarCuposIndexRoute: ValidarCuposIndexRoute,
   AccountIndexRoute: AccountIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
   PerfilIndexRoute: PerfilIndexRoute,
@@ -804,9 +867,11 @@ export const routeTree = rootRoute
         "/ConfirmarCupo/",
         "/Cupones/",
         "/Cupos/",
+        "/CuposReservados/",
         "/DateSelected/",
         "/Destino/",
         "/DetallesViaje/",
+        "/EmpezarViaje/",
         "/Login/",
         "/Origen/",
         "/PagarCupo/",
@@ -816,6 +881,7 @@ export const routeTree = rootRoute
         "/RegistrarVehiculo/",
         "/Registro/",
         "/Reservas/",
+        "/ValidarCupos/",
         "/account/",
         "/home/",
         "/perfil/",
@@ -874,6 +940,9 @@ export const routeTree = rootRoute
     "/Cupos/": {
       "filePath": "Cupos/index.tsx"
     },
+    "/CuposReservados/": {
+      "filePath": "CuposReservados/index.tsx"
+    },
     "/DateSelected/": {
       "filePath": "DateSelected/index.tsx"
     },
@@ -882,6 +951,9 @@ export const routeTree = rootRoute
     },
     "/DetallesViaje/": {
       "filePath": "DetallesViaje/index.tsx"
+    },
+    "/EmpezarViaje/": {
+      "filePath": "EmpezarViaje/index.tsx"
     },
     "/Login/": {
       "filePath": "Login/index.tsx"
@@ -909,6 +981,9 @@ export const routeTree = rootRoute
     },
     "/Reservas/": {
       "filePath": "Reservas/index.tsx"
+    },
+    "/ValidarCupos/": {
+      "filePath": "ValidarCupos/index.tsx"
     },
     "/account/": {
       "filePath": "account/index.tsx"
