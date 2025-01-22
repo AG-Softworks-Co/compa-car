@@ -45,6 +45,7 @@ import { Route as RegistrarVehiculoLicenseImport } from './routes/RegistrarVehic
 import { Route as RegistrarVehiculoDocumentsRequiredImport } from './routes/RegistrarVehiculo/DocumentsRequired'
 import { Route as RegistrarVehiculoDocumentFormImport } from './routes/RegistrarVehiculo/DocumentForm'
 import { Route as PagarCupoUpdateTripSeatsImport } from './routes/PagarCupo/updateTripSeats'
+import { Route as CuposReservadosValidarCupoImport } from './routes/CuposReservados/ValidarCupo'
 import { Route as CuposViewTicketImport } from './routes/Cupos/ViewTicket'
 import { Route as CuposViewPassengersImport } from './routes/Cupos/ViewPassengers'
 import { Route as CuposViewBookingDetailsImport } from './routes/Cupos/ViewBookingDetails'
@@ -225,6 +226,13 @@ const PagarCupoUpdateTripSeatsRoute = PagarCupoUpdateTripSeatsImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const CuposReservadosValidarCupoRoute = CuposReservadosValidarCupoImport.update(
+  {
+    path: '/CuposReservados/ValidarCupo',
+    getParentRoute: () => rootRoute,
+  } as any,
+)
+
 const CuposViewTicketRoute = CuposViewTicketImport.update({
   path: '/Cupos/ViewTicket',
   getParentRoute: () => rootRoute,
@@ -284,6 +292,13 @@ declare module '@tanstack/react-router' {
       path: '/Cupos/ViewTicket'
       fullPath: '/Cupos/ViewTicket'
       preLoaderRoute: typeof CuposViewTicketImport
+      parentRoute: typeof rootRoute
+    }
+    '/CuposReservados/ValidarCupo': {
+      id: '/CuposReservados/ValidarCupo'
+      path: '/CuposReservados/ValidarCupo'
+      fullPath: '/CuposReservados/ValidarCupo'
+      preLoaderRoute: typeof CuposReservadosValidarCupoImport
       parentRoute: typeof rootRoute
     }
     '/PagarCupo/updateTripSeats': {
@@ -521,6 +536,7 @@ export interface FileRoutesByFullPath {
   '/Cupos/ViewBookingDetails': typeof CuposViewBookingDetailsRoute
   '/Cupos/ViewPassengers': typeof CuposViewPassengersRoute
   '/Cupos/ViewTicket': typeof CuposViewTicketRoute
+  '/CuposReservados/ValidarCupo': typeof CuposReservadosValidarCupoRoute
   '/PagarCupo/updateTripSeats': typeof PagarCupoUpdateTripSeatsRoute
   '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
   '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
@@ -561,6 +577,7 @@ export interface FileRoutesByTo {
   '/Cupos/ViewBookingDetails': typeof CuposViewBookingDetailsRoute
   '/Cupos/ViewPassengers': typeof CuposViewPassengersRoute
   '/Cupos/ViewTicket': typeof CuposViewTicketRoute
+  '/CuposReservados/ValidarCupo': typeof CuposReservadosValidarCupoRoute
   '/PagarCupo/updateTripSeats': typeof PagarCupoUpdateTripSeatsRoute
   '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
   '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
@@ -602,6 +619,7 @@ export interface FileRoutesById {
   '/Cupos/ViewBookingDetails': typeof CuposViewBookingDetailsRoute
   '/Cupos/ViewPassengers': typeof CuposViewPassengersRoute
   '/Cupos/ViewTicket': typeof CuposViewTicketRoute
+  '/CuposReservados/ValidarCupo': typeof CuposReservadosValidarCupoRoute
   '/PagarCupo/updateTripSeats': typeof PagarCupoUpdateTripSeatsRoute
   '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
   '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
@@ -644,6 +662,7 @@ export interface FileRouteTypes {
     | '/Cupos/ViewBookingDetails'
     | '/Cupos/ViewPassengers'
     | '/Cupos/ViewTicket'
+    | '/CuposReservados/ValidarCupo'
     | '/PagarCupo/updateTripSeats'
     | '/RegistrarVehiculo/DocumentForm'
     | '/RegistrarVehiculo/DocumentsRequired'
@@ -683,6 +702,7 @@ export interface FileRouteTypes {
     | '/Cupos/ViewBookingDetails'
     | '/Cupos/ViewPassengers'
     | '/Cupos/ViewTicket'
+    | '/CuposReservados/ValidarCupo'
     | '/PagarCupo/updateTripSeats'
     | '/RegistrarVehiculo/DocumentForm'
     | '/RegistrarVehiculo/DocumentsRequired'
@@ -722,6 +742,7 @@ export interface FileRouteTypes {
     | '/Cupos/ViewBookingDetails'
     | '/Cupos/ViewPassengers'
     | '/Cupos/ViewTicket'
+    | '/CuposReservados/ValidarCupo'
     | '/PagarCupo/updateTripSeats'
     | '/RegistrarVehiculo/DocumentForm'
     | '/RegistrarVehiculo/DocumentsRequired'
@@ -763,6 +784,7 @@ export interface RootRouteChildren {
   CuposViewBookingDetailsRoute: typeof CuposViewBookingDetailsRoute
   CuposViewPassengersRoute: typeof CuposViewPassengersRoute
   CuposViewTicketRoute: typeof CuposViewTicketRoute
+  CuposReservadosValidarCupoRoute: typeof CuposReservadosValidarCupoRoute
   PagarCupoUpdateTripSeatsRoute: typeof PagarCupoUpdateTripSeatsRoute
   RegistrarVehiculoDocumentFormRoute: typeof RegistrarVehiculoDocumentFormRoute
   RegistrarVehiculoDocumentsRequiredRoute: typeof RegistrarVehiculoDocumentsRequiredRoute
@@ -803,6 +825,7 @@ const rootRouteChildren: RootRouteChildren = {
   CuposViewBookingDetailsRoute: CuposViewBookingDetailsRoute,
   CuposViewPassengersRoute: CuposViewPassengersRoute,
   CuposViewTicketRoute: CuposViewTicketRoute,
+  CuposReservadosValidarCupoRoute: CuposReservadosValidarCupoRoute,
   PagarCupoUpdateTripSeatsRoute: PagarCupoUpdateTripSeatsRoute,
   RegistrarVehiculoDocumentFormRoute: RegistrarVehiculoDocumentFormRoute,
   RegistrarVehiculoDocumentsRequiredRoute:
@@ -855,6 +878,7 @@ export const routeTree = rootRoute
         "/Cupos/ViewBookingDetails",
         "/Cupos/ViewPassengers",
         "/Cupos/ViewTicket",
+        "/CuposReservados/ValidarCupo",
         "/PagarCupo/updateTripSeats",
         "/RegistrarVehiculo/DocumentForm",
         "/RegistrarVehiculo/DocumentsRequired",
@@ -903,6 +927,9 @@ export const routeTree = rootRoute
     },
     "/Cupos/ViewTicket": {
       "filePath": "Cupos/ViewTicket.tsx"
+    },
+    "/CuposReservados/ValidarCupo": {
+      "filePath": "CuposReservados/ValidarCupo.tsx"
     },
     "/PagarCupo/updateTripSeats": {
       "filePath": "PagarCupo/updateTripSeats.tsx"

@@ -1,0 +1,35 @@
+.container {
+    padding: 20px;
+    max-width: 100%;
+}
+.title {
+  text-align: center;
+  margin-bottom: 20px;
+   color: #374151; /* Dark gray text */
+}
+.qrScannerContainer {
+    width: 280px;
+    height: 280px;
+    margin-bottom: 20px;
+   border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.scanResult {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+.validateButton {
+    border-radius: 6px;
+    font-size: 1rem;
+    padding: 10px 20px;
+}
+.scanButton {
+  border-radius: 6px;
+  font-size: 1rem;
+  padding: 10px 20px;
+  margin-bottom: 20px;
+}
