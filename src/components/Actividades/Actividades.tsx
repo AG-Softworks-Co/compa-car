@@ -3,7 +3,6 @@ import { Container, Title, Text, LoadingOverlay, Button } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 import dayjs from 'dayjs';
 import RolSelector from './RolSelector';
-import TripList from './TripList';
 import TripFilter from './TripFilter';
 import EditTripModal from './EditTripModal';
 import DeleteTripModal from './DeleteTripModal';

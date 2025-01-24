@@ -10,7 +10,7 @@ interface RolSelectorProps {
     role: string | null;
 }
 
-const RolSelector: React.FC<RolSelectorProps> = ({ userId, token, onSelect, role }) => {
+const RolSelector: React.FC<RolSelectorProps> = ({  onSelect, role }) => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 

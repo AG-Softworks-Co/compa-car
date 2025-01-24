@@ -1,11 +1,11 @@
 // Cupos.tsx
 import React, { useState, useEffect } from 'react';
-import { Container, Title, Text, LoadingOverlay, Card, Group, Stack, List ,Button,  } from '@mantine/core';
+import { Container, Title, Text, LoadingOverlay, Card, Group, Stack ,Button,  } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 import dayjs from 'dayjs';
 import styles from './index.module.css';
-import { createFileRoute, useNavigate, useLocation } from '@tanstack/react-router';
-import { Booking, Passenger } from '../../components/Cupos/types';
+import { createFileRoute,  useLocation } from '@tanstack/react-router';
+import { Booking, } from '../../components/Cupos/types';
 import ViewBookingDetails from './ViewBookingDetails';
 import ViewPassengers from './ViewPassengers';
 

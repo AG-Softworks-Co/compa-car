@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'CompaCar',
   webDir: 'dist',
   server: {
-    url: "http://192.168.18.4:5173/",
+    url: "http://192.168.18.248:5173/",
     cleartext: true
   }
 };

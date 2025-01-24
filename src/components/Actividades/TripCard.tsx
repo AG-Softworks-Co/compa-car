@@ -132,7 +132,7 @@ const TripCard: React.FC<TripCardProps> = ({ trip, onEdit, onDelete, token, user
             <Modal
             opened={cuposModalOpen}
             onClose={handleCloseCuposModal}
-            title={`Cupos Comprados para el viaje ${trip.id}`}
+        
             >
               <CuposReservados tripId={trip.id} token={token} userId={userId}/>
             </Modal>

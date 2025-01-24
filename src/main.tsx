@@ -1,4 +1,3 @@
-// index.tsx
 import "./index.css";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
@@ -39,6 +38,7 @@ function App() {
     <MantineProvider>
       <RouterProvider router={router} />
       <ReservarView isLoaded={isLoaded} />
+  
     </MantineProvider>
   );
 }
@@ -53,3 +53,4 @@ if (!rootElement.innerHTML) {
     </StrictMode>
   );
 }
+
