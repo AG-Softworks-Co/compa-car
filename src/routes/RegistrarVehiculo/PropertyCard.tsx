@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, createFileRoute } from '@tanstack/react-router';
 import {
     ArrowLeft,
@@ -12,7 +13,7 @@ import {
     UserRound,
     Settings
 } from 'lucide-react';
-import { PropertyCardData, SERVICE_TYPES } from '../../types/PropertyCardTypes';
+import { type PropertyCardData, SERVICE_TYPES } from '../../types/PropertyCardTypes';
 import styles from './PropertyCar.module.css';
 import { LoadingOverlay, Modal, Button, Text } from '@mantine/core';
 
@@ -185,7 +186,7 @@ const PropertyCard: React.FC = () => {
           if (name === "passengerCapacity") {
                 const numericValue = value.replace(/[^0-9]/g, ''); // Elimina caracteres no numéricos
 
-              if (parseInt(numericValue) > 10) {
+              if (Number.parseInt(numericValue) > 10) {
                  setErrors(prev => ({ ...prev, [name]: "La capacidad máxima es 10 pasajeros" }));
                  return;
               }
@@ -362,10 +363,10 @@ const PropertyCard: React.FC = () => {
     const handleSuccessModalClose = () => {
         setIsSuccessModalOpen(false);
           if (hasPropertyCard) {
-               navigate({ to: '/perfil' });
+               navigate({ to: '/Perfil' });
            } else {
                 navigate({
-                    to: '/perfil',
+                    to: '/Perfil',
                     search: { documentType: 'property', status: 'completed' }
                 });
             }
@@ -375,7 +376,7 @@ const PropertyCard: React.FC = () => {
         if (formHasChanged) {
            setIsModalOpen(true);
         } else {
-             navigate({ to: hasPropertyCard ? '/perfil' :'/RegistrarVehiculo/DocumentsRequired' });
+             navigate({ to: hasPropertyCard ? '/Perfil' :'/RegistrarVehiculo/DocumentsRequired' });
         }
     };
 
@@ -385,7 +386,7 @@ const PropertyCard: React.FC = () => {
 
     const handleModalConfirm = () => {
         setIsModalOpen(false);
-         navigate({ to: hasPropertyCard ? '/perfil' : '/RegistrarVehiculo/DocumentsRequired' });
+         navigate({ to: hasPropertyCard ? '/Perfil' : '/RegistrarVehiculo/DocumentsRequired' });
     };
    const handleEditClick = () => {
         setViewMode(false);

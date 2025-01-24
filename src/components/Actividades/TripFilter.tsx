@@ -1,8 +1,8 @@
-import React from 'react';
+import type React from 'react';
 import { Select, Text } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import styles from './SrylesComponents/TripFilter.module.css';
-import { Trip } from './Actividades';
+import type { Trip } from './Actividades';
 
 interface TripFilterProps {
     trips: Trip[];

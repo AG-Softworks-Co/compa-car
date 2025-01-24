@@ -1,5 +1,5 @@
 // UpdateTripSeats.tsx
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { useEffect } from 'react';
 
 async function updateTripSeats(tripId: number, seatsToSubtract: number, token: string) {
@@ -31,7 +31,7 @@ async function updateTripSeats(tripId: number, seatsToSubtract: number, token: s
 }
 
 const UpdateTripSeatsComponent = () => {
-     const navigate = useNavigate();
+    //  const navigate = useNavigate();
      useEffect(() => {
        const searchParams = new URLSearchParams(window.location.search);
        const tripId = Number(searchParams.get('tripId'));

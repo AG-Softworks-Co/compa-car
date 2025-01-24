@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { createFileRoute } from '@tanstack/react-router';
 import {
@@ -11,7 +12,7 @@ import {
     AlertCircle,
     CheckCircle,
 } from 'lucide-react';
-import { SoatFormData, INSURANCE_COMPANIES } from '../../types/SoatTypes';
+import { type SoatFormData, INSURANCE_COMPANIES } from '../../types/SoatTypes';
 import styles from './Soat.module.css';
 import { TextInput, Modal, Button, Text } from '@mantine/core';
 
@@ -390,7 +391,7 @@ if (typeof name === "string" && errors[name]) {
         if (formHasChanged) {
             setIsModalOpen(true);
         } else {
-            navigate({ to: '/perfil' });
+            navigate({ to: '/Perfil' });
         }
     };
 
@@ -400,16 +401,16 @@ if (typeof name === "string" && errors[name]) {
 
     const handleModalConfirm = () => {
         setIsModalOpen(false);
-        navigate({ to: '/perfil' });
+        navigate({ to: '/Perfil' });
     };
 
      const handleSuccessModalClose = () => {
          setIsSuccessModalOpen(false);
            if (hasSoat) {
-                navigate({ to: '/perfil' });
+                navigate({ to: '/Perfil' });
             } else {
                navigate({
-                to: '/perfil',
+                to: '/Perfil',
                 search: { documentType: 'soat', status: 'completed' },
                 });
             }

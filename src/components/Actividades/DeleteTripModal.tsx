@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Modal, Text, Group, Button } from '@mantine/core';
 import styles from './SrylesComponents/DeleteTripModal.module.css';
 

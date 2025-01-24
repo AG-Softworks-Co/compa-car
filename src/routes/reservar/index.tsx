@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import type React from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Box, TextInput, Button, Title, Card, Text, Container, Badge, Group } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { Container, Title, Text, LoadingOverlay, Button } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 import dayjs from 'dayjs';

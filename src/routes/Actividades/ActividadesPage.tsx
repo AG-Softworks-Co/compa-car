@@ -9,7 +9,7 @@ const ActividadesPage = () => {
     return (
         <div>
         {userId && token ? (
-            <Actividades userId={parseInt(userId, 10)} token={token} />
+            <Actividades userId={Number.parseInt(userId, 10)} token={token} />
         ) : (
             <p>No se encontro el usuario. Inicie sesión nuevamente.</p>
         )}

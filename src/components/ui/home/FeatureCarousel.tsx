@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import {  Card, Text } from '@mantine/core';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import styles from './FeatureCarousel.module.css';

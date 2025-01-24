@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearch, createFileRoute } from '@tanstack/react-router';
 import { ArrowLeft } from 'lucide-react';
 import type { DocumentFormData, DocumentType } from '../../types/DocumentTypes';

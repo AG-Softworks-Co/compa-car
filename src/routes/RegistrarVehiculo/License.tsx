@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import {
     ArrowLeft,
@@ -12,7 +13,7 @@ import {
     User,
 } from 'lucide-react';
 import {
-    DocumentFormData,
+    type DocumentFormData,
     LICENSE_CATEGORIES,
     BLOOD_TYPES,
 } from '../../types/DocumentTypes';
@@ -367,7 +368,7 @@ const License: React.FC = () => {
             console.log('Licencia guardada correctamente');
             setFormHasChanged(false);
             setViewMode(true);
-            navigate({ to: '/perfil' });
+            navigate({ to: '/Perfil' });
         } catch (error: any) {
             console.error('Error al guardar la licencia catch:', error);
             setErrors((prev) => ({
@@ -389,7 +390,7 @@ const License: React.FC = () => {
         if (formHasChanged) {
             setIsModalOpen(true);
         } else {
-            navigate({ to: '/perfil' });
+            navigate({ to: '/Perfil' });
         }
     };
 
@@ -399,7 +400,7 @@ const License: React.FC = () => {
 
     const handleModalConfirm = () => {
         setIsModalOpen(false);
-        navigate({ to: '/perfil' });
+        navigate({ to: '/Perfil' });
     };
 
     if (loading) {

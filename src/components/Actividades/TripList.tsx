@@ -2,13 +2,14 @@ import React from 'react';
 import TripCard from './TripCard';
 import { Stack, Text } from '@mantine/core';
 import styles from './index.module.css';
-import { Trip } from './Actividades.tsx';
+import type { Trip } from './Actividades.tsx';
 
 interface TripListProps {
   trips: Trip[];
   onEdit: (index: number) => void;
   onDelete: (index: number) => void;
 }
+
 
 const TripList: React.FC<TripListProps> = ({ trips, onEdit, onDelete }) => {
   if (trips.length === 0) {
@@ -23,6 +24,8 @@ const TripList: React.FC<TripListProps> = ({ trips, onEdit, onDelete }) => {
     <Stack gap="lg">
        {trips.map((trip, index) => (
           <TripCard
+            token=''
+            userId={0}
             key={trip.id}
             trip={trip}
             index={index}

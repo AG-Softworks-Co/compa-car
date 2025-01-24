@@ -296,7 +296,7 @@ export interface Coordinates {
     },
   };
     
-    tripStore.getPublishedTrips = function (): TripData[] {
+    tripStore.getPublishedTrips = (): TripData[] => {
         const trips = localStorage.getItem(PUBLISHED_TRIPS_KEY);
         return trips ? JSON.parse(trips) : [];
     };
@@ -307,7 +307,7 @@ export interface Coordinates {
         localStorage.setItem(PUBLISHED_TRIPS_KEY, JSON.stringify(existingTrips));
     };
   
-    tripStore.clearPublishedTrips = function (): void {
+    tripStore.clearPublishedTrips = (): void => {
         localStorage.removeItem(PUBLISHED_TRIPS_KEY);
     };
   // Constantes para mensajes de error

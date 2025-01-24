@@ -13,7 +13,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { Download, AlertCircle } from 'lucide-react';
 import styles from './ViewTicket.module.css';
 import html2canvas from 'html2canvas';
-import { Booking, Passenger } from '../../components/Cupos/types';
+import type { Booking, Passenger } from '../../components/Cupos/types';
 
 interface PassengerData {
     passenger_id: number;

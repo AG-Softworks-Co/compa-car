@@ -1,6 +1,6 @@
-import React from 'react';
+import type React from 'react';
 import { Modal, Stack, Textarea, NumberInput, Switch, Button } from '@mantine/core';
-import { Trip } from './Actividades';
+import type { Trip } from './Actividades';
 
 interface EditTripModalProps {
     opened: boolean;

@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { User } from 'lucide-react';
 import styles from './passenger.module.css';
 

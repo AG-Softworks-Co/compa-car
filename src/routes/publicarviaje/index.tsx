@@ -30,8 +30,8 @@ import { GoogleMap, Marker } from '@react-google-maps/api';
 import { 
   mapOptions, 
   tripStore,
-  TripRoute,
-  TripLocation,
+  type TripRoute,
+  type TripLocation,
   errorMessages
 } from '../../types/PublicarViaje/TripDataManagement';
 import styles from './index.module.css';

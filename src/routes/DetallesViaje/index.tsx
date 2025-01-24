@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import {
     Container,
@@ -11,7 +12,7 @@ import {
     Stack,
     Badge,
     NumberInput,
-    NumberInputProps,
+    type NumberInputProps,
     Textarea,
     Switch,
     Modal,
@@ -27,9 +28,9 @@ import {
     Check,
     MapPin,
 } from 'lucide-react';
-import { MantineTheme, } from '@mantine/core';
+import type { MantineTheme, } from '@mantine/core';
 import { DateTimePicker, } from '@mantine/dates';
-import { tripStore, TripData, TripStopover } from '../../types/PublicarViaje/TripDataManagement';
+import { tripStore, type TripData, type TripStopover } from '../../types/PublicarViaje/TripDataManagement';
 import { saveToLocalStorage, getFromLocalStorage } from '../../types/PublicarViaje/localStorageHelper';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
@@ -204,7 +205,7 @@ function FormattedNumberInput({
     ...props
 }: FormattedNumberInputProps) {
     const handleChange = (val: string | number) => {
-        const numericValue = typeof val === 'string' ? parseFloat(val) : val;
+        const numericValue = typeof val === 'string' ? Number.parseFloat(val) : val;
         onChange(isNaN(numericValue) ? 0 : numericValue);
     };
 
@@ -474,7 +475,7 @@ function DetallesViajeView() {
                 return;
             }
 
-             const vehicleId = await fetchVehicleId(parseInt(userId));
+             const vehicleId = await fetchVehicleId(Number.parseInt(userId));
             if (!vehicleId) {
                 setFormError("No se pudo encontrar el id del vehiculo para este usuario.");
                 return;
@@ -531,7 +532,7 @@ function DetallesViajeView() {
                 origin_id: createdOriginLocation.location_id,
                 destination_id: createdDestinationLocation.location_id,
                 route_id: createdRoute.route_id,
-                user_id: parseInt(userId),
+                user_id: Number.parseInt(userId),
                 vehicle_id: vehicleId,
                 date_time: dateTime?.toISOString().replace('T', ' ').slice(0, 19),
                 seats,
@@ -720,7 +721,7 @@ function DetallesViajeView() {
                                 required
                                 leftSection={<DollarSign size={18} />}
                                 error={formError && formError.includes('precio') ? formError : null}
-                                formatter={(value) => !value ? '$ 0' : `$ ${parseInt(value).toLocaleString()}`}
+                                formatter={(value) => !value ? '$ 0' : `$ ${Number.parseInt(value).toLocaleString()}`}
                                 parser={(value) => value.replace(/[^\d]/g, '')}
                             />
                         </Group>

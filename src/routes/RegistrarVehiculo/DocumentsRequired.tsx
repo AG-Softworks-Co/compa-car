@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { useNavigate, createFileRoute } from '@tanstack/react-router';
 import { 
   FileText, 
@@ -11,8 +12,8 @@ import {
 } from 'lucide-react';
 import { 
   DOCUMENT_TYPES, 
-  DocumentType, 
-  DocumentStatus 
+  type DocumentType, 
+  type DocumentStatus 
 } from '../../types/FormsVehicle';
 import styles from './DocumentsRequired.module.css';
 
@@ -155,7 +156,7 @@ const DocumentsRequired: React.FC = () => {
               </button>
               <button 
                 className={styles.buttonPrimary}
-                onClick={() => navigate({ to: '/perfil' })}
+                onClick={() => navigate({ to: '/Perfil' })}
               >
                 Finalizar Registro
               </button>

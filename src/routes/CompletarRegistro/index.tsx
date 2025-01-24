@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import type React from "react";
+import { useState, useEffect } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   Box,
@@ -107,13 +108,13 @@ const CompleteProfileView: React.FC = () => {
             setIsEditing(true);
             form.setValues({
               ...data.data,
-              id: parseInt(userId),
+              id: Number.parseInt(userId),
             });
           } else {
             console.log('Perfil no encontrado, iniciando nuevo registro');
             form.setValues({
               ...form.values,
-              id: parseInt(userId),
+              id: Number.parseInt(userId),
               email: userEmail
             });
           }
@@ -121,7 +122,7 @@ const CompleteProfileView: React.FC = () => {
           console.error('Error cargando perfil:', error);
           form.setValues({
             ...form.values,
-            id: parseInt(userId),
+            id: Number.parseInt(userId),
             email: userEmail
           });
         }
@@ -151,7 +152,7 @@ const CompleteProfileView: React.FC = () => {
 
       // Preparar datos
       const dataToSend = {
-        id: parseInt(userId),
+        id: Number.parseInt(userId),
         email: values.email.trim(),
         phone_number: values.phone_number,
         first_name: values.first_name.trim(),

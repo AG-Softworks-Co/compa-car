@@ -15,9 +15,9 @@ import { ArrowLeft, MapPin, AlertCircle } from 'lucide-react';
 import { GoogleMap,  } from '@react-google-maps/api';
 import {
     tripStore,
-    TripLocation,
-    TripStopover,
-    StopData
+    type TripLocation,
+    type TripStopover,
+    type StopData
 } from '../../types/PublicarViaje/TripDataManagement';
 import styles from './index.module.css';
 
@@ -200,8 +200,8 @@ function ParadasView() {
         await Promise.all(searchPromises);
         
         return Array.from(stops.values()).sort((a, b) => {
-          const distA = parseInt(a.distance.replace(/[^0-9]/g, ''));
-          const distB = parseInt(b.distance.replace(/[^0-9]/g, ''));
+          const distA = Number.parseInt(a.distance.replace(/[^0-9]/g, ''));
+          const distB = Number.parseInt(b.distance.replace(/[^0-9]/g, ''));
           return distA - distB;
         });
     }, [loadSelectedRoute, calculateStopInfo]);

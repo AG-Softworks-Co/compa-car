@@ -22,17 +22,17 @@ import {
 import dayjs from 'dayjs'
 import styles from './index.module.css'
 
-interface PaymentData {
-    reservationId: string
-    amount: number
-    paymentMethod: string
-    cardNumber: string
-    expiryDate: string
-    cvv: string
-    holderName: string
-    status: 'completed' | 'failed'
-    timestamp: string
-}
+// interface PaymentData {
+//     reservationId: string
+//     amount: number
+//     paymentMethod: string
+//     cardNumber: string
+//     expiryDate: string
+//     cvv: string
+//     holderName: string
+//     status: 'completed' | 'failed'
+//     timestamp: string
+// }
 
 interface ReservationData {
     tripId: string
@@ -142,7 +142,7 @@ export function PaymentProcess() {
         } else {
             const [month, year] = cardData.expiry.split('/')
             const currentDate = new Date()
-            const cardDate = new Date(2000 + parseInt(year), parseInt(month) - 1)
+            const cardDate = new Date(2000 + Number.parseInt(year), Number.parseInt(month) - 1)
             if (cardDate < currentDate) {
                 newErrors.expiry = 'Tarjeta vencida'
             }
@@ -270,7 +270,7 @@ export function PaymentProcess() {
 
               //Update the Trip seats
        if (trip) {
-          const tripId = parseInt(trip.id);
+          const tripId = Number.parseInt(trip.id);
          const seatsToSubtract = currentReservation.passengersCount
          const tripSeatsUpdated = await updateTripSeats(tripId, trip.seats-seatsToSubtract, token);
            if(tripSeatsUpdated){

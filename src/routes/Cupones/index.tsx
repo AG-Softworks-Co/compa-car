@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import styles from './index.module.css'
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { Container, Title, Text, Button, Badge, Tabs, Modal } from '@mantine/core';
 import { Gift, Clock, Search, Copy, Check, ArrowLeft } from 'lucide-react';
 import { notifications } from '@mantine/notifications';
-import { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 interface Coupon {
   id: number;

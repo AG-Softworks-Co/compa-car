@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { Group, Text, Badge, Button, ActionIcon, Modal, useMantineTheme } from '@mantine/core';
 import { Navigation, Clock, Users, DollarSign, Edit, Trash, Bell } from 'lucide-react';
 import styles from './SrylesComponents/TripCard.module.css';
-import { Trip } from './Actividades';
-import { BookedPassenger } from '../../components/Cupos/types';
+import type { Trip } from './Actividades';
+import type { BookedPassenger } from '../../components/Cupos/types';
 import CuposReservados from '../../routes/CuposReservados';
 
 interface TripCardProps {
@@ -12,6 +13,7 @@ interface TripCardProps {
     onDelete: () => void;
     token: string;
     userId: number;
+    index?: number;
 }
 
 const BASE_URL = 'https://rest-sorella-production.up.railway.app/api';

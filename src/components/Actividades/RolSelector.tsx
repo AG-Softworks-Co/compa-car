@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import ModalNoDriver from './ModalNoDriver';
 import { Button, Group } from '@mantine/core';
 import styles from './SrylesComponents/RolSelector.module.css'

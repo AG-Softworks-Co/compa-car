@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { createFileRoute } from '@tanstack/react-router';
 import { 
@@ -114,7 +115,7 @@ const VehicleRegistration: React.FC = () => {
 
         setFormData(prev => ({
           ...prev,
-          user_id: parseInt(userId)
+          user_id: Number.parseInt(userId)
         }));
 
         const response = await fetch(`${BASE_URL}/vehicles`, {
@@ -275,7 +276,7 @@ const VehicleRegistration: React.FC = () => {
         throw new Error(data.msg || 'Error al procesar el vehículo');
       }
 
-      navigate({ to: '/perfil' });
+      navigate({ to: '/Perfil' });
     } catch (error: any) {
       console.error('Error al procesar el vehículo:', error);
       setError(error.message || "Error al guardar los datos");
@@ -285,7 +286,7 @@ const VehicleRegistration: React.FC = () => {
   };
 
   const handleBack = () => {
-    navigate({ to: '/perfil' });
+    navigate({ to: '/Perfil' });
   };
 
 

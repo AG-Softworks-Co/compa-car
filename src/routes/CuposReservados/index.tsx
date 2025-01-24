@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { Text, Center, Container, Title, Group, Button, Badge } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';

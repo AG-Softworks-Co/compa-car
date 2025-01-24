@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { Card, Stack, Group, Text, Button, LoadingOverlay, Badge } from '@mantine/core';
 import styles from './index.module.css';
 import detailStyles from './ViewBookingDetails.module.css';
 import dayjs from 'dayjs';
-import { Booking } from '../../components/Cupos/types';
+import type { Booking } from '../../components/Cupos/types';
 import { createFileRoute } from '@tanstack/react-router';
 import { showNotification } from '@mantine/notifications';
 

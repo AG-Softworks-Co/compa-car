@@ -14,7 +14,6 @@ import {
 } from '@mantine/core'
 import { showNotification } from '@mantine/notifications'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { QRCodeSVG } from 'qrcode.react'
 import jsQR from 'jsqr'
 import {
   IconAlertCircle,
@@ -31,7 +30,7 @@ interface ValidateResponse {
 
 const ValidarCupoComponent = () => {
   // Obtener los parámetros de la ruta actual sin pasar argumentos a useParams
-  const { passengerId, token, userId } = Route.useParams()
+  const { passengerId, token } = Route.useParams()
 
   const [loading, setLoading] = useState(false)
   const [scanResult, setScanResult] = useState<string | null>(null)
@@ -43,9 +42,9 @@ const ValidarCupoComponent = () => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const handleGoBack = () => {
-    navigate({ to: '/Actividades' })
-  }
+  // const handleGoBack = () => {
+  //   navigate({ to: '/Actividades' })
+  // }
 
   const handleValidate = useCallback(async () => {
     if (!scanResult) {

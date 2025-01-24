@@ -67,7 +67,7 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
 
         const reservationData = {
             trip_id: trip.id,
-            user_id: parseInt(userId), // Asumo que el user_id es un número
+            user_id: Number.parseInt(userId), // Asumo que el user_id es un número
             seats_booked: passengersCount,
             total_price: passengersCount * trip.pricePerSeat,
             booking_status: 'pending',

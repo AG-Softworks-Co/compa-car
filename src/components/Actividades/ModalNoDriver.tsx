@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Modal, Container, Title, Text, } from '@mantine/core';
 import { AlertCircle, ShieldAlert, ArrowRight } from 'lucide-react';
 import styles from './SrylesComponents/ModalNoDrIver.module.css';

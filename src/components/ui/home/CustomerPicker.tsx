@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { Popover, TextInput } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
 import { Calendar } from 'lucide-react';
