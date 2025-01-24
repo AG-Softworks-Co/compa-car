@@ -29,4 +29,7 @@ export default defineConfig({
       }
     ],
   },
+  server: {
+    allowedHosts: ["dev.faun-scylla.ts.net"]
+  }
 });

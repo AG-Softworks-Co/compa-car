@@ -20,6 +20,7 @@ const ViewPassengers: React.FC<ViewPassengersProps> = ({ booking, onClose }) => 
     const handleViewTicket = (passenger: Passenger) => {
         navigate({
             to: `/Cupos/ViewTicket`,
+            //@ts-ignore
             state: { booking, passenger, selectedBooking: booking, showPassengers: true }, // Pass selected booking data and show passengers flag
         });
     };

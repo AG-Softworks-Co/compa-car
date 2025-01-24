@@ -111,7 +111,7 @@ const CuponesView: React.FC = () => {
   };
 
   const handleBack = () => {
-    navigate({ to: '/perfil' });
+    navigate({ to: '/Perfil' });
   };
 
   const handleSearch = (e: React.FormEvent) => {

@@ -245,7 +245,7 @@ const ConfirmarCupoView = () => {
              let updatedPassengers: PassengerData[] = [];
                 // Loop through each passenger and make a separate request
                 for (const passenger of passengers) {
-                   const bookingQr = `${passenger.fullName}+${passenger.identification}+${reservation.bookingId}+${Date.now()}`;
+                   const bookingQr = `${passenger.fullName}+${passenger.identification}+${reservation.bookingId}}`;
                    const passengerData = {
                       booking_id: reservation.bookingId,
                        full_name: passenger.fullName,
