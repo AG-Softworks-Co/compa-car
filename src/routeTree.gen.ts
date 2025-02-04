@@ -17,6 +17,7 @@ import { Route as ReservarIndexImport } from './routes/reservar/index'
 import { Route as PublicarviajeIndexImport } from './routes/publicarviaje/index'
 import { Route as HomeIndexImport } from './routes/home/index'
 import { Route as AccountIndexImport } from './routes/account/index'
+import { Route as WalletIndexImport } from './routes/Wallet/index'
 import { Route as ValidarCuposIndexImport } from './routes/ValidarCupos/index'
 import { Route as ReservasIndexImport } from './routes/Reservas/index'
 import { Route as RegistroIndexImport } from './routes/Registro/index'
@@ -28,6 +29,7 @@ import { Route as ParadasIndexImport } from './routes/Paradas/index'
 import { Route as PagarCupoIndexImport } from './routes/PagarCupo/index'
 import { Route as OrigenIndexImport } from './routes/Origen/index'
 import { Route as LoginIndexImport } from './routes/Login/index'
+import { Route as GatewayIndexImport } from './routes/Gateway/index'
 import { Route as EmpezarViajeIndexImport } from './routes/EmpezarViaje/index'
 import { Route as DetallesViajeIndexImport } from './routes/DetallesViaje/index'
 import { Route as DestinoIndexImport } from './routes/Destino/index'
@@ -84,6 +86,12 @@ const HomeIndexRoute = HomeIndexImport.update({
 const AccountIndexRoute = AccountIndexImport.update({
   id: '/account/',
   path: '/account/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const WalletIndexRoute = WalletIndexImport.update({
+  id: '/Wallet/',
+  path: '/Wallet/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -150,6 +158,12 @@ const OrigenIndexRoute = OrigenIndexImport.update({
 const LoginIndexRoute = LoginIndexImport.update({
   id: '/Login/',
   path: '/Login/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const GatewayIndexRoute = GatewayIndexImport.update({
+  id: '/Gateway/',
+  path: '/Gateway/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -450,6 +464,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmpezarViajeIndexImport
       parentRoute: typeof rootRoute
     }
+    '/Gateway/': {
+      id: '/Gateway/'
+      path: '/Gateway'
+      fullPath: '/Gateway'
+      preLoaderRoute: typeof GatewayIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/Login/': {
       id: '/Login/'
       path: '/Login'
@@ -527,6 +548,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ValidarCuposIndexImport
       parentRoute: typeof rootRoute
     }
+    '/Wallet/': {
+      id: '/Wallet/'
+      path: '/Wallet'
+      fullPath: '/Wallet'
+      preLoaderRoute: typeof WalletIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/account/': {
       id: '/account/'
       path: '/account'
@@ -590,6 +618,7 @@ export interface FileRoutesByFullPath {
   '/Destino': typeof DestinoIndexRoute
   '/DetallesViaje': typeof DetallesViajeIndexRoute
   '/EmpezarViaje': typeof EmpezarViajeIndexRoute
+  '/Gateway': typeof GatewayIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
   '/PagarCupo': typeof PagarCupoIndexRoute
@@ -601,6 +630,7 @@ export interface FileRoutesByFullPath {
   '/Registro': typeof RegistroIndexRoute
   '/Reservas': typeof ReservasIndexRoute
   '/ValidarCupos': typeof ValidarCuposIndexRoute
+  '/Wallet': typeof WalletIndexRoute
   '/account': typeof AccountIndexRoute
   '/home': typeof HomeIndexRoute
   '/publicarviaje': typeof PublicarviajeIndexRoute
@@ -631,6 +661,7 @@ export interface FileRoutesByTo {
   '/Destino': typeof DestinoIndexRoute
   '/DetallesViaje': typeof DetallesViajeIndexRoute
   '/EmpezarViaje': typeof EmpezarViajeIndexRoute
+  '/Gateway': typeof GatewayIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
   '/PagarCupo': typeof PagarCupoIndexRoute
@@ -642,6 +673,7 @@ export interface FileRoutesByTo {
   '/Registro': typeof RegistroIndexRoute
   '/Reservas': typeof ReservasIndexRoute
   '/ValidarCupos': typeof ValidarCuposIndexRoute
+  '/Wallet': typeof WalletIndexRoute
   '/account': typeof AccountIndexRoute
   '/home': typeof HomeIndexRoute
   '/publicarviaje': typeof PublicarviajeIndexRoute
@@ -673,6 +705,7 @@ export interface FileRoutesById {
   '/Destino/': typeof DestinoIndexRoute
   '/DetallesViaje/': typeof DetallesViajeIndexRoute
   '/EmpezarViaje/': typeof EmpezarViajeIndexRoute
+  '/Gateway/': typeof GatewayIndexRoute
   '/Login/': typeof LoginIndexRoute
   '/Origen/': typeof OrigenIndexRoute
   '/PagarCupo/': typeof PagarCupoIndexRoute
@@ -684,6 +717,7 @@ export interface FileRoutesById {
   '/Registro/': typeof RegistroIndexRoute
   '/Reservas/': typeof ReservasIndexRoute
   '/ValidarCupos/': typeof ValidarCuposIndexRoute
+  '/Wallet/': typeof WalletIndexRoute
   '/account/': typeof AccountIndexRoute
   '/home/': typeof HomeIndexRoute
   '/publicarviaje/': typeof PublicarviajeIndexRoute
@@ -716,6 +750,7 @@ export interface FileRouteTypes {
     | '/Destino'
     | '/DetallesViaje'
     | '/EmpezarViaje'
+    | '/Gateway'
     | '/Login'
     | '/Origen'
     | '/PagarCupo'
@@ -727,6 +762,7 @@ export interface FileRouteTypes {
     | '/Registro'
     | '/Reservas'
     | '/ValidarCupos'
+    | '/Wallet'
     | '/account'
     | '/home'
     | '/publicarviaje'
@@ -756,6 +792,7 @@ export interface FileRouteTypes {
     | '/Destino'
     | '/DetallesViaje'
     | '/EmpezarViaje'
+    | '/Gateway'
     | '/Login'
     | '/Origen'
     | '/PagarCupo'
@@ -767,6 +804,7 @@ export interface FileRouteTypes {
     | '/Registro'
     | '/Reservas'
     | '/ValidarCupos'
+    | '/Wallet'
     | '/account'
     | '/home'
     | '/publicarviaje'
@@ -796,6 +834,7 @@ export interface FileRouteTypes {
     | '/Destino/'
     | '/DetallesViaje/'
     | '/EmpezarViaje/'
+    | '/Gateway/'
     | '/Login/'
     | '/Origen/'
     | '/PagarCupo/'
@@ -807,6 +846,7 @@ export interface FileRouteTypes {
     | '/Registro/'
     | '/Reservas/'
     | '/ValidarCupos/'
+    | '/Wallet/'
     | '/account/'
     | '/home/'
     | '/publicarviaje/'
@@ -838,6 +878,7 @@ export interface RootRouteChildren {
   DestinoIndexRoute: typeof DestinoIndexRoute
   DetallesViajeIndexRoute: typeof DetallesViajeIndexRoute
   EmpezarViajeIndexRoute: typeof EmpezarViajeIndexRoute
+  GatewayIndexRoute: typeof GatewayIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   OrigenIndexRoute: typeof OrigenIndexRoute
   PagarCupoIndexRoute: typeof PagarCupoIndexRoute
@@ -849,6 +890,7 @@ export interface RootRouteChildren {
   RegistroIndexRoute: typeof RegistroIndexRoute
   ReservasIndexRoute: typeof ReservasIndexRoute
   ValidarCuposIndexRoute: typeof ValidarCuposIndexRoute
+  WalletIndexRoute: typeof WalletIndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
   PublicarviajeIndexRoute: typeof PublicarviajeIndexRoute
@@ -880,6 +922,7 @@ const rootRouteChildren: RootRouteChildren = {
   DestinoIndexRoute: DestinoIndexRoute,
   DetallesViajeIndexRoute: DetallesViajeIndexRoute,
   EmpezarViajeIndexRoute: EmpezarViajeIndexRoute,
+  GatewayIndexRoute: GatewayIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   OrigenIndexRoute: OrigenIndexRoute,
   PagarCupoIndexRoute: PagarCupoIndexRoute,
@@ -891,6 +934,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegistroIndexRoute: RegistroIndexRoute,
   ReservasIndexRoute: ReservasIndexRoute,
   ValidarCuposIndexRoute: ValidarCuposIndexRoute,
+  WalletIndexRoute: WalletIndexRoute,
   AccountIndexRoute: AccountIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
   PublicarviajeIndexRoute: PublicarviajeIndexRoute,
@@ -931,6 +975,7 @@ export const routeTree = rootRoute
         "/Destino/",
         "/DetallesViaje/",
         "/EmpezarViaje/",
+        "/Gateway/",
         "/Login/",
         "/Origen/",
         "/PagarCupo/",
@@ -942,6 +987,7 @@ export const routeTree = rootRoute
         "/Registro/",
         "/Reservas/",
         "/ValidarCupos/",
+        "/Wallet/",
         "/account/",
         "/home/",
         "/publicarviaje/",
@@ -1015,6 +1061,9 @@ export const routeTree = rootRoute
     "/EmpezarViaje/": {
       "filePath": "EmpezarViaje/index.tsx"
     },
+    "/Gateway/": {
+      "filePath": "Gateway/index.tsx"
+    },
     "/Login/": {
       "filePath": "Login/index.tsx"
     },
@@ -1047,6 +1096,9 @@ export const routeTree = rootRoute
     },
     "/ValidarCupos/": {
       "filePath": "ValidarCupos/index.tsx"
+    },
+    "/Wallet/": {
+      "filePath": "Wallet/index.tsx"
     },
     "/account/": {
       "filePath": "account/index.tsx"

@@ -1,0 +1,70 @@
+.walletHeader {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0;
+  }
+  
+  .walletTitle {
+    margin-bottom: 0px;
+    font-size: 24px;
+  }
+  
+  .balanceCard {
+    margin: 10px 0;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .balanceLabel {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+  }
+  
+  .balanceAmount {
+      font-size: 24px;
+      font-weight: 700;
+    }
+  
+  
+  .transactionsSection {
+    margin-top: 20px;
+  }
+  
+  .transactionsTitle {
+    margin-bottom: 15px;
+    font-size: 20px;
+  }
+  
+  .transactionCard {
+      margin-bottom: 10px;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  
+  .transactionDescription {
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .transactionAmount {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+  .creditTransaction {
+      color: green;
+    }
+    
+  .debitTransaction {
+      color: red;
+    }
+  .noTransactionsText{
+      text-align: center;
+      padding: 20px;
+  }

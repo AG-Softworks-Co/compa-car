@@ -20,6 +20,7 @@ import {
   FileText,
   Shield,
   AlertCircle,
+  Wallet,
 } from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
 import styles from './index.module.css'
@@ -59,8 +60,14 @@ interface MenuItem {
   subtitle: string
   path?: string
   expandable?: boolean
+  subMenuItems?: SubMenuItem[]
 }
 
+interface SubMenuItem {
+  id: string
+  title: string
+  path: string
+}
 const BASE_URL = 'https://rest-sorella-production.up.railway.app/api'
 
 const ProfileView: React.FC = () => {
@@ -79,6 +86,8 @@ const ProfileView: React.FC = () => {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string>('')
   const [showVehicleMessage, setShowVehicleMessage] = useState(false)
+  const [showWalletOptions, setShowWalletOptions] = useState(false)
+
   // Definición de items del menú
   const menuItems: MenuItem[] = [
     {
@@ -94,6 +103,25 @@ const ProfileView: React.FC = () => {
       title: 'Mi vehículo',
       subtitle: 'Gestiona la información de tu vehículo',
       expandable: true,
+    },
+    {
+      id: 'wallet',
+      icon: Wallet,
+      title: 'Wallet Virtual',
+      subtitle: 'Gestiona tu billetera virtual',
+      expandable: true,
+      subMenuItems: [
+        {
+          id: 'wallet-detail',
+          title: 'Ver detalle de billetera',
+          path: '/Wallet',
+        },
+        {
+          id: 'wallet-reload',
+          title: 'Recargar billetera',
+          path: '/Gateway',
+        },
+      ],
     },
     {
       id: 'coupons',
@@ -325,13 +353,17 @@ const ProfileView: React.FC = () => {
     navigate({ to: '/' })
   }
 
-  const handleNavigation = (path: string) => {
+   const handleNavigation = (path: string) => {
     console.log('Navegando a:', path)
-    navigate({ to: path })
-  }
+    navigate({ to: path });
+  };
 
   const toggleVehicleOptions = () => {
     setShowVehicleOptions(!showVehicleOptions)
+  }
+
+  const toggleWalletOptions = () => {
+    setShowWalletOptions(!showWalletOptions)
   }
 
   const handleSuccessModalClose = () => {
@@ -450,6 +482,27 @@ const ProfileView: React.FC = () => {
     </div>
   )
 
+  const renderWalletSubmenu = (subMenuItems: SubMenuItem[]) => {
+    return (
+      <div className={styles.subMenu}>
+        {subMenuItems.map((subItem) => (
+          <div
+            key={subItem.id}
+            className={styles.subMenuItem}
+            onClick={() => handleNavigation(subItem.path)}
+          >
+            <div className={styles.subMenuItemContent}>
+              <div className={styles.subMenuItemDetails}>
+                <Text className={styles.subMenuItemText}>{subItem.title}</Text>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+  
+
   // Loading state
   if (loading) {
     return (
@@ -506,25 +559,35 @@ const ProfileView: React.FC = () => {
           </Text>
           <Text className={styles.userEmail}>{userProfile?.email}</Text>
           <Text
-            className={`${styles.userType} ${userProfile?.user_type === 'DRIVER' ? styles.driver : ''}`}
+            className={`${styles.userType} ${
+              userProfile?.user_type === 'DRIVER' ? styles.driver : ''
+            }`}
           >
             {userProfile?.user_type === 'DRIVER' ? 'Conductor' : 'Pasajero'}
           </Text>
         </div>
       </div>
 
-      <div className={styles.menuSection}>
+       <div className={styles.menuSection}>
         {menuItems.map((item) => (
           <div key={item.id}>
             <div
               className={`${styles.menuItem} ${
-                item.expandable && showVehicleOptions ? styles.expanded : ''
+                item.expandable &&
+                  ((item.id === 'vehicle' && showVehicleOptions) ||
+                    (item.id === 'wallet' && showWalletOptions))
+                  ? styles.expanded
+                  : ''
               }`}
               onClick={() => {
                 if (item.expandable) {
-                  toggleVehicleOptions()
+                  if (item.id === 'vehicle') {
+                    toggleVehicleOptions()
+                  } else if (item.id === 'wallet') {
+                    toggleWalletOptions();
+                  }
                 } else if (item.path) {
-                  handleNavigation(item.path)
+                   handleNavigation(item.path)
                 }
               }}
               data-type={item.id}
@@ -538,14 +601,18 @@ const ProfileView: React.FC = () => {
               </div>
               <ChevronRight
                 className={`${styles.menuItemArrow} ${
-                  item.expandable && showVehicleOptions
+                  item.expandable &&
+                    ((item.id === 'vehicle' && showVehicleOptions) ||
+                      (item.id === 'wallet' && showWalletOptions))
                     ? styles.rotatedArrow
                     : ''
                 }`}
                 size={20}
               />
             </div>
-            {item.expandable && showVehicleOptions && renderVehicleSubmenu()}
+            {item.expandable && item.id === 'vehicle' && showVehicleOptions && renderVehicleSubmenu()}
+            {item.expandable && item.id === 'wallet' && showWalletOptions &&
+             item.subMenuItems && renderWalletSubmenu(item.subMenuItems)}
           </div>
         ))}
 
