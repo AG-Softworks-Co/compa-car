@@ -12,18 +12,14 @@ import {
 } from "@mantine/core";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import styles from "./index.module.css";
 import { useForm } from "@mantine/form";
+import { supabase } from "@/lib/supabaseClient";
+import styles from "./index.module.css";
 
 interface LoginFormValues {
   email: string;
   password: string;
 }
-
-
-
-
-const BASE_URL = 'https://rest-sorella-production.up.railway.app/api';
 
 const LoginView: React.FC = () => {
   const [showPassword, setShowPassword] = React.useState(false);
@@ -42,27 +38,18 @@ const LoginView: React.FC = () => {
     }
   });
 
-  const checkUserProfile = async (userId: number, token: string): Promise<boolean> => {
+  const checkUserProfile = async (userId: string): Promise<boolean> => {
     try {
-      console.log('Verificando perfil para usuario:', userId);
-      
-      const response = await fetch(`${BASE_URL}/users/${userId}`, {
-        headers: {
-          'x-token': token
-        }
-      });
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
 
-      const responseData = await response.json();
-      console.log('Respuesta verificación perfil:', responseData);
-
-      // Si la respuesta es exitosa y tiene datos, el perfil existe
-      if (response.ok && responseData.data) {
-        return true;
-      }
-
-      return false;
+      if (error) throw error;
+      return !!data;
     } catch (error) {
-      console.error('Error verificando perfil:', error);
+      console.error('Error checking user profile:', error);
       return false;
     }
   };
@@ -72,54 +59,46 @@ const LoginView: React.FC = () => {
       setLoading(true);
       setError("");
 
-      // 1. Autenticación inicial
-      const loginResponse = await fetch(`${BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          correo: values.email,
-          password: values.password,
-        })
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
       });
 
-      const loginData = await loginResponse.json();
-      console.log('Respuesta login:', loginData);
-
-      if (!loginResponse.ok || !loginData.ok) {
-        setError(loginData.msj || "Error en la autenticación");
-        return;
+      if (authError) {
+        throw new Error(authError.message);
       }
 
-      // 2. Guardar datos de sesión
-      localStorage.setItem("token", loginData.token);
-      localStorage.setItem("userEmail", values.email);
-      localStorage.setItem("userId", loginData.idusuario.toString());
-
-      try {
-        // 3. Verificar si el usuario ya tiene perfil
-        const hasProfile = await checkUserProfile(
-          loginData.idusuario,
-          loginData.token
-        );
-
-        // 4. Redirigir según corresponda
-        if (hasProfile) {
-          console.log('Usuario tiene perfil, redirigiendo a home');
-          navigate({ to: "/home" });
-        } else {
-          console.log('Usuario necesita completar perfil');
-          navigate({ to: "/CompletarRegistro" });
-        }
-      } catch (error) {
-        console.error('Error verificando perfil:', error);
-        setError("Error al verificar el perfil de usuario");
-        localStorage.clear();
+      if (!authData.user) {
+        throw new Error('No user data received');
       }
-    } catch (error: any) {
-      console.error('Error en login:', error);
-      setError("Error al conectar con el servidor");
+
+      // Store session data
+      const session = authData.session;
+      if (session) {
+        // Store only necessary session data
+        localStorage.setItem('userEmail', values.email);
+        localStorage.setItem('userId', authData.user.id);
+      }
+
+      // Check user profile
+      const hasProfile = await checkUserProfile(authData.user.id);
+      
+      // Navigate based on profile status
+      if (hasProfile) {
+        console.log('User has profile, redirecting to home');
+        navigate({ to: "/home" });
+      } else {
+        console.log('User needs to complete profile');
+        navigate({ to: "/CompletarRegistro" });
+      }
+
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(
+        (error instanceof Error ? error.message : "") === 'Invalid login credentials'
+          ? 'Credenciales inválidas'
+          : 'Error al iniciar sesión'
+      );
       localStorage.clear();
     } finally {
       setLoading(false);

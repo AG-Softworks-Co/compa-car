@@ -8,65 +8,107 @@ import {
   Text,
   Group,
   UnstyledButton,
+  LoadingOverlay,
 } from "@mantine/core";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import styles from "./index.module.css";
 import { useForm } from "@mantine/form";
-import ky from "ky";
+import { supabase } from "@/lib/supabaseClient";
+
+interface RegisterFormValues {
+  nombre: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
 
 const RegisterView: React.FC = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const form = useForm({
-    mode: "uncontrolled",
+  const form = useForm<RegisterFormValues>({
     initialValues: {
       nombre: "",
       email: "",
       password: "",
       confirmPassword: "",
     },
+    validate: {
+      nombre: (value) => (value.length < 3 ? "El nombre debe tener al menos 3 caracteres" : null),
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : "Correo electrónico inválido"),
+      password: (value) => (value.length < 6 ? "La contraseña debe tener al menos 6 caracteres" : null),
+      confirmPassword: (value, values) =>
+        value !== values.password ? "Las contraseñas no coinciden" : null,
+    },
   });
 
-  const handleRegister = async (values: {
-    nombre: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }) => {
-    setLoading(true);
-    if (values.password !== values.confirmPassword) {
-      alert("Las contraseñas no coinciden");
-      setLoading(false);
-      return;
-    }
+  const handleRegister = async (values: RegisterFormValues) => {
+    try {
+      setLoading(true);
+      setError("");
 
-    const res = await ky
-      .post(
-        "https://rest-sorella-production.up.railway.app/api/usuarios",
-        {
-          json: {
-            nombre: values.nombre,
-            correo: values.email,
-            password: values.password,
+      // 1. Registrar usuario en Supabase Auth
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          data: {
+            full_name: values.nombre,
           },
-        }
-      )
-      .json<{ ok: boolean }>();
-    if (res.ok) {
-      alert("Usuario creado correctamente");
+        },
+      });
+
+      if (signUpError) throw signUpError;
+
+      if (!authData.user) {
+        throw new Error('No se pudo crear el usuario');
+      }
+
+      // 2. Crear perfil inicial en user_profiles
+      console.log({
+          user_id: authData.user.id,
+          first_name: values.nombre.split(' ')[0],
+          last_name: values.nombre.split(' ').slice(1).join(' ') || '',
+          identification_type: 'CC',
+          identification_number: '0000000000', // Temporal
+          status: 'PENDING_COMPLETION'
+        })
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .insert({
+          user_id: authData.user.id,
+          first_name: values.nombre.split(' ')[0],
+          last_name: values.nombre.split(' ').slice(1).join(' ') || '',
+          identification_type: 'CC',
+          identification_number: '0000000000', // Temporal
+          status: 'PENDING_COMPLETION'
+        });
+
+      if (profileError) throw profileError;
+
+      // 3. Éxito - redirigir al login
+      alert("Usuario creado correctamente. Por favor, verifica tu correo electrónico.");
       navigate({ to: "/Login" });
-      setLoading(false)
-      return;
+
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError(
+        error instanceof Error 
+          ? error.message
+          : "Error al crear el usuario"
+      );
+    } finally {
+      setLoading(false);
     }
-    alert("Error al crear el usuario");
-    setLoading(false);
   };
 
   return (
     <Container className={styles.container}>
+      <LoadingOverlay visible={loading} />
+      
       <Group justify="flex-start" mb="xl">
         <UnstyledButton component={Link} to="/" className={styles.backButton}>
           <ArrowLeft size={24} />
@@ -145,6 +187,12 @@ const RegisterView: React.FC = () => {
             }
           />
         </Box>
+
+        {error && (
+          <Text color="red" size="sm" className={styles.errorMessage}>
+            {error}
+          </Text>
+        )}
 
         <Button
           loading={loading}

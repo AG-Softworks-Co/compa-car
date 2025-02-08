@@ -16,6 +16,7 @@ import {
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import styles from "./index.module.css";
 import { useForm } from "@mantine/form";
+import { supabase } from "@/lib/supabaseClient";
 
 interface ProfileFormData {
   id: number;
@@ -33,8 +34,6 @@ interface ServerResponse {
   data?: ProfileFormData;
   msg?: string;
 }
-
-const BASE_URL = 'https://rest-sorella-production.up.railway.app/api';
 
 const CompleteProfileView: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -81,11 +80,9 @@ const CompleteProfileView: React.FC = () => {
   useEffect(() => {
     const loadUserProfile = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const userId = localStorage.getItem("userId");
-        const userEmail = localStorage.getItem("userEmail");
+        const { data: { user } } = await supabase.auth.getUser();
 
-        if (!token || !userId || !userEmail) {
+        if (!user) {
           console.log('No se encontraron datos de sesión');
           navigate({ to: "/Login" });
           return;
@@ -94,36 +91,41 @@ const CompleteProfileView: React.FC = () => {
         // Intentar cargar el perfil existente
         try {
           console.log('Verificando perfil existente...');
-          const response = await fetch(`${BASE_URL}/users/${userId}`, {
-            headers: {
-              'x-token': token
-            }
-          });
+          const { data: profile, error } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
 
-          const data: ServerResponse = await response.json();
-          console.log('Datos del perfil:', data);
+          if (error) throw error;
 
-          if (data.ok && data.data) {
+          if (profile) {
             console.log('Perfil encontrado, cargando datos...');
             setIsEditing(true);
             form.setValues({
-              ...data.data,
-              id: Number.parseInt(userId),
+              id: profile.id,
+              email: user.email || '',
+              phone_number: user.phone || '',
+              first_name: profile.first_name,
+              last_name: profile.last_name,
+              identification_type: profile.identification_type,
+              identification_number: profile.identification_number,
+              user_type: profile.status || 'PASSENGER'
             });
           } else {
             console.log('Perfil no encontrado, iniciando nuevo registro');
             form.setValues({
               ...form.values,
-              id: Number.parseInt(userId),
-              email: userEmail
+              email: user.email || '',
+              phone_number: user.phone || ''
             });
           }
         } catch (error) {
           console.error('Error cargando perfil:', error);
           form.setValues({
             ...form.values,
-            id: Number.parseInt(userId),
-            email: userEmail
+            email: user.email || '',
+            phone_number: user.phone || ''
           });
         }
 
@@ -138,62 +140,49 @@ const CompleteProfileView: React.FC = () => {
     loadUserProfile();
   }, []);
 
-    const handleSubmit = async (values: ProfileFormData) => {
+  const handleSubmit = async (values: ProfileFormData) => {
     try {
       setLoading(true);
       setError("");
 
-      const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
+      const { data: { user } } = await supabase.auth.getUser();
 
-      if (!token || !userId) {
-        throw new Error("No se encontró el token de autenticación");
+      if (!user) {
+        throw new Error("No se encontró la sesión del usuario");
       }
 
-      // Preparar datos
-      const dataToSend = {
-        id: Number.parseInt(userId),
-        email: values.email.trim(),
-        phone_number: values.phone_number,
+      const profileData = {
+        user_id: user.id,
         first_name: values.first_name.trim(),
         last_name: values.last_name.trim(),
         identification_type: values.identification_type,
         identification_number: values.identification_number.trim(),
-        user_type: values.user_type
+        status: values.user_type
       };
 
-      console.log('Enviando datos:', dataToSend);
+      let result;
+      if (isEditing) {
+        result = await supabase
+          .from('user_profiles')
+          .update(profileData)
+          .eq('user_id', user.id);
+      } else {
+        result = await supabase
+          .from('user_profiles')
+          .insert([profileData]);
+      }
 
-      // Usar el método correcto según si es edición o creación
-      const method = isEditing ? 'PUT' : 'POST';
-      const response = await fetch(`${BASE_URL}/users`, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'x-token': token
-        },
-        body: JSON.stringify(dataToSend)
-      });
-
-      const responseData = await response.json();
-      console.log('Respuesta del servidor:', responseData);
-
-      if (!response.ok) {
-        if (responseData.errors) {
-          const errorMessage = responseData.errors[0]?.msg || "Error al guardar los datos";
-          throw new Error(errorMessage);
-        }
-        throw new Error(responseData.msg || "Error al guardar el perfil");
+      if (result.error) {
+        throw new Error(result.error.message);
       }
 
       console.log('Perfil guardado exitosamente');
-        // Redirección basada en user_type
-        if (values.user_type === "PASSENGER") {
+      if (values.user_type === "PASSENGER") {
         navigate({ to: "/" });
-        } else if (values.user_type === "DRIVER") {
+      } else if (values.user_type === "DRIVER") {
         navigate({ to: "/RegistrarVehiculo" });
-        }
-        
+      }
+
     } catch (error: any) {
       console.error('Error guardando perfil:', error);
       setError(error.message || "Error al guardar los datos");

@@ -72,9 +72,10 @@ function Index() {
           </div>
 
           <div className={styles.indicators}>
-            {slides.map((_, index) => (
+            {slides.map((slide, index) => (
               <button
-                key={index}
+                type="button"
+                key={`slide-${slide.title}`}
                 className={`${styles.indicator} ${currentSlide === index ? styles.activeIndicator : ""}`}
                 onClick={() => setCurrentSlide(index)}
               />
