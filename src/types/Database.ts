@@ -16,6 +16,7 @@ export type Database = {
           id: number
           identification_number: string
           status: string | null
+          user_id: string
         }
         Insert: {
           booking_id?: number | null
@@ -23,6 +24,7 @@ export type Database = {
           id?: number
           identification_number: string
           status?: string | null
+          user_id: string
         }
         Update: {
           booking_id?: number | null
@@ -30,6 +32,7 @@ export type Database = {
           id?: number
           identification_number?: string
           status?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -295,6 +298,7 @@ export type Database = {
           place_id: string
           postal_code: string | null
           secondary_text: string | null
+          user_id: string
         }
         Insert: {
           address: string
@@ -305,6 +309,7 @@ export type Database = {
           place_id: string
           postal_code?: string | null
           secondary_text?: string | null
+          user_id: string
         }
         Update: {
           address?: string
@@ -315,6 +320,7 @@ export type Database = {
           place_id?: string
           postal_code?: string | null
           secondary_text?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -460,6 +466,7 @@ export type Database = {
           polyline: string | null
           start_address: string | null
           summary: string | null
+          user_id: string
           warnings: string | null
         }
         Insert: {
@@ -475,6 +482,7 @@ export type Database = {
           polyline?: string | null
           start_address?: string | null
           summary?: string | null
+          user_id: string
           warnings?: string | null
         }
         Update: {
@@ -490,6 +498,7 @@ export type Database = {
           polyline?: string | null
           start_address?: string | null
           summary?: string | null
+          user_id?: string
           warnings?: string | null
         }
         Relationships: []
@@ -554,6 +563,7 @@ export type Database = {
           location_id: number | null
           order: number | null
           trip_id: number | null
+          user_id: string
         }
         Insert: {
           estimated_time?: string | null
@@ -561,6 +571,7 @@ export type Database = {
           location_id?: number | null
           order?: number | null
           trip_id?: number | null
+          user_id: string
         }
         Update: {
           estimated_time?: string | null
@@ -568,6 +579,7 @@ export type Database = {
           location_id?: number | null
           order?: number | null
           trip_id?: number | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -674,7 +686,8 @@ export type Database = {
           identification_number: string
           identification_type: string
           last_name: string
-          status: string | null
+          phone_number: string | null
+          status: string
           updated_at: string | null
           user_id: string
         }
@@ -685,7 +698,8 @@ export type Database = {
           identification_number: string
           identification_type: string
           last_name: string
-          status?: string | null
+          phone_number?: string | null
+          status?: string
           updated_at?: string | null
           user_id: string
         }
@@ -696,7 +710,8 @@ export type Database = {
           identification_number?: string
           identification_type?: string
           last_name?: string
-          status?: string | null
+          phone_number?: string | null
+          status?: string
           updated_at?: string | null
           user_id?: string
         }
