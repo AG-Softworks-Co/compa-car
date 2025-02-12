@@ -24,9 +24,13 @@ import {
     Select,
     Modal,
     Button,
+    Text,
 } from '@mantine/core';
+import { supabase } from '@/lib/supabaseClient';
+import { modals } from '@mantine/modals';
+import { notifications } from '@mantine/notifications';
 
-const BASE_URL = 'https://rest-sorella-production.up.railway.app/api';
+
 
 interface ValidationErrors {
     [key: string]: string;
@@ -69,157 +73,100 @@ const License: React.FC = () => {
     const [viewMode, setViewMode] = useState(true);
     const [vehicleId, setVehicleId] = useState<number | null>(null);
     const [licenseId, setLicenseId] = useState<number | null>(null);
-    const [, setError] = useState('');
+    const [] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formHasChanged, setFormHasChanged] = useState(false);
 
-    const userId = localStorage.getItem('userId');
+
 
     useEffect(() => {
         const loadData = async () => {
             try {
                 console.log('Iniciando carga de datos de la licencia...');
                 setLoading(true);
-                const token = localStorage.getItem('token');
+                const userId = localStorage.getItem('userId');
 
-                if (!token || !userId) {
+                if (!userId) {
                     console.log('No hay sesión activa, redirigiendo...');
                     navigate({ to: '/Login' });
                     return;
                 }
 
-                console.log('Token y userId encontrados. UserId:', userId);
-                // Cargar perfil de usuario
-                console.log('Cargando datos del perfil...');
-                const profileResponse = await fetch(`${BASE_URL}/users/${userId}`, {
-                    headers: { 'x-token': token },
-                });
+                // Cargar datos del vehículo
+                const { data: vehicleData, error: vehicleError } = await supabase
+                    .from('vehicles')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .single();
 
-                if (!profileResponse.ok) {
-                    throw new Error('Error al cargar el perfil');
+                if (vehicleError) throw vehicleError;
+                if (vehicleData) {
+                    setVehicleId(vehicleData.id);
                 }
 
-                const profileData = await profileResponse.json();
-                console.log('Datos del perfil recibidos:', profileData);
-                if (profileData.ok && profileData.data) {
-                    setFormData((prev) => ({
-                        ...prev,
-                        identificationNumber: profileData.data.identification_number,
-                    }));
-                }
-                // Cargar estado del vehículo
-                console.log('Verificando datos del vehículo...');
-                const vehicleResponse = await fetch(`${BASE_URL}/vehicles`, {
-                    headers: { 'x-token': token },
-                });
-                if (!vehicleResponse.ok) {
-                    console.error('Error al verificar el vehículo:', vehicleResponse);
-                    throw new Error('Error al verificar el vehículo');
+                // Cargar datos de la licencia
+                const { data: licenseData, error: licenseError } = await supabase
+                    .from('driver_licenses')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .single();
+
+                if (licenseError && licenseError.code !== 'PGRST116') {
+                    throw licenseError;
                 }
 
-                const vehicleData = await vehicleResponse.json();
-                console.log('Datos del vehiculo:', vehicleData);
-                const userVehicle = vehicleData.data?.find(
-                    (vehicle: any) => vehicle.user_id.toString() === userId
-                );
-
-                if (userVehicle) {
-                    setVehicleId(userVehicle.id);
-                    console.log('Vehicle ID encontrado:', userVehicle.id);
-                } else {
-                    console.log('No se encontró el Vehicle ID para este usuario');
-                }
-
-                // Cargar info de licencias
-                console.log('Verificando datos de la licencia...');
-                const licenseResponse = await fetch(`${BASE_URL}/driver_licenses`, {
-                    headers: { 'x-token': token },
-                });
-
-                if (!licenseResponse.ok) {
-                    console.error('Error al verificar la licencia:', licenseResponse);
-                    throw new Error('Error al verificar la licencia');
-                }
-
-                const licenseData = await licenseResponse.json();
-                console.log('Datos de la licencia recibidos:', licenseData);
-
-                const userLicense = licenseData.data?.find(
-                    (license: any) => license.user_id.toString() === userId
-                );
-
-                if (userLicense) {
-                    setLicenseId(userLicense.id);
-                    setHasLicense(true);
-                    setFormData((prev) => ({
-                        ...prev,
-                        licenseNumber: userLicense.license_number,
-                        expeditionDate: userLicense.expedition_date?.split('T')[0],
-                        expiryDate: userLicense.expiration_date?.split('T')[0],
-                        photo_front_url: userLicense.photo_front_url || undefined,
-                        photo_back_url: userLicense.photo_back_url || undefined,
-                    }));
-                    setViewMode(false);
-                } else {
-                    console.log('No se encontró licencia para este usuario.');
-                    setViewMode(false);
-                }
+                if (licenseData) {
+                                    setLicenseId(licenseData.id);
+                                    setHasLicense(true);
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        licenseNumber: licenseData.license_number || '',
+                                        expeditionDate: licenseData.expedition_date?.split('T')[0] || '',
+                                        expiryDate: licenseData.expiration_date?.split('T')[0] || '',
+                                        photo_front_url: licenseData.photo_front_url || undefined,
+                                        photo_back_url: licenseData.photo_back_url || undefined,
+                                        bloodType: licenseData.blood_type || 'O+',
+                                        licenseCategory: licenseData.license_category || 'B1',
+                                        identificationNumber: licenseData.identification_number || '',
+                                    }));
+                                }
+                setViewMode(!hasLicense);
             } catch (error) {
                 console.error('Error en la carga de datos:', error);
-                setError('Error al cargar información. Por favor intente nuevamente.');
-                setViewMode(false);
+                showErrorNotification('Error al cargar información. Por favor intente nuevamente.');
             } finally {
                 setLoading(false);
             }
         };
 
         loadData();
-    }, [navigate, userId]);
+    }, [navigate]);
 
     const validateForm = (): boolean => {
         const newErrors: ValidationErrors = {};
 
-        if (!formData.licenseNumber?.trim() || formData.licenseNumber === '')
+        if (!formData.licenseNumber?.trim())
             newErrors.licenseNumber = 'El número de licencia es requerido';
-        if (formData.licenseNumber && formData.licenseNumber.trim().length > 20)
-            newErrors.licenseNumber = 'El número de licencia no debe superar los 20 caracteres';
 
-        if (!formData.identificationNumber?.trim() || formData.identificationNumber === '')
-            newErrors.identificationNumber =
-                'El número de identificación es requerido';
-        if (formData.identificationNumber && formData.identificationNumber.trim().length > 20)
-            newErrors.identificationNumber =
-            'El número de identificación no debe superar los 20 caracteres';
+        if (!formData.identificationNumber?.trim())
+            newErrors.identificationNumber = 'El número de identificación es requerido';
 
         if (!formData.expeditionDate)
             newErrors.expeditionDate = 'La fecha de expedición es requerida';
+
         if (!formData.expiryDate)
             newErrors.expiryDate = 'La fecha de vencimiento es requerida';
 
-        if (!formData.bloodType?.trim() || formData.bloodType === '')
-            newErrors.bloodType = 'El tipo de sangre es requerido';
-        if (formData.bloodType && formData.bloodType.trim().length > 5)
-            newErrors.bloodType = 'El tipo de sangre no debe superar los 5 caracteres';
-
-        if (!formData.licenseCategory?.trim() || formData.licenseCategory === '')
-            newErrors.licenseCategory = 'La categoría es requerida';
-
-        if (formData.licenseCategory && formData.licenseCategory.trim().length > 10)
-            newErrors.licenseCategory = 'La categoría no debe superar los 10 caracteres';
-        if (!formData.photo_front_url && !formData.frontFile)
-            newErrors.frontFile = 'La foto frontal es requerida';
-        if (!formData.photo_back_url && !formData.backFile)
-            newErrors.backFile = 'La foto posterior es requerida';
-
+        // Removed photo validation - now optional
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
     const handleInputChange = (name: string, value: string) => {
-       if (!viewMode) {
-        setFormHasChanged(true);
-      }
+        if (!viewMode) {
+            setFormHasChanged(true);
+        }
         setFormData((prev) => ({
             ...prev,
             [name]: value,
@@ -234,157 +181,166 @@ const License: React.FC = () => {
         }
     };
 
-   const handleFileUpload =
+    const handleFileUpload =
         (side: 'front' | 'back') => async (e: React.ChangeEvent<HTMLInputElement>) => {
             const file = e.target.files?.[0];
-              if (!file) return;
-              const maxSize = 5 * 1024 * 1024; // 5MB
-              if (file.size > maxSize) {
-                  setErrors((prev) => ({
-                      ...prev,
-                      [`${side}File`]: 'La imagen no debe exceder 5MB',
-                  }));
-                  return;
-              }
+            if (!file) return;
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                setErrors((prev) => ({
+                    ...prev,
+                    [`${side}File`]: 'La imagen no debe exceder 5MB',
+                }));
+                return;
+            }
 
-              const validTypes = ['image/jpeg', 'image/png', 'image/heic'];
-              if (!validTypes.includes(file.type)) {
-                  setErrors((prev) => ({
-                      ...prev,
-                      [`${side}File`]: 'Formato no válido. Use JPG, PNG o HEIC',
-                  }));
-                  return;
-              }
-              setFormData((prev) => ({
-              ...prev,
-              [`${side}File`]: file,
-             [`${side}Preview`]: file.name
-              }));
-                if (errors[`${side}File`]) {
-                      setErrors((prev) => {
-                          const newErrors = { ...prev };
-                          delete newErrors[`${side}File`];
-                          return newErrors;
-                      });
-                  }
+            const validTypes = ['image/jpeg', 'image/png', 'image/heic'];
+            if (!validTypes.includes(file.type)) {
+                setErrors((prev) => ({
+                    ...prev,
+                    [`${side}File`]: 'Formato no válido. Use JPG, PNG o HEIC',
+                }));
+                return;
+            }
+            setFormData((prev) => ({
+                ...prev,
+                [`${side}File`]: file,
+                [`${side}Preview`]: file.name
+            }));
+            if (errors[`${side}File`]) {
+                setErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors[`${side}File`];
+                    return newErrors;
+                });
+            }
         };
 
+    const uploadPhoto = async (file: File, path: string): Promise<string | null> => {
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+            const filePath = `${path}/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('licenses')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage
+                .from('licenses')
+                .getPublicUrl(filePath);
+
+            return data.publicUrl;
+        } catch (error) {
+            console.error('Error uploading photo:', error);
+            return null;
+        }
+    };
+
+    const showSuccessModal = () => {
+        modals.open({
+            title: 'Operación Exitosa',
+            children: (
+                <div style={{ textAlign: 'center', padding: '20px' }}>
+                    <CheckCircle size={50} color="green" style={{ marginBottom: '15px' }} />
+                    <Text size="lg">
+                        {hasLicense ? 'Licencia actualizada correctamente' : 'Licencia registrada correctamente'}
+                    </Text>
+                    <Button
+                        onClick={() => {
+                            modals.closeAll();
+                            navigate({ to: '/Perfil' });
+                        }}
+                        style={{ marginTop: '20px' }}
+                    >
+                        Aceptar
+                    </Button>
+                </div>
+            ),
+            closeOnClickOutside: false,
+            closeOnEscape: false,
+        });
+    };
+
+    const showErrorNotification = (message: string) => {
+        notifications.show({
+            title: 'Error',
+            message,
+            color: 'red',
+            icon: <AlertCircle />,
+        });
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (isSubmitting) return;
-        if (!validateForm()) {
-            return;
-        }
+        if (!validateForm()) return;
+
         setIsSubmitting(true);
 
         try {
-            const token = localStorage.getItem('token');
-            if (!token || !userId || !vehicleId) {
-                navigate({ to: '/Login' });
-                return;
+            const userId = localStorage.getItem('userId');
+            if (!userId || !vehicleId) {
+                throw new Error('Información de usuario o vehículo no disponible');
             }
-            console.log('Construyendo FormData...');
-            const formDataToSend = new FormData();
 
-            if (vehicleId) {
-                formDataToSend.append('vehicle_id', vehicleId.toString());
-                 console.log('Vehicle ID agregado a FormData:', vehicleId);
+            let frontPhotoUrl = formData.photo_front_url;
+            let backPhotoUrl = formData.photo_back_url;
+
+            // Upload new photos if provided
+            if (formData.frontFile) {
+                const uploadedFrontUrl = await uploadPhoto(formData.frontFile, 'front');
+                if (uploadedFrontUrl) frontPhotoUrl = uploadedFrontUrl;
+            }
+
+            if (formData.backFile) {
+                const uploadedBackUrl = await uploadPhoto(formData.backFile, 'back');
+                if (uploadedBackUrl) backPhotoUrl = uploadedBackUrl;
+            }
+
+            const licenseData = {
+                user_id: userId,
+                vehicle_id: vehicleId,
+                license_number: formData.licenseNumber?.trim() ?? '',
+                identification_number: formData.identificationNumber?.trim() ?? '',
+                expedition_date: formData.expeditionDate,
+                expiration_date: formData.expiryDate,
+                license_category: formData.licenseCategory,
+                blood_type: formData.bloodType,
+                photo_front_url: frontPhotoUrl,
+                photo_back_url: backPhotoUrl,
+            };
+
+            if (hasLicense && licenseId) {
+                const { error } = await supabase
+                    .from('driver_licenses')
+                    .update(licenseData)
+                    .eq('id', licenseId);
+
+                if (error) throw error;
             } else {
-                console.error("Error: No se pudo obtener el vehicleId");
-                setError('Error al obtener el ID del vehículo, por favor intente nuevamente.');
-                return;
-            }
-              formDataToSend.append('user_id', userId);
-            console.log('Agregando campos del formulario...');
+                const { error } = await supabase
+                    .from('driver_licenses')
+                    .insert([licenseData]);
 
-             formDataToSend.append('license_number', String(formData.licenseNumber).trim());
-             formDataToSend.append('identification_number', String(formData.identificationNumber).trim());
-
-           if(formData.expeditionDate) {
-               const date = new Date(formData.expeditionDate as string);
-               const formattedDate = date.toISOString().slice(0, 10);
-                formDataToSend.append('expedition_date', formattedDate);
-           }
-
-            if(formData.expiryDate) {
-               const date = new Date(formData.expiryDate as string);
-               const formattedDate = date.toISOString().slice(0, 10);
-                formDataToSend.append('expiration_date', formattedDate);
-           }
-            formDataToSend.append('license_category', String(formData.licenseCategory).trim());
-             formDataToSend.append('blood_type', String(formData.bloodType).trim());
-
-            if (formData.frontFile && formData.photo_front_url === undefined ) {
-              formDataToSend.append('photo_front_url', formData.frontFile.name);
-                 console.log("se agrego la foto frontal como url usando el nombre del file")
-           } else if (formData.photo_front_url) {
-               formDataToSend.append('photo_front_url', formData.photo_front_url);
-                  console.log("se agrego la foto frontal como url")
-             }
-
-            if (formData.backFile && formData.photo_back_url === undefined) {
-                formDataToSend.append('photo_back_url', formData.backFile.name);
-                 console.log("se agrego la foto trasera como url usando el nombre del file")
-             }
-            else if (formData.photo_back_url) {
-                 formDataToSend.append('photo_back_url', formData.photo_back_url);
-                  console.log("se agrego la foto trasera como url")
-              }
-
-
-             console.log('Data a enviar:', Object.fromEntries(formDataToSend));
-            for (const pair of formDataToSend.entries()) {
-                console.log(pair[0] + ', ' + pair[1]);
+                if (error) throw error;
             }
 
-            const method = hasLicense ? 'PUT' : 'POST';
-            const url = hasLicense
-                ? `${BASE_URL}/driver_licenses/${licenseId}`
-                : `${BASE_URL}/driver_licenses`;
-
-            console.log('Método HTTP:', method);
-            console.log('URL de la petición:', url);
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'x-token': token,
-                },
-                body: formDataToSend,
-            });
-              console.log('Respuesta del servidor:', response);
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Error al guardar la licencia, response:', errorData);
-                 console.log('response:', response);
-
-                let errorMessage = 'Error al guardar la licencia. Por favor intente nuevamente.';
-                    if (errorData && errorData.errors) {
-                        errorMessage = errorData.errors.map((error: any) => error.msg).join(', ');
-                    }
-                    throw new Error(errorMessage);
-            }
-            // Si la respuesta es ok, entonces la licencia se guardó
-            console.log('Licencia guardada correctamente');
-            setFormHasChanged(false);
-            setViewMode(true);
-            navigate({ to: '/Perfil' });
+            showSuccessModal();
         } catch (error: any) {
-            console.error('Error al guardar la licencia catch:', error);
-            setErrors((prev) => ({
-                ...prev,
-                submit: error.message || 'Error al guardar la licencia. Por favor intente nuevamente.',
-            }));
+            console.error('Error al guardar la licencia:', error);
+            showErrorNotification(error.message || 'Error al guardar la licencia');
         } finally {
             setIsSubmitting(false);
         }
     };
 
-  const handleEditClick = () => {
-      setViewMode(false);
-      setFormHasChanged(false);
-  };
-
+    const handleEditClick = () => {
+        setViewMode(false);
+        setFormHasChanged(false);
+    };
 
     const handleBack = () => {
         if (formHasChanged) {
@@ -416,7 +372,7 @@ const License: React.FC = () => {
 
     return (
         <div className={styles.container}>
-             <Modal
+            <Modal
                 opened={isModalOpen}
                 onClose={handleModalClose}
                 title="¿Salir sin guardar cambios?"
@@ -424,15 +380,15 @@ const License: React.FC = () => {
                     root: styles.modalContainer,
                     title: styles.modalTitle,
                     body: styles.modalBody,
-                     header: styles.modalHeader,
-                     close: styles.modalCloseButton
+                    header: styles.modalHeader,
+                    close: styles.modalCloseButton
                 }}
             >
-                 <p className={styles.modalParagraph}>
-                     ¿Estás seguro de que deseas salir sin guardar los cambios?
+                <p className={styles.modalParagraph}>
+                    ¿Estás seguro de que deseas salir sin guardar los cambios?
                 </p>
                 <div className={styles.modalButtons}>
-                     <Button onClick={handleModalClose}  variant="outline" color="gray"  className={styles.buttonModalSecondary} >
+                    <Button onClick={handleModalClose} variant="outline" color="gray" className={styles.buttonModalSecondary} >
                         Cancelar
                     </Button>
                     <Button onClick={handleModalConfirm} variant="filled" color="red" className={styles.buttonModalPrimary}>

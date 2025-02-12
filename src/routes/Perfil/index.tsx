@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
 import styles from './index.module.css'
+import { supabase } from '@/lib/supabaseClient'
 
 // Interfaces
 interface UserProfile {
@@ -144,112 +145,73 @@ const ProfileView: React.FC = () => {
     const loadUserData = async () => {
       try {
         setLoading(true)
-        const token = localStorage.getItem('token')
         const userId = localStorage.getItem('userId')
 
-        if (!token || !userId) {
+        if (!userId) {
           console.log('No hay sesión activa, redirigiendo...')
           navigate({ to: '/Login' })
           return
         }
 
-        // Cargar perfil de usuario
-        console.log('Cargando datos del usuario...')
-        const profileResponse = await fetch(`${BASE_URL}/users/${userId}`, {
-          headers: { 'x-token': token },
-        })
+        // Cargar perfil de usuario y sesión
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        const { data: profileData, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .single()
 
-        if (!profileResponse.ok) {
-          throw new Error('Error al cargar el perfil')
+        if (profileError) throw profileError
+        if (sessionError) throw sessionError
+        if (profileData) {
+          setUserProfile({
+            id: profileData.id,
+            email: session?.user?.email || '',
+            phone_number: profileData.phone_number || '',
+            first_name: profileData.first_name,
+            last_name: profileData.last_name,
+            identification_type: profileData.identification_type,
+            identification_number: profileData.identification_number,
+            user_type: profileData.status // Usando status como user_type
+          })
         }
 
-        const profileData = await profileResponse.json()
-        console.log('Datos del perfil recibidos:', profileData)
-
-        if (profileData.ok && profileData.data) {
-          setUserProfile(profileData.data)
-        }
-
-        // Cargar estado de la licencia
-        console.log('Verificando datos de la licencia...')
-        const licenseResponse = await fetch(`${BASE_URL}/driver_licenses`, {
-          headers: { 'x-token': token },
-        })
-
-        if (!licenseResponse.ok) {
-          console.error('Error al verificar la licencia:', licenseResponse)
-          throw new Error('Error al verificar la licencia')
-        }
-
-        const licenseData = await licenseResponse.json()
-        console.log('Datos de la licencia recibidos:', licenseData)
-
-        const userLicense = licenseData.data?.find(
-          (license: any) => license.user_id.toString() === userId,
-        )
-
-        // Cargar estado del vehículo
-        console.log('Verificando documentos del vehículo...')
-        const vehicleResponse = await fetch(`${BASE_URL}/vehicles`, {
-          headers: { 'x-token': token },
-        })
-
-        if (!vehicleResponse.ok) {
-          throw new Error('Error al verificar el vehículo')
-        }
-
-        const vehicleData = await vehicleResponse.json()
-        console.log('Datos del vehículo recibidos:', vehicleData)
-
-        const userVehicle = vehicleData.data?.find(
-          (vehicle: any) => vehicle.user_id.toString() === userId,
-        )
-
-        // Cargar estado del SOAT
-        console.log('Verificando datos del SOAT...')
-        const soatResponse = await fetch(`${BASE_URL}/soat_details`, {
-          headers: { 'x-token': token },
-        })
-        if (!soatResponse.ok) {
-          console.error('Error al verificar el SOAT:', soatResponse)
-          throw new Error('Error al verificar el SOAT')
-        }
-
-        const soatData = await soatResponse.json()
-        console.log('Datos de SOAT recibidos:', soatData)
-
-        const userSoat = soatData.data?.find(
-          (soat: any) => soat.user_id.toString() === userId,
-        )
-
-        // Cargar estado de la Tarjeta de Propiedad
-        console.log('Verificando datos de la Tarjeta de Propiedad...')
-        const propertyCardResponse = await fetch(`${BASE_URL}/property_cards`, {
-          headers: { 'x-token': token },
-        })
-        if (!propertyCardResponse.ok) {
-          console.error(
-            'Error al verificar la Tarjeta de Propiedad:',
-            propertyCardResponse,
-          )
-          throw new Error('Error al verificar la Tarjeta de Propiedad')
-        }
-
-        const propertyCardData = await propertyCardResponse.json()
-        console.log(
-          'Datos de la Tarjeta de Propiedad recibidos:',
-          propertyCardData,
-        )
-        const userPropertyCard = propertyCardData.data?.find(
-          (card: any) => card.user_id.toString() === userId,
-        )
+        // Cargar datos del vehículo y documentos
+        const [
+          { data: vehicleData },
+          { data: licenseData },
+          { data: soatData },
+          { data: propertyCardData }
+        ] = await Promise.all([
+          supabase
+            .from('vehicles')
+            .select('*')
+            .eq('user_id', userId)
+            .single(),
+          supabase
+            .from('driver_licenses')
+            .select('*')
+            .eq('user_id', userId)
+            .single(),
+          supabase
+            .from('soat_details')
+            .select('*')
+            .eq('user_id', userId)
+            .single(),
+          supabase
+            .from('property_cards')
+            .select('*')
+            .eq('user_id', userId)
+            .single()
+        ])
 
         setVehicleStatus({
-          hasVehicle: Boolean(userVehicle),
-          hasLicense: Boolean(userLicense),
-          hasSoat: Boolean(userSoat),
-          hasPropertyCard: Boolean(userPropertyCard),
+          hasVehicle: Boolean(vehicleData),
+          hasLicense: Boolean(licenseData),
+          hasSoat: Boolean(soatData),
+          hasPropertyCard: Boolean(propertyCardData)
         })
+
       } catch (error) {
         console.error('Error en la carga de datos:', error)
         setError('Error al cargar la información')
@@ -273,65 +235,30 @@ const ProfileView: React.FC = () => {
         if (userProfile.user_type !== 'DRIVER' && allDocumentsComplete) {
           try {
             setLoading(true)
-            const token = localStorage.getItem('token')
             const userId = localStorage.getItem('userId')
 
-            if (!token || !userId) {
-              console.error(
-                'No hay token o userId disponible para cambiar el rol del usuario.',
-              )
+            if (!userId) {
+              console.error('No hay userId disponible para cambiar el rol del usuario.')
               return
             }
-            const updateUrl = `${BASE_URL}/users/${userId}`
-            const requestBody = {
-              user_type: 'DRIVER',
-            }
 
-            console.log(
-              'Actualizando user_type a DRIVER:',
-              requestBody,
-              'URL',
-              updateUrl,
-            )
+            const { error: updateError } = await supabase
+              .from('user_profiles')
+              .update({ status: 'DRIVER' })
+              .eq('user_id', userId)
 
-            // Make the PUT request to update user_type to DRIVER
-            const response = await fetch(updateUrl, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-                'x-token': token,
-              },
-              body: JSON.stringify(requestBody),
-            })
-            console.log('Respuesta del server:', response)
+            if (updateError) throw updateError
 
-            if (!response.ok) {
-              const errorData = await response.json()
-              console.error(
-                'Error al actualizar el rol del usuario:',
-                errorData,
-              )
-              throw new Error(
-                `Error al actualizar el rol del usuario: ${response.status}`,
-              )
-            }
-
-            const responseData = await response.json()
-            console.log('Respuesta del cambio de rol:', responseData)
-
-            // Update userProfile state with the new user_type
-            if (responseData.ok && responseData.data) {
-              setUserProfile((prevProfile) => ({
-                ...(prevProfile as UserProfile),
-                user_type: 'DRIVER',
-              }))
-            }
+            setUserProfile(prev => ({
+              ...(prev as UserProfile),
+              user_type: 'DRIVER'
+            }))
 
             setSuccessMessage(
-              `Felicidades ${userProfile.first_name} ${userProfile.last_name} ya tienes las habilidades de conductor en cupo.`,
+              `Felicidades ${userProfile.first_name} ${userProfile.last_name} ya tienes las habilidades de conductor en cupo.`
             )
             setIsSuccessModalOpen(true)
-            console.log('Rol actualizado con éxito, mostrando modal.')
+
           } catch (error) {
             console.error('Error al actualizar el rol del usuario:', error)
             setError(`Error al actualizar el rol del usuario: ${error}`)
@@ -348,9 +275,15 @@ const ProfileView: React.FC = () => {
   }, [vehicleStatus, userProfile])
 
   // Helpers y manejadores
-  const handleLogout = () => {
-    localStorage.clear()
-    navigate({ to: '/' })
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+      localStorage.clear()
+      navigate({ to: '/' })
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error)
+    }
   }
 
    const handleNavigation = (path: string) => {

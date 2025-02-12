@@ -29,11 +29,6 @@ interface ProfileFormData {
   user_type: string;
 }
 
-interface ServerResponse {
-  ok: boolean;
-  data?: ProfileFormData;
-  msg?: string;
-}
 
 const CompleteProfileView: React.FC = () => {
   const [loading, setLoading] = useState(false);
