@@ -231,6 +231,26 @@
     box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.1);
   }
   
+  .form.editing .input:not(:disabled),
+  .form.editing .select:not(:disabled) {
+    background: var(--input-bg);
+    border-color: var(--primary-color);
+    cursor: text;
+    opacity: 1;
+  }
+  
+  .viewModeInput {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: transparent !important;
+    color: var(--text-color) !important;
+    opacity: 0.8;
+  }
+  
+  .viewModeInput:disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
+  }
+  
   /* Upload de Fotos */
   .photosGrid {
     display: grid;
@@ -789,4 +809,11 @@ input[type="file"] {
 }
 .modalCloseButton:hover {
   color: #555;
+}
+
+.optionalText {
+  margin-left: auto;
+  color: var(--text-tertiary);
+  font-size: 14px;
+  font-style: italic;
 }

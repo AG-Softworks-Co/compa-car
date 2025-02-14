@@ -140,139 +140,188 @@ const ProfileView: React.FC = () => {
     },
   ]
 
+  const checkAndUpdateUserRole = async (userId: string, hasAllDocs: boolean) => {
+    try {
+      const { data: userProfile } = await supabase
+        .from('user_profiles')
+        .select('status')
+        .eq('user_id', userId)
+        .single();
+
+      if (userProfile?.status === 'PASSENGER' && hasAllDocs) {
+        // Actualizar a DRIVER
+        const { error: updateError } = await supabase
+          .from('user_profiles')
+          .update({ status: 'DRIVER' })
+          .eq('user_id', userId);
+
+        if (updateError) throw updateError;
+
+        // Actualizar estado local
+        setUserProfile(prev => prev ? {
+          ...prev,
+          user_type: 'DRIVER'
+        } : null);
+
+        // Mostrar notificación
+        setSuccessMessage(
+          `¡Felicitaciones! Has completado todos los documentos requeridos. Ahora eres conductor verificado.`
+        );
+        setIsSuccessModalOpen(true);
+      }
+    } catch (error) {
+      console.error('Error updating user role:', error);
+    }
+  };
+
   // Efecto para cargar datos del usuario y documentos
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        setLoading(true)
-        const userId = localStorage.getItem('userId')
-
-        if (!userId) {
-          console.log('No hay sesión activa, redirigiendo...')
-          navigate({ to: '/Login' })
-          return
+        setLoading(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session?.user?.id) {
+          navigate({ to: '/Login' });
+          return;
         }
 
-        // Cargar perfil de usuario y sesión
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        const { data: profileData, error: profileError } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .single()
-
-        if (profileError) throw profileError
-        if (sessionError) throw sessionError
-        if (profileData) {
-          setUserProfile({
-            id: profileData.id,
-            email: session?.user?.email || '',
-            phone_number: profileData.phone_number || '',
-            first_name: profileData.first_name,
-            last_name: profileData.last_name,
-            identification_type: profileData.identification_type,
-            identification_number: profileData.identification_number,
-            user_type: profileData.status // Usando status como user_type
-          })
-        }
-
-        // Cargar datos del vehículo y documentos
+        // Cargar todos los documentos y perfil en paralelo
         const [
-          { data: vehicleData },
-          { data: licenseData },
-          { data: soatData },
-          { data: propertyCardData }
+          { data: profile },
+          { data: vehicle },
+          { data: license },
+          { data: soat },
+          { data: propertyCard }
         ] = await Promise.all([
-          supabase
-            .from('vehicles')
-            .select('*')
-            .eq('user_id', userId)
-            .single(),
-          supabase
-            .from('driver_licenses')
-            .select('*')
-            .eq('user_id', userId)
-            .single(),
-          supabase
-            .from('soat_details')
-            .select('*')
-            .eq('user_id', userId)
-            .single(),
-          supabase
-            .from('property_cards')
-            .select('*')
-            .eq('user_id', userId)
-            .single()
-        ])
+          supabase.from('user_profiles').select('*').eq('user_id', session.user.id).single(),
+          supabase.from('vehicles').select('id').eq('user_id', session.user.id).maybeSingle(),
+          supabase.from('driver_licenses').select('id').eq('user_id', session.user.id).maybeSingle(),
+          supabase.from('soat_details').select('id').eq('user_id', session.user.id).maybeSingle(),
+          supabase.from('property_cards').select('id').eq('user_id', session.user.id).maybeSingle()
+        ]);
 
+        const hasAllDocuments = Boolean(vehicle && license && soat && propertyCard);
+        
+        // Verificar y actualizar rol si es necesario
+        await checkAndUpdateUserRole(session.user.id, hasAllDocuments);
+
+        // Actualizar estados
+        if (profile) {
+          setUserProfile({
+            id: profile.id,
+            email: session.user.email ?? '',
+            phone_number: profile.phone_number ?? '',
+            first_name: profile.first_name,
+            last_name: profile.last_name,
+            identification_type: profile.identification_type,
+            identification_number: profile.identification_number,
+            user_type: profile.status
+          });
+        }
         setVehicleStatus({
-          hasVehicle: Boolean(vehicleData),
-          hasLicense: Boolean(licenseData),
-          hasSoat: Boolean(soatData),
-          hasPropertyCard: Boolean(propertyCardData)
-        })
+          hasVehicle: Boolean(vehicle),
+          hasLicense: Boolean(license),
+          hasSoat: Boolean(soat),
+          hasPropertyCard: Boolean(propertyCard)
+        });
 
       } catch (error) {
-        console.error('Error en la carga de datos:', error)
-        setError('Error al cargar la información')
+        console.error('Error loading data:', error);
+        setError('Error al cargar la información');
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadUserData()
-  }, [navigate])
+    loadUserData();
+  }, [navigate]);
+
+  // Modificar la sección de renderizado del usuario
+  const renderUserSection = () => (
+    <div className={styles.userSection}>
+      <div className={styles.userAvatar}>
+        <User size={40} />
+      </div>
+      <div className={styles.userInfo}>
+        <Text className={styles.userName}>
+          {userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Usuario'}
+        </Text>
+        <Text className={styles.userEmail}>{userProfile?.email}</Text>
+        <Text
+          className={`${styles.userType} ${
+            userProfile?.user_type === 'DRIVER' ? styles.driver : ''
+          }`}
+        >
+          {userProfile?.user_type === 'DRIVER' ? (
+            <>
+              <CheckCircle size={16} className={styles.verifiedIcon} />
+              Conductor Verificado
+            </>
+          ) : (
+            'Pasajero'
+          )}
+        </Text>
+      </div>
+    </div>
+  );
 
   useEffect(() => {
     const checkDocumentCompletion = async () => {
       if (userProfile) {
+        // Verificar que todos los documentos estén completos
         const allDocumentsComplete =
           vehicleStatus.hasVehicle &&
           vehicleStatus.hasLicense &&
           vehicleStatus.hasSoat &&
-          vehicleStatus.hasPropertyCard
+          vehicleStatus.hasPropertyCard;
 
-        if (userProfile.user_type !== 'DRIVER' && allDocumentsComplete) {
+        // Solo proceder si tiene todos los documentos y NO es conductor aún
+        if (userProfile.user_type === 'PASSENGER' && allDocumentsComplete) {
           try {
-            setLoading(true)
-            const userId = localStorage.getItem('userId')
+            setLoading(true);
+            const userId = localStorage.getItem('userId');
 
             if (!userId) {
-              console.error('No hay userId disponible para cambiar el rol del usuario.')
-              return
+              console.error('No hay userId disponible');
+              return;
             }
 
+            // Actualizar el rol a DRIVER
             const { error: updateError } = await supabase
               .from('user_profiles')
               .update({ status: 'DRIVER' })
-              .eq('user_id', userId)
+              .eq('user_id', userId);
 
-            if (updateError) throw updateError
+            if (updateError) throw updateError;
 
+            // Actualizar el estado local
             setUserProfile(prev => ({
               ...(prev as UserProfile),
               user_type: 'DRIVER'
-            }))
+            }));
 
+            // Mostrar mensaje de felicitación
             setSuccessMessage(
-              `Felicidades ${userProfile.first_name} ${userProfile.last_name} ya tienes las habilidades de conductor en cupo.`
-            )
-            setIsSuccessModalOpen(true)
+              `¡Felicitaciones ${userProfile.first_name}! Ya eres conductor en Cupo. Ahora puedes publicar viajes.`
+            );
+            setIsSuccessModalOpen(true);
 
           } catch (error) {
-            console.error('Error al actualizar el rol del usuario:', error)
-            setError(`Error al actualizar el rol del usuario: ${error}`)
+            console.error('Error al actualizar el rol:', error);
+            setError('Error al actualizar tu perfil de conductor');
           } finally {
-            setLoading(false)
+            setLoading(false);
           }
-        } else if (!allDocumentsComplete) {
-          setShowVehicleMessage(true)
+        } else if (!allDocumentsComplete && userProfile.user_type === 'PASSENGER') {
+          // Mostrar mensaje solo si aún es pasajero y le faltan documentos
+          setShowVehicleMessage(true);
         }
       }
-    }
+    };
 
-    checkDocumentCompletion()
-  }, [vehicleStatus, userProfile])
+    checkDocumentCompletion();
+  }, [vehicleStatus, userProfile]);
 
   // Helpers y manejadores
   const handleLogout = async () => {
@@ -375,43 +424,24 @@ const ProfileView: React.FC = () => {
           </div>
         </div>
       ))}
-      {/* Completion message */}
-      {showVehicleMessage &&
-        !vehicleStatus.hasVehicle &&
-        !vehicleStatus.hasLicense &&
-        !vehicleStatus.hasSoat &&
-        !vehicleStatus.hasPropertyCard && (
-          <div className={styles.vehicleIncompleteMessage}>
-            <Text className={styles.vehicleIncompleteText}>
-              Para ser conductor, debes completar todos los registros
-            </Text>
-          </div>
-        )}
-      {showVehicleMessage &&
-        (vehicleStatus.hasVehicle ||
-          vehicleStatus.hasLicense ||
-          vehicleStatus.hasSoat ||
-          vehicleStatus.hasPropertyCard) && (
-          <div className={styles.vehicleIncompleteMessage}>
-            <Text className={styles.vehicleIncompleteText}>
-              Para ser conductor debes completar todos los registros del
-              vehiculo
-            </Text>
-          </div>
-        )}
-      {vehicleStatus.hasVehicle &&
-        vehicleStatus.hasLicense &&
-        vehicleStatus.hasSoat &&
-        vehicleStatus.hasPropertyCard && (
-          <div className={styles.vehicleRegistrationComplete}>
-            <Text className={styles.vehicleRegistrationText}>
-              ¡Registro de vehículo completado!
-            </Text>
-            <Text className={styles.vehicleRegistrationSubtitle}>
-              ¡Eres conductor en Cupo!
-            </Text>
-          </div>
-        )}
+      {/* Mensajes actualizados */}
+      {showVehicleMessage && userProfile?.user_type === 'PASSENGER' && (
+        <div className={styles.vehicleIncompleteMessage}>
+          <Text className={styles.vehicleIncompleteText}>
+            Para convertirte en conductor, completa todos los documentos requeridos
+          </Text>
+        </div>
+      )}
+      {userProfile?.user_type === 'DRIVER' && (
+        <div className={styles.vehicleRegistrationComplete}>
+          <Text className={styles.vehicleRegistrationText}>
+            ¡Eres conductor verificado!
+          </Text>
+          <Text className={styles.vehicleRegistrationSubtitle}>
+            Puedes publicar y gestionar viajes
+          </Text>
+        </div>
+      )}
     </div>
   )
 
@@ -480,26 +510,7 @@ const ProfileView: React.FC = () => {
         <Title className={styles.title}>Menú</Title>
       </div>
 
-      <div className={styles.userSection}>
-        <div className={styles.userAvatar}>
-          <User size={40} />
-        </div>
-        <div className={styles.userInfo}>
-          <Text className={styles.userName}>
-            {userProfile
-              ? `${userProfile.first_name} ${userProfile.last_name}`
-              : 'Usuario'}
-          </Text>
-          <Text className={styles.userEmail}>{userProfile?.email}</Text>
-          <Text
-            className={`${styles.userType} ${
-              userProfile?.user_type === 'DRIVER' ? styles.driver : ''
-            }`}
-          >
-            {userProfile?.user_type === 'DRIVER' ? 'Conductor' : 'Pasajero'}
-          </Text>
-        </div>
-      </div>
+      {renderUserSection()}
 
        <div className={styles.menuSection}>
         {menuItems.map((item) => (

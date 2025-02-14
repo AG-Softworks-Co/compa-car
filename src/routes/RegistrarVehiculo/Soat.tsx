@@ -12,20 +12,37 @@ import {
     AlertCircle,
     CheckCircle,
 } from 'lucide-react';
-import { type SoatFormData, INSURANCE_COMPANIES } from '../../types/SoatTypes';
+import { INSURANCE_COMPANIES } from '../../types/SoatTypes';
 import styles from './Soat.module.css';
 import { TextInput, Modal, Button, Text } from '@mantine/core';
+import { supabase } from '@/lib/supabaseClient';
+import { notifications } from '@mantine/notifications';
 
-const BASE_URL = 'https://rest-sorella-production.up.railway.app/api';
+
+interface SoatFormData {
+  policy_number: string;
+  insurance_company: string;
+  identification_number: string;
+  expedition_date: string;
+  expiry_date: string;
+  validity_from?: string;
+  validity_to?: string;
+  photo_front_url?: string | null;
+  photo_back_url?: string | null;
+  frontFile?: File;
+  backFile?: File;
+  frontPreview?: string;
+  backPreview?: string;
+}
 
 const Soat: React.FC = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState<SoatFormData>({
-        expeditionDate: '',
-        expiryDate: '',
-        insuranceCompany: '',
-        policyNumber: '',
-        identificationNumber: '',
+        expedition_date: '',
+        expiry_date: '',
+        insurance_company: '',
+        policy_number: '',
+        identification_number: '',
         frontPreview: undefined,
         backPreview: undefined,
     })
@@ -44,109 +61,86 @@ const Soat: React.FC = () => {
      const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
      const [successMessage, setSuccessMessage] = useState<string>('');
 
-    const userId = localStorage.getItem('userId');
-
+    const showErrorNotification = (message: string) => {
+        notifications.show({
+            title: 'Error',
+            message,
+            color: 'red',
+            icon: <AlertCircle />
+        });
+    };
+    
     useEffect(() => {
-        const loadData = async () => {
+        const loadSoatData = async () => {
             try {
-                console.log('Iniciando carga de datos del SOAT...');
                 setLoading(true);
-                const token = localStorage.getItem('token');
-                if (!token || !userId) {
-                    console.log('No hay sesión activa, redirigiendo...');
+
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session?.user?.id) {
                     navigate({ to: '/Login' });
                     return;
                 }
-                console.log('Token y userId encontrados. UserId:', userId);
 
-                // Cargar perfil de usuario
-                console.log('Cargando datos del perfil...');
-                const profileResponse = await fetch(`${BASE_URL}/users/${userId}`, {
-                    headers: { 'x-token': token },
-                });
+                const userId = session.user.id;
 
-                if (!profileResponse.ok) {
-                    throw new Error('Error al cargar el perfil');
-                }
+                // Cargar datos del SOAT existente
+                const { data: existingSoat, error: soatError } = await supabase
+                    .from('soat_details')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .maybeSingle();
 
-                const profileData = await profileResponse.json();
-                console.log('Datos del perfil recibidos:', profileData);
-                if (profileData.ok && profileData.data) {
-                    setFormData((prev) => ({
-                        ...prev,
-                        identificationNumber: profileData.data.identification_number,
-                    }));
-                }
-
-                // Cargar estado del vehículo
-                console.log('Verificando datos del vehículo...');
-                const vehicleResponse = await fetch(`${BASE_URL}/vehicles`, {
-                    headers: { 'x-token': token },
-                });
-                if (!vehicleResponse.ok) {
-                    console.error('Error al verificar el vehículo:', vehicleResponse);
-                    throw new Error('Error al verificar el vehículo');
-                }
-
-                const vehicleData = await vehicleResponse.json();
-                console.log('Datos del vehiculo:', vehicleData);
-                const userVehicle = vehicleData.data?.find(
-                    (vehicle: any) => vehicle.user_id.toString() === userId
-                );
-
-                if (userVehicle) {
-                    setVehicleId(userVehicle.id);
-                    console.log('Vehicle ID encontrado:', userVehicle.id);
-                } else {
-                    console.log('No se encontró el Vehicle ID para este usuario');
-                }
-
-                // Cargar info de SOAT
-                console.log('Verificando datos del SOAT...');
-                const soatResponse = await fetch(`${BASE_URL}/soat_details`, {
-                    headers: { 'x-token': token },
-                });
-                if (!soatResponse.ok) {
-                    console.error('Error al verificar el SOAT:', soatResponse);
-                    throw new Error('Error al verificar el SOAT');
-                }
-
-                const soatData = await soatResponse.json();
-                console.log('Datos de SOAT recibidos:', soatData);
-
-                const userSoat = soatData.data?.find(
-                    (soat: any) => soat.user_id.toString() === userId
-                );
-                if (userSoat) {
-                    setSoatId(userSoat.id);
+                if (existingSoat) {
+                    setSoatId(existingSoat.id);
                     setHasSoat(true);
-                    const initialData: SoatFormData = {
-                        policyNumber: userSoat.policy_number,
-                        expeditionDate: userSoat.validity_from?.split('T')[0],
-                        expiryDate: userSoat.validity_to?.split('T')[0],
-                        insuranceCompany: userSoat.insurance_company,
-                         identificationNumber: profileData.data.identification_number,
-                        frontPreview: userSoat.photo_front_url || undefined,
-                        backPreview: userSoat.photo_back_url || undefined
-                    }
-                      setInitialFormData(initialData);
-                     setFormData(initialData);
+                    setFormData({
+                        policy_number: existingSoat.policy_number || '',
+                        insurance_company: existingSoat.insurance_company || '',
+                        identification_number: existingSoat.identification_number || '',
+                        expedition_date: existingSoat.validity_from?.split('T')[0] || '',
+                        expiry_date: existingSoat.validity_to?.split('T')[0] || '',
+                        photo_front_url: existingSoat.photo_front_url,
+                        photo_back_url: existingSoat.photo_back_url
+                    });
                     setViewMode(true);
                 } else {
-                    console.log('No se encontró SOAT para este usuario.');
+                    // Cargar datos del perfil para nuevo SOAT
+                    const { data: profileData } = await supabase
+                        .from('user_profiles')
+                        .select('identification_number')
+                        .eq('user_id', userId)
+                        .single();
+
+                    if (profileData) {
+                        setFormData(prev => ({
+                            ...prev,
+                            identification_number: profileData.identification_number
+                        }));
+                    }
                     setViewMode(false);
                 }
 
+                // Obtener vehicleId
+                const { data: vehicleData } = await supabase
+                    .from('vehicles')
+                    .select('id')
+                    .eq('user_id', userId)
+                    .single();
+
+                if (vehicleData) {
+                    setVehicleId(vehicleData.id);
+                }
+
             } catch (error) {
-                console.error('Error en la carga de datos:', error);
-                setError('Error al cargar información. Por favor intente nuevamente.');
-                setViewMode(false);
+                console.error('Error loading SOAT data:', error);
+                showErrorNotification('Error al cargar los datos del SOAT');
             } finally {
                 setLoading(false);
             }
         };
-        loadData();
-    }, [navigate, userId]);
+
+        loadSoatData();
+    }, [navigate]);
 
   // Validaciones específicas para SOAT
     const validateForm = (): boolean => {
@@ -154,39 +148,31 @@ const Soat: React.FC = () => {
 
   
 
-        if (!formData.expeditionDate) {
-            newErrors.expeditionDate = 'La fecha de expedición es requerida';
+        if (!formData.expedition_date) {
+            newErrors.expedition_date = 'La fecha de expedición es requerida';
         }
 
-        if (!formData.expiryDate) {
-            newErrors.expiryDate = 'La fecha de vencimiento es requerida';
+        if (!formData.expiry_date) {
+            newErrors.expiry_date = 'La fecha de vencimiento es requerida';
         } else {
-            const expiry = new Date(formData.expiryDate);
+            const expiry = new Date(formData.expiry_date);
             const today = new Date();
             if (expiry <= today) {
-                newErrors.expiryDate = 'El SOAT debe tener una fecha de vencimiento futura';
+                newErrors.expiry_date = 'El SOAT debe tener una fecha de vencimiento futura';
             }
         }
-         if (!formData.insuranceCompany) {
-            newErrors.insuranceCompany = 'La aseguradora es requerida';
+         if (!formData.insurance_company) {
+            newErrors.insurance_company = 'La aseguradora es requerida';
         }
        
 
-       if (!formData.identificationNumber) {
-            newErrors.identificationNumber = 'El número de identificación es requerido';
+       if (!formData.identification_number) {
+            newErrors.identification_number = 'El número de identificación es requerido';
        }
-      else if (!/^\d+$/.test(formData.identificationNumber)) {
-             newErrors.identificationNumber = 'Número de identificación inválido';
+      else if (!/^\d+$/.test(formData.identification_number)) {
+             newErrors.identification_number = 'Número de identificación inválido';
        }
 
-
-        // Validar archivos
-        if (!formData.frontPreview && !formData.frontFile ) {
-            newErrors.frontFile = 'La foto frontal del SOAT es requerida';
-       }
-        if (!formData.backPreview && !formData.backFile) {
-            newErrors.backFile = 'La foto posterior del SOAT es requerida';
-        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -271,119 +257,115 @@ if (typeof name === "string" && errors[name]) {
     };
 
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const showSuccessModal = () => {
+    setSuccessMessage('SOAT registrado exitosamente');
+    setIsSuccessModalOpen(true);
+};
+
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
-    console.log('Iniciando handleSubmit con formData:', formData); // Log antes de la validación
-    if (!validateForm()) {
-      console.log('Validación falló, errores:', errors);
-      setSubmitMessage('Por favor, corrige los errores en el formulario.');
-      return;
-    }
+    if (isSubmitting || !validateForm()) return;
+
     setIsSubmitting(true);
-    setSubmitMessage(null); // Resetear el mensaje anterior
 
     try {
-      const token = localStorage.getItem('token');
-        if (!token || !userId || !vehicleId) {
-        console.error('No hay token, userId o vehicleId. Redirigiendo a /Login');
-        navigate({ to: '/Login' });
-        return;
-      }
-        const formDataToSend = new FormData();
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
 
-      if (vehicleId) {
-        formDataToSend.append('vehicle_id', String(vehicleId));
+      if (!userId || !vehicleId) {
+        throw new Error('Información necesaria no disponible');
+      }
+
+      // Preparar datos base
+      const soatData = {
+        user_id: userId,
+        vehicle_id: vehicleId,
+        policy_number: formData.policy_number,
+        identification_number: formData.identification_number,
+        insurance_company: formData.insurance_company,
+        validity_from: new Date(formData.expedition_date).toISOString(),
+        validity_to: new Date(formData.expiry_date).toISOString(),
+        photo_front_url: formData.photo_front_url,
+        photo_back_url: formData.photo_back_url
+      };
+
+      // Procesar fotos nuevas si existen
+      if (formData.frontFile) {
+        const frontUrl = await uploadPhoto(formData.frontFile, 'front');
+        if (frontUrl) soatData.photo_front_url = frontUrl;
+      }
+
+      if (formData.backFile) {
+        const backUrl = await uploadPhoto(formData.backFile, 'back');
+        if (backUrl) soatData.photo_back_url = backUrl;
+      }
+
+      if (hasSoat && soatId) {
+        // Actualizar SOAT existente
+        const { error: updateError } = await supabase
+          .from('soat_details')
+          .update(soatData)
+          .eq('id', soatId);
+
+        if (updateError) throw updateError;
+
+        notifications.show({
+          title: 'SOAT Actualizado',
+          message: 'La información del SOAT ha sido actualizada correctamente',
+          color: 'green',
+          icon: <CheckCircle />,
+          autoClose: 4000
+        });
+
+        setViewMode(true);
       } else {
-        console.error('Error: No se pudo obtener el vehicleId');
-        setSubmitMessage(
-          'Error al obtener el ID del vehículo, por favor intente nuevamente.'
-        );
-        return;
-      }
+        // Crear nuevo SOAT
+        const { data: newSoat, error: insertError } = await supabase
+          .from('soat_details')
+          .insert([soatData])
+          .select()
+          .single();
 
-      formDataToSend.append('user_id', String(userId));
-      formDataToSend.append('policy_number', formData.policyNumber);
-      formDataToSend.append(
-        'identification_number',
-        formData.identificationNumber
-      );
-      formDataToSend.append('insurance_company', formData.insuranceCompany);
-      if (formData.expeditionDate) {
-        const date = new Date(formData.expeditionDate as string);
-        const formattedDate = date.toISOString().slice(0, 10);
-        formDataToSend.append('validity_from', formattedDate);
-      }
-      if (formData.expiryDate) {
-        const date = new Date(formData.expiryDate as string);
-        const formattedDate = date.toISOString().slice(0, 10);
-        formDataToSend.append('validity_to', formattedDate);
-      }
+        if (insertError) throw insertError;
 
-        if (formData.frontFile && formData.frontPreview === undefined) {
-            formDataToSend.append('photo_front_url', formData.frontFile.name);
-        } else if (formData.frontPreview) {
-            formDataToSend.append('photo_front_url', formData.frontPreview);
+        if (newSoat) {
+          setSoatId(newSoat.id);
+          setHasSoat(true);
+          showSuccessModal();
         }
-
-         if (formData.backFile && formData.backPreview === undefined) {
-            formDataToSend.append('photo_back_url', formData.backFile.name);
-        } else if (formData.backPreview) {
-            formDataToSend.append('photo_back_url', formData.backPreview);
-        }
-
-
-      const method = hasSoat ? 'PUT' : 'POST';
-      const url = hasSoat
-        ? `${BASE_URL}/soat_details/${soatId}`
-        : `${BASE_URL}/soat_details`;
-
-      console.log('Enviando datos al backend...', {
-        method,
-        url,
-        formData: Object.fromEntries(formDataToSend.entries()), // Mostrar los datos a enviar
-      });
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'x-token': token,
-        },
-        body: formDataToSend,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-         console.error('Error al guardar el SOAT, respuesta del servidor:', errorData);
-        let errorMessage = 'Error al guardar el SOAT. Por favor intente nuevamente.';
-        if (errorData && errorData.errors) {
-          errorMessage = errorData.errors
-            .map((error: any) => error.msg)
-            .join(', ');
-        }
-        throw new Error(errorMessage);
       }
-         console.log('SOAT guardado exitosamente');
-        setFormHasChanged(false);
-          setViewMode(true);
-        setSuccessMessage('SOAT guardado exitosamente!');
-        setIsSuccessModalOpen(true);
 
+      setFormHasChanged(false);
 
     } catch (error: any) {
-        console.error('Error en handleSubmit:', error);
-      setErrors((prev) => ({
-        ...prev,
-        submit:
-          error.message ||
-          'Error al guardar el SOAT. Por favor intente nuevamente.',
-      }));
-          setSubmitMessage(
-            error.message ||
-                'Error al guardar el SOAT. Por favor intente nuevamente.'
-          );
+      console.error('Error:', error);
+      showErrorNotification(error.message || 'Error al procesar el SOAT');
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
+    }
+  };
+
+  // Agregar función para subir fotos
+  const uploadPhoto = async (file: File, type: 'front' | 'back'): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${type}_${Math.random()}.${fileExt}`;
+      const filePath = `soat/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('soat')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('soat')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error(`Error uploading ${type} photo:`, error);
+      return null;
     }
   };
 
@@ -516,8 +498,8 @@ if (typeof name === "string" && errors[name]) {
                                 </label>
                                 <TextInput
                                     type="text"
-                                    name="identificationNumber"
-                                    value={formData.identificationNumber}
+                                    name="identification_number"
+                                    value={formData.identification_number}
                                     onChange={handleInputChange}
                                     className={styles.input}
                                     placeholder="Número de identificación del usuario"
@@ -531,11 +513,11 @@ if (typeof name === "string" && errors[name]) {
                                     Aseguradora
                                 </label>
                                 <select
-                                    name="insuranceCompany"
-                                    value={formData.insuranceCompany}
+                                    name="insurance_company"
+                                    value={formData.insurance_company}
                                     onChange={handleInputChange}
-                                    className={styles.select}
-                                     disabled={isSubmitting}
+                                    className={`${styles.select} ${viewMode ? styles.viewModeInput : ''}`}
+                                    disabled={viewMode || isSubmitting}
                                 >
                                     <option value="">Seleccione aseguradora</option>
                                     {INSURANCE_COMPANIES.map(company => (
@@ -544,10 +526,10 @@ if (typeof name === "string" && errors[name]) {
                                         </option>
                                     ))}
                                 </select>
-                                {errors.insuranceCompany && (
+                                {errors.insurance_company && (
                                     <span className={styles.errorText}>
                                         <AlertCircle size={14} />
-                                        {errors.insuranceCompany}
+                                        {errors.insurance_company}
                                     </span>
                                 )}
                             </div>
@@ -559,13 +541,13 @@ if (typeof name === "string" && errors[name]) {
                                 </label>
                                 <TextInput
                                     type="text"
-                                    name="policyNumber"
-                                    value={formData.policyNumber}
+                                    name="policy_number"
+                                    value={formData.policy_number}
                                     onChange={handleInputChange}
                                     className={styles.input}
                                     placeholder="Número de póliza SOAT"
                                     disabled={isSubmitting}
-                                    error={errors.policyNumber}
+                                    error={errors.policy_number}
                                 />
                             </div>
 
@@ -577,13 +559,13 @@ if (typeof name === "string" && errors[name]) {
                                 </label>
                                 <TextInput
                                     type="date"
-                                    name="expeditionDate"
-                                    value={formData.expeditionDate}
+                                    name="expedition_date"
+                                    value={formData.expedition_date}
                                      onChange={handleInputChange}
                                     className={styles.input}
                                     max={new Date().toISOString().split('T')[0]}
                                      disabled={isSubmitting}
-                                    error={errors.expeditionDate}
+                                    error={errors.expedition_date}
                                 />
                             </div>
 
@@ -594,13 +576,13 @@ if (typeof name === "string" && errors[name]) {
                                 </label>
                                 <TextInput
                                     type="date"
-                                    name="expiryDate"
-                                    value={formData.expiryDate}
+                                    name="expiry_date"
+                                    value={formData.expiry_date}
                                     onChange={handleInputChange}
                                     className={styles.input}
                                     min={new Date().toISOString().split('T')[0]}
                                     disabled={isSubmitting}
-                                    error={errors.expiryDate}
+                                    error={errors.expiry_date}
                                 />
                             </div>
                         </div>
@@ -611,6 +593,9 @@ if (typeof name === "string" && errors[name]) {
                         <div className={styles.sectionHeader}>
                             <Camera className={styles.sectionIcon} size={24} />
                             <h2 className={styles.sectionTitle}>Fotos del SOAT</h2>
+                            <Text size="sm" color="dimmed" className={styles.optionalText}>
+                                (Opcional)
+                            </Text>
                         </div>
                         <div className={styles.photosGrid}>
                             {/* Foto Frontal */}

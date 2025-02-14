@@ -526,3 +526,84 @@
     .modalCloseButton {
      color: var(--text-color);
     }
+
+.disabledInput {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-secondary) !important;
+  cursor: not-allowed;
+}
+
+.helperText {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Estilos para notificaciones */
+.notification {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+}
+
+.notification[data-success] {
+  border-color: var(--success-color);
+}
+
+.notification[data-error] {
+  border-color: var(--error-color);
+}
+
+/* Estilos para modo edición */
+.form.editing .input:not(:disabled),
+.form.editing .select:not(:disabled) {
+  animation: highlightField 0.5s ease;
+  border-color: var(--primary-color);
+  background: rgba(0, 255, 157, 0.05);
+}
+
+@keyframes highlightField {
+  0% { transform: translateY(-2px); opacity: 0.8; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.editMode {
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(0, 255, 157, 0.1);
+}
+
+/* Estilo para campos deshabilitados */
+.input:disabled,
+.select:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  color: var(--text-color) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Estilos adicionales para modo de edición y vista */
+.form.editing .input:not(:disabled),
+.form.editing .select:not(:disabled) {
+  background: var(--input-bg);
+  border-color: var(--primary-color);
+  cursor: text;
+  opacity: 1;
+}
+
+.viewModeInput {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: transparent !important;
+  color: var(--text-color) !important;
+  opacity: 0.8;
+}
+
+.viewModeInput:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.viewModeInput:disabled {
+  opacity: 1;
+  color: var(--text-color) !important;
+  cursor: default;
+}
