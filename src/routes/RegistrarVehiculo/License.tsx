@@ -39,8 +39,8 @@ interface ValidationErrors {
 interface DriverLicenseData
     extends Omit<DocumentFormData, 'vehicle_id' | 'documentType'> {
     id?: number;
-    photo_front_url?: string;
-    photo_back_url?: string;
+    photo_front_url?: string | null;
+    photo_back_url?: string | null;
     expedition_date?: string;
     expiry_date?: string;
     user_id?: string;
@@ -48,6 +48,11 @@ interface DriverLicenseData
     backFile?: File;
     licenseNumber?: string;
     identificationNumber?: string;
+}
+
+interface UserProfileData {
+    identification_number: string;
+    identification_type: string;
 }
 
 const License: React.FC = () => {
@@ -76,70 +81,130 @@ const License: React.FC = () => {
     const [] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formHasChanged, setFormHasChanged] = useState(false);
+    const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
 
+    const fetchUserProfile = async (userId: string) => {
+        try {
+            const { data, error } = await supabase
+                .from('user_profiles')
+                .select('identification_number, identification_type')
+                .eq('user_id', userId)
+                .single();
 
+            if (error) {
+                showErrorNotification('Error al cargar datos del perfil');
+                return null;
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Error fetching user profile:', error);
+            return null;
+        }
+    };
 
     useEffect(() => {
-        const loadData = async () => {
+        const loadLicenseData = async () => {
             try {
-                console.log('Iniciando carga de datos de la licencia...');
                 setLoading(true);
-                const userId = localStorage.getItem('userId');
 
-                if (!userId) {
-                    console.log('No hay sesión activa, redirigiendo...');
+                // Obtener sesión y validar
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                if (!session?.user?.id) {
                     navigate({ to: '/Login' });
                     return;
                 }
 
-                // Cargar datos del vehículo
-                const { data: vehicleData, error: vehicleError } = await supabase
-                    .from('vehicles')
-                    .select('*')
-                    .eq('user_id', userId)
-                    .single();
+                const userId = session.user.id;
+                console.log('Loading license data for user:', userId);
 
-                if (vehicleError) throw vehicleError;
-                if (vehicleData) {
-                    setVehicleId(vehicleData.id);
-                }
-
-                // Cargar datos de la licencia
-                const { data: licenseData, error: licenseError } = await supabase
+                // Cargar datos de la licencia existente primero
+                const { data: existingLicense, error: existingLicenseError } = await supabase
                     .from('driver_licenses')
                     .select('*')
                     .eq('user_id', userId)
+                    .maybeSingle();
+
+                if (existingLicense) {
+                    // Si existe licencia, guardar su ID
+                    setLicenseId(existingLicense.id);
+                    setHasLicense(true);
+                }
+
+                // Cargar datos del perfil primero
+                const profileData = await fetchUserProfile(userId);
+                if (!profileData) {
+                    showErrorNotification('Debe completar su perfil primero');
+                    navigate({ to: '/CompletarRegistro' });
+                    return;
+                }
+                setUserProfile(profileData);
+
+                // Obtener primero el vehículo asociado
+                const { data: vehicleData, error: vehicleError } = await supabase
+                    .from('vehicles')
+                    .select('id')
+                    .eq('user_id', userId)
                     .single();
+
+                if (vehicleError) {
+                    console.error('Error fetching vehicle:', vehicleError);
+                    throw new Error('Debe registrar primero un vehículo');
+                }
+
+                // Consultar datos de la licencia
+                const { data: licenseData, error: licenseError } = await supabase
+                    .from('driver_licenses')
+                    .select('id, license_number, identification_number, blood_type, license_category, expedition_date, expiration_date, photo_front_url, photo_back_url')
+                    .eq('user_id', userId)
+                    .maybeSingle();
 
                 if (licenseError && licenseError.code !== 'PGRST116') {
                     throw licenseError;
                 }
 
                 if (licenseData) {
-                                    setLicenseId(licenseData.id);
-                                    setHasLicense(true);
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        licenseNumber: licenseData.license_number || '',
-                                        expeditionDate: licenseData.expedition_date?.split('T')[0] || '',
-                                        expiryDate: licenseData.expiration_date?.split('T')[0] || '',
-                                        photo_front_url: licenseData.photo_front_url || undefined,
-                                        photo_back_url: licenseData.photo_back_url || undefined,
-                                        bloodType: licenseData.blood_type || 'O+',
-                                        licenseCategory: licenseData.license_category || 'B1',
-                                        identificationNumber: licenseData.identification_number || '',
-                                    }));
-                                }
-                setViewMode(!hasLicense);
-            } catch (error) {
-                console.error('Error en la carga de datos:', error);
-                showErrorNotification('Error al cargar información. Por favor intente nuevamente.');
+                    console.log('Found existing license:', licenseData);
+                    setHasLicense(true);
+                    setFormData({
+                        licenseNumber: licenseData.license_number || '',
+                        expeditionDate: licenseData.expedition_date?.split('T')[0] || '',
+                        expiryDate: licenseData.expiration_date?.split('T')[0] || '',
+                        bloodType: licenseData.blood_type || 'O+',
+                        licenseCategory: licenseData.license_category || 'B1',
+                        identificationNumber: licenseData.identification_number ?? undefined,
+                        photo_front_url: licenseData.photo_front_url ?? undefined,
+                        photo_back_url: licenseData.photo_back_url ?? undefined,
+                        frontPreview: undefined,
+                        backPreview: undefined,
+                        frontFile: undefined,
+                        backFile: undefined
+                    });
+                    setViewMode(true);
+                } else {
+                    console.log('No existing license found');
+                    setFormData(prev => ({
+                        ...prev,
+                        identificationNumber: profileData.identification_number
+                    }));
+                    setHasLicense(false);
+                    setViewMode(false);
+                }
+
+                setVehicleId(vehicleData.id);
+
+            } catch (error: any) {
+                console.error('Error loading license data:', error);
+                showErrorNotification(error.message);
+                if (error.message.includes('vehículo')) {
+                    navigate({ to: '/RegistrarVehiculo' });
+                }
             } finally {
                 setLoading(false);
             }
         };
 
-        loadData();
+        loadLicenseData();
     }, [navigate]);
 
     const validateForm = (): boolean => {
@@ -148,16 +213,18 @@ const License: React.FC = () => {
         if (!formData.licenseNumber?.trim())
             newErrors.licenseNumber = 'El número de licencia es requerido';
 
-        if (!formData.identificationNumber?.trim())
-            newErrors.identificationNumber = 'El número de identificación es requerido';
-
         if (!formData.expeditionDate)
             newErrors.expeditionDate = 'La fecha de expedición es requerida';
 
         if (!formData.expiryDate)
             newErrors.expiryDate = 'La fecha de vencimiento es requerida';
 
-        // Removed photo validation - now optional
+        // Validaciones adicionales
+        if (formData.expeditionDate && formData.expiryDate) {
+            if (new Date(formData.expeditionDate) > new Date(formData.expiryDate)) {
+                newErrors.expeditionDate = 'La fecha de expedición no puede ser posterior a la fecha de vencimiento';
+            }
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -194,7 +261,7 @@ const License: React.FC = () => {
                 return;
             }
 
-            const validTypes = ['image/jpeg', 'image/png', 'image/heic'];
+            const validTypes = ['image/jpeg', 'image/png', 'image.heic'];
             if (!validTypes.includes(file.type)) {
                 setErrors((prev) => ({
                     ...prev,
@@ -205,7 +272,7 @@ const License: React.FC = () => {
             setFormData((prev) => ({
                 ...prev,
                 [`${side}File`]: file,
-                [`${side}Preview`]: file.name
+                [`${side}Preview`]: URL.createObjectURL(file)
             }));
             if (errors[`${side}File`]) {
                 setErrors((prev) => {
@@ -216,25 +283,28 @@ const License: React.FC = () => {
             }
         };
 
-    const uploadPhoto = async (file: File, path: string): Promise<string | null> => {
+    const uploadPhoto = async (file: File, type: 'front' | 'back'): Promise<string | null> => {
         try {
             const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
-            const filePath = `${path}/${fileName}`;
+            const fileName = `${type}_${Math.random()}.${fileExt}`;
+            const filePath = `licenses/${fileName}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('licenses')
-                .upload(filePath, file);
+                .upload(filePath, file, {
+                    upsert: true,
+                    cacheControl: '3600'
+                });
 
             if (uploadError) throw uploadError;
 
-            const { data } = supabase.storage
+            const { data: { publicUrl } } = supabase.storage
                 .from('licenses')
                 .getPublicUrl(filePath);
 
-            return data.publicUrl;
+            return publicUrl;
         } catch (error) {
-            console.error('Error uploading photo:', error);
+            console.error(`Error uploading ${type} photo:`, error);
             return null;
         }
     };
@@ -273,73 +343,235 @@ const License: React.FC = () => {
         });
     };
 
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (isSubmitting) return;
-        if (!validateForm()) return;
+        if (isSubmitting || !validateForm()) return;
 
         setIsSubmitting(true);
 
         try {
-            const userId = localStorage.getItem('userId');
+            const { data: { session } } = await supabase.auth.getSession();
+            const userId = session?.user?.id;
+
             if (!userId || !vehicleId) {
                 throw new Error('Información de usuario o vehículo no disponible');
             }
 
-            let frontPhotoUrl = formData.photo_front_url;
-            let backPhotoUrl = formData.photo_back_url;
-
-            // Upload new photos if provided
-            if (formData.frontFile) {
-                const uploadedFrontUrl = await uploadPhoto(formData.frontFile, 'front');
-                if (uploadedFrontUrl) frontPhotoUrl = uploadedFrontUrl;
+            // Preparar datos base
+            if (!formData.licenseNumber) {
+                throw new Error('Número de licencia es requerido');
             }
-
-            if (formData.backFile) {
-                const uploadedBackUrl = await uploadPhoto(formData.backFile, 'back');
-                if (uploadedBackUrl) backPhotoUrl = uploadedBackUrl;
-            }
-
+            
             const licenseData = {
                 user_id: userId,
                 vehicle_id: vehicleId,
-                license_number: formData.licenseNumber?.trim() ?? '',
-                identification_number: formData.identificationNumber?.trim() ?? '',
-                expedition_date: formData.expeditionDate,
-                expiration_date: formData.expiryDate,
-                license_category: formData.licenseCategory,
-                blood_type: formData.bloodType,
-                photo_front_url: frontPhotoUrl,
-                photo_back_url: backPhotoUrl,
+                license_number: formData.licenseNumber.trim(),
+                identification_number: userProfile?.identification_number ?? null,
+                expedition_date: new Date(formData.expeditionDate).toISOString(),
+                expiration_date: new Date(formData.expiryDate).toISOString(),
+                license_category: formData.licenseCategory || 'B1',
+                blood_type: formData.bloodType || 'O+',
+                photo_front_url: formData.photo_front_url ?? null,
+                photo_back_url: formData.photo_back_url ?? null
             };
 
+            // Procesar fotos solo si se subieron nuevas
+            if (formData.frontFile) {
+                const frontUrl = await uploadPhoto(formData.frontFile, 'front');
+                if (frontUrl) licenseData.photo_front_url = frontUrl;
+            }
+
+            if (formData.backFile) {
+                const backUrl = await uploadPhoto(formData.backFile, 'back');
+                if (backUrl) licenseData.photo_back_url = backUrl;
+            }
+
             if (hasLicense && licenseId) {
-                const { error } = await supabase
+                // Actualizar licencia existente
+                const { error: updateError } = await supabase
                     .from('driver_licenses')
                     .update(licenseData)
                     .eq('id', licenseId);
 
-                if (error) throw error;
-            } else {
-                const { error } = await supabase
-                    .from('driver_licenses')
-                    .insert([licenseData]);
+                if (updateError) throw updateError;
 
-                if (error) throw error;
+                // Actualizar estado local después de actualización exitosa
+                setFormData(prev => ({
+                    ...prev,
+                    ...licenseData,
+                    expeditionDate: licenseData.expedition_date.split('T')[0],
+                    expiryDate: licenseData.expiration_date.split('T')[0],
+                }));
+
+                notifications.show({
+                    title: 'Actualización Exitosa',
+                    message: 'Los cambios han sido guardados correctamente',
+                    color: 'green',
+                    icon: <CheckCircle />
+                });
+
+                setViewMode(true); // Volver a modo vista
+                setFormHasChanged(false);
+            } else {
+                // Crear nueva licencia
+                const { data: newLicense, error: insertError } = await supabase
+                    .from('driver_licenses')
+                    .insert([licenseData])
+                    .select()
+                    .single();
+
+                if (insertError) throw insertError;
+
+                if (newLicense) {
+                    setLicenseId(newLicense.id);
+                    setHasLicense(true);
+                    showSuccessModal();
+                    setViewMode(true);
+                }
             }
 
-            showSuccessModal();
         } catch (error: any) {
-            console.error('Error al guardar la licencia:', error);
-            showErrorNotification(error.message || 'Error al guardar la licencia');
+            console.error('Error:', error);
+            showErrorNotification(
+                error.message || 'Error al procesar la licencia. Por favor, intente nuevamente.'
+            );
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleEditClick = () => {
-        setViewMode(false);
+        setViewMode(false); // Desbloquear campos
         setFormHasChanged(false);
+        notifications.show({
+            title: 'Modo Edición Activado',
+            message: 'Ahora puedes modificar los datos de tu licencia',
+            color: 'blue',
+            icon: <FileText />
+        });
+    };
+
+    const loadLicenseData = async () => {
+        try {
+            setLoading(true);
+
+            // Obtener sesión y validar
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            if (!session?.user?.id) {
+                navigate({ to: '/Login' });
+                return;
+            }
+
+            const userId = session.user.id;
+            console.log('Loading license data for user:', userId);
+
+            // Cargar datos de la licencia existente primero
+            const { data: existingLicense, error: existingLicenseError } = await supabase
+                .from('driver_licenses')
+                .select('*')
+                .eq('user_id', userId)
+                .maybeSingle();
+
+            if (existingLicense) {
+                // Si existe licencia, guardar su ID
+                setLicenseId(existingLicense.id);
+                setHasLicense(true);
+            }
+
+            // Cargar datos del perfil primero
+            const profileData = await fetchUserProfile(userId);
+            if (!profileData) {
+                showErrorNotification('Debe completar su perfil primero');
+                navigate({ to: '/CompletarRegistro' });
+                return;
+            }
+            setUserProfile(profileData);
+
+            // Obtener primero el vehículo asociado
+            const { data: vehicleData, error: vehicleError } = await supabase
+                .from('vehicles')
+                .select('id')
+                .eq('user_id', userId)
+                .single();
+
+            if (vehicleError) {
+                console.error('Error fetching vehicle:', vehicleError);
+                throw new Error('Debe registrar primero un vehículo');
+            }
+
+            // Consultar datos de la licencia
+            const { data: licenseData, error: licenseError } = await supabase
+                .from('driver_licenses')
+                .select('id, license_number, identification_number, blood_type, license_category, expedition_date, expiration_date, photo_front_url, photo_back_url')
+                .eq('user_id', userId)
+                .maybeSingle();
+
+            if (licenseError && licenseError.code !== 'PGRST116') {
+                throw licenseError;
+            }
+
+            if (licenseData) {
+                console.log('Found existing license:', licenseData);
+                setHasLicense(true);
+                setFormData({
+                    licenseNumber: licenseData.license_number || '',
+                    expeditionDate: licenseData.expedition_date?.split('T')[0] || '',
+                    expiryDate: licenseData.expiration_date?.split('T')[0] || '',
+                    bloodType: licenseData.blood_type || 'O+',
+                    licenseCategory: licenseData.license_category || 'B1',
+                    identificationNumber: licenseData.identification_number ?? undefined,
+                    photo_front_url: licenseData.photo_front_url ?? undefined,
+                    photo_back_url: licenseData.photo_back_url ?? undefined,
+                    frontPreview: undefined,
+                    backPreview: undefined,
+                    frontFile: undefined,
+                    backFile: undefined
+                });
+                setViewMode(true);
+            } else {
+                console.log('No existing license found');
+                setFormData(prev => ({
+                    ...prev,
+                    identificationNumber: profileData.identification_number
+                }));
+                setHasLicense(false);
+                setViewMode(false);
+            }
+
+            setVehicleId(vehicleData.id);
+
+        } catch (error: any) {
+            console.error('Error loading license data:', error);
+            showErrorNotification(error.message);
+            if (error.message.includes('vehículo')) {
+                navigate({ to: '/RegistrarVehiculo' });
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCancelEdit = () => {
+        if (formHasChanged) {
+            // Mostrar confirmación si hay cambios
+            modals.openConfirmModal({
+                title: 'Cancelar edición',
+                children: (
+                    <Text>¿Estás seguro de que deseas cancelar la edición? Los cambios no guardados se perderán.</Text>
+                ),
+                labels: { confirm: 'Sí, cancelar', cancel: 'Seguir editando' },
+                confirmProps: { color: 'red' },
+                onConfirm: () => {
+                    setViewMode(true);
+                    setFormHasChanged(false);
+                    // Recargar datos originales
+                    loadLicenseData();
+                },
+            });
+        } else {
+            setViewMode(true);
+        }
     };
 
     const handleBack = () => {
@@ -357,6 +589,114 @@ const License: React.FC = () => {
     const handleModalConfirm = () => {
         setIsModalOpen(false);
         navigate({ to: '/Perfil' });
+    };
+
+    const renderIdentificationField = () => (
+        <div className={styles.formGroup}>
+            <label className={styles.label}>
+                <User size={16} className={styles.labelIcon} />
+                Número de Identificación
+            </label>
+            <TextInput
+                value={formData.identificationNumber}
+                disabled={true}
+                className={`${styles.input} ${styles.disabledInput}`}
+            />
+            <small className={styles.helperText}>
+                Este campo no es editable y se obtiene de su perfil
+            </small>
+        </div>
+    );
+
+    const renderTextField = (label: string, name: keyof typeof formData, icon: React.ReactNode) => (
+        <div className={styles.formGroup}>
+            <label className={styles.label}>
+                {icon}
+                {label}
+            </label>
+            <TextInput
+                type="text" // Explicitly set the type to "text"
+                name={name}    // Set the name attribute to match the formData key
+                value={formData[name]?.toString() || ''}
+                onChange={(e) => handleInputChange(name, e.currentTarget.value)}
+                disabled={viewMode}
+                className={`${styles.input} ${viewMode ? styles.viewModeInput : ''}`}
+                error={errors[name]}
+            />
+        </div>
+    );
+
+    const renderDateField = (label: string, name: keyof typeof formData, icon: React.ReactNode) => (
+        <div className={styles.formGroup}>
+            <label className={styles.label}>
+                {icon}
+                {label}
+            </label>
+            <TextInput
+                type="date"
+                name={name}    // Set the name attribute to match the formData key
+                value={formData[name]?.toString() || ''}
+                onChange={(e) => handleInputChange(name, e.currentTarget.value)}
+                disabled={viewMode}
+                className={`${styles.input} ${viewMode ? styles.viewModeInput : ''}`}
+                error={errors[name]}
+            />
+        </div>
+    );
+
+    const renderActionButtons = () => {
+        if (hasLicense) {
+            if (viewMode) {
+                return (
+                    <button
+                        type="button"
+                        onClick={handleEditClick}
+                        className={styles.buttonPrimary}
+                    >
+                        <FileText size={20} />
+                        Editar Licencia
+                    </button>
+                );
+            } else {
+                return (
+                    <>
+                        <button
+                            type="button"
+                            onClick={handleCancelEdit}
+                            className={styles.buttonSecondary}
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            className={styles.buttonPrimary}
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? (
+                                <span className={styles.loadingText}>
+                                    <span className={styles.loadingSpinner} />
+                                    Guardando...
+                                </span>
+                            ) : (
+                                <>
+                                    <CheckCircle size={20} />
+                                    Guardar Cambios
+                                </>
+                            )}
+                        </button>
+                    </>
+                );
+            }
+        }
+        return (
+            <button
+                type="submit"
+                className={styles.buttonPrimary}
+                disabled={isSubmitting}
+            >
+                {isSubmitting ? 'Registrando...' : 'Registrar Licencia'}
+            </button>
+        );
     };
 
     if (loading) {
@@ -409,7 +749,7 @@ const License: React.FC = () => {
                     </button>
                     <h1 className={styles.title}>Licencia de Conducción</h1>
                 </div>
-                <form onSubmit={handleSubmit} className={styles.form} >
+                <form onSubmit={handleSubmit} className={`${styles.form} ${!viewMode ? styles.editing : ''}`} >
                     {/* Información de la Licencia */}
                     <div className={styles.section}>
                         <div className={styles.sectionHeader}>
@@ -417,95 +757,50 @@ const License: React.FC = () => {
                             <h2 className={styles.sectionTitle}>Información de la Licencia</h2>
                         </div>
                         <div className={styles.formGrid}>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>
-                                    <Shield size={16} className={styles.labelIcon} />
-                                    Número de Licencia
-                                </label>
-                                <TextInput
-                                    type="text"
-                                    name="licenseNumber"
-                                    value={formData.licenseNumber}
-                                    onChange={(e) => handleInputChange('licenseNumber', e.currentTarget.value)}
-                                    className={styles.input}
-                                    disabled={viewMode || isSubmitting}
-                                    error={errors.licenseNumber}
-                                />
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>
-                                    <User size={16} className={styles.labelIcon} />
-                                    Número de Identificación
-                                </label>
-                                <TextInput
-                                    type="text"
-                                    name="identificationNumber"
-                                    value={formData.identificationNumber}
-                                    onChange={(e) => handleInputChange('identificationNumber', e.currentTarget.value)}
-                                    className={styles.input}
-                                    disabled={true}
-                                />
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>
-                                    <Shield size={16} className={styles.labelIcon} />
-                                    Categoría
-                                </label>
-                                <Select
-                                    name="licenseCategory"
-                                    value={formData.licenseCategory}
-                                    onChange={(value) => handleInputChange('licenseCategory', value || '')}
-                                    className={styles.select}
-                                    disabled={viewMode || isSubmitting}
-                                    data={LICENSE_CATEGORIES.map(category => ({ value: category.value, label: category.label }))}
-                                />
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>
-                                    <Heart size={16} className={styles.labelIcon} />
-                                    Tipo de Sangre
-                                </label>
-                                <Select
-                                    name="bloodType"
-                                    value={formData.bloodType}
-                                    onChange={(value) => handleInputChange('bloodType', value || '')}
-                                    className={styles.select}
-                                    disabled={viewMode || isSubmitting}
-                                    data={BLOOD_TYPES.map(type => ({ value: type, label: type }))}
-                                />
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>
-                                    <Calendar size={16} className={styles.labelIcon} />
-                                    Fecha de Expedición
-                                </label>
-                                <TextInput
-                                    type="date"
-                                    name="expeditionDate"
-                                    value={formData.expeditionDate}
-                                    onChange={(e) => handleInputChange('expeditionDate', e.currentTarget.value)}
-                                    className={styles.input}
-                                    max={new Date().toISOString().split('T')[0]}
-                                    disabled={viewMode || isSubmitting}
-                                    error={errors.expeditionDate}
-                                />
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>
-                                    <Calendar size={16} className={styles.labelIcon} />
-                                    Fecha de Vencimiento
-                                </label>
-                                <TextInput
-                                    type="date"
-                                    name="expiryDate"
-                                    value={formData.expiryDate}
-                                    onChange={(e) => handleInputChange('expiryDate', e.currentTarget.value)}
-                                    className={styles.input}
-                                    min={new Date().toISOString().split('T')[0]}
-                                    disabled={viewMode || isSubmitting}
-                                    error={errors.expiryDate}
-                                />
-                            </div>
+                             {renderTextField(
+                                  'Número de Licencia',
+                                  'licenseNumber',
+                                  <Shield size={16} className={styles.labelIcon} />
+                              )}
+                            {renderIdentificationField()}
+                             <div className={styles.formGroup}>
+                                 <label className={styles.label}>
+                                     <Shield size={16} className={styles.labelIcon} />
+                                     Categoría
+                                 </label>
+                                 <Select
+                                     name="licenseCategory"
+                                     value={formData.licenseCategory}
+                                     onChange={(value) => handleInputChange('licenseCategory', value || '')}
+                                     className={styles.select}
+                                     disabled={viewMode || isSubmitting}
+                                     data={LICENSE_CATEGORIES.map(category => ({ value: category.value, label: category.label }))}
+                                 />
+                             </div>
+                             <div className={styles.formGroup}>
+                                 <label className={styles.label}>
+                                     <Heart size={16} className={styles.labelIcon} />
+                                     Tipo de Sangre
+                                 </label>
+                                 <Select
+                                     name="bloodType"
+                                     value={formData.bloodType}
+                                     onChange={(value) => handleInputChange('bloodType', value || '')}
+                                     className={styles.select}
+                                     disabled={viewMode || isSubmitting}
+                                     data={BLOOD_TYPES.map(type => ({ value: type, label: type }))}
+                                 />
+                             </div>
+                             {renderDateField(
+                                  'Fecha de Expedición',
+                                  'expeditionDate',
+                                  <Calendar size={16} className={styles.labelIcon} />
+                              )}
+                             {renderDateField(
+                                  'Fecha de Vencimiento',
+                                  'expiryDate',
+                                  <Calendar size={16} className={styles.labelIcon} />
+                              )}
                         </div>
                     </div>
                     {/* Fotos del Documento */}
@@ -535,7 +830,7 @@ const License: React.FC = () => {
                                 </div>
                                 <input
                                     type="file"
-                                    accept="image/jpeg,image/png,image/heic"
+                                    accept="image/jpeg,image/png,image.heic"
                                     onChange={handleFileUpload('front')}
                                     className={styles.photoInput}
                                     id="front-photo"
@@ -572,7 +867,7 @@ const License: React.FC = () => {
                                 </div>
                                 <input
                                     type="file"
-                                    accept="image/jpeg,image/png,image/heic"
+                                    accept="image/jpeg,image/png,image.heic"
                                     onChange={handleFileUpload('back')}
                                     className={styles.photoInput}
                                     id="back-photo"
@@ -609,35 +904,7 @@ const License: React.FC = () => {
                             <ArrowLeft size={20} style={{ marginRight: 8 }} />
                             Volver
                         </button>
-                        {hasLicense && viewMode ? (
-                            <button
-                                type="button"
-                                onClick={handleEditClick}
-                                className={styles.buttonPrimary}
-                                disabled={isSubmitting}
-                            >
-                                <CheckCircle size={20} />
-                                Editar Licencia
-                            </button>
-                        ) : !viewMode && (
-                            <button
-                                type="submit"
-                                className={`${styles.buttonPrimary} ${isSubmitting ? styles.loading : ''}`}
-                                disabled={isSubmitting}
-                            >
-                                {isSubmitting ? (
-                                    <span className={styles.loadingText}>
-                                        <span className={styles.loadingSpinner} />
-                                        Guardando...
-                                    </span>
-                                ) : (
-                                    <>
-                                        <CheckCircle size={20} />
-                                        Guardar Licencia
-                                    </>
-                                )}
-                            </button>
-                        )}
+                        {renderActionButtons()}
                     </div>
                 </form>
             </div>

@@ -9,6 +9,7 @@ import {
     FileText,
     Calendar,
     Shield,
+    CheckCircle,
 } from 'lucide-react';
 import {
     Container,
@@ -24,6 +25,7 @@ import {
 } from '@mantine/core';
 import { supabase } from '@/lib/supabaseClient';
 import styles from './index.module.css';
+import { notifications } from '@mantine/notifications';
 
 interface VehicleFormData {
     id?: number;
@@ -44,9 +46,8 @@ interface VehicleFormData {
 interface UserProfile {
     id: number;
     user_id: string;
-    first_name?: string;  // Adjust based on your user_profiles table
+    first_name?: string;
     last_name?: string;
-    // ... other profile fields
 }
 
 interface ValidationErrors {
@@ -66,7 +67,6 @@ interface VehicleData {
     chassis_number: string | null;
     vin_number: string | null;
     photo_url?: string | null;
-    // ... other vehicle fields
 }
 
 const COLORS = [
@@ -83,7 +83,7 @@ const COLORS = [
 const BODY_TYPES = [
     { value: 'Automovil', label: 'Automóvil' },
     { value: 'Camioneta', label: 'Camioneta' },
-    { value: 'SUV', label: 'SUV' },
+    { value : 'SUV', label: 'SUV' },
     { value: 'Van', label: 'Van' },
     { value: 'Pickup', label: 'Pick-up' },
 ];
@@ -101,7 +101,7 @@ const VehicleRegistration: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
     const [error, setError] = useState("");
-    const [viewMode, setViewMode] = useState(true); // Default to view mode
+    const [viewMode, setViewMode] = useState(true);
     const [hasVehicle, setHasVehicle] = useState(false);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
@@ -122,6 +122,66 @@ const VehicleRegistration: React.FC = () => {
 
     const [errors, setErrors] = useState<ValidationErrors>({});
 
+    useEffect(() => {
+        const loadData = async () => {
+            setInitialLoading(true);
+            setError("");
+
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+
+                console.log('Full session object:', session); // ADD THIS
+
+                if (!session?.user?.id) {
+                    console.warn('No user ID found in session. Redirecting to /Login'); // ADD THIS
+                    navigate({ to: '/Login' });
+                    return;
+                }
+
+                const userId = session.user.id;
+                console.log('User ID from session:', userId); // ADD THIS
+
+                const profile = await fetchUserProfile(userId);
+                setUserProfile(profile);
+
+                const vehicle = await fetchVehicleData(userId);
+
+                if (vehicle) {
+                    console.log('Vehicle data fetched successfully:', vehicle); // ADD THIS
+                    setHasVehicle(true);
+                    setViewMode(true);
+                    setFormData({
+                        id: vehicle.id,
+                        user_id: userId,
+                        brand: vehicle.brand || '',
+                        model: vehicle.model || '',
+                        year: vehicle.year ? vehicle.year.toString() : '',
+                        plate: vehicle.plate || '',
+                        color: vehicle.color || '',
+                        body_type: vehicle.body_type || '',
+                        engine_number: vehicle.engine_number || '',
+                        chassis_number: vehicle.chassis_number || '',
+                        vin_number: vehicle.vin_number || '',
+                        photoUrl: vehicle.photo_url || null
+                    });
+                } else {
+                    console.log('No vehicle data found for user.');  // ADD THIS
+                    setHasVehicle(false);
+                    setViewMode(false);
+                    setFormData(prev => ({ ...prev, user_id: userId }));
+                }
+
+            } catch (err: any) {
+                console.error("Error during data loading:", err);
+                setError(`Failed to load data: ${err.message}`);
+            } finally {
+                setInitialLoading(false);
+            }
+        };
+
+        loadData();
+    }, [navigate]);
+
     const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
         try {
             const { data, error } = await supabase
@@ -132,98 +192,41 @@ const VehicleRegistration: React.FC = () => {
 
             if (error) {
                 console.warn("Error fetching user profile:", error);
-                return null; // Return null in case of error
+                return null;
             }
 
-            return data || null; // Return the profile data or null if not found
+            return data || null;
         } catch (error) {
             console.error('Error fetching user profile:', error);
-            return null; // Handle unexpected errors
+            return null;
         }
     };
 
     const fetchVehicleData = async (userId: string): Promise<VehicleData | null> => {
         try {
+            console.log('Attempting to fetch vehicle data for user ID:', userId); // ADD THIS
             const { data, error } = await supabase
                 .from('vehicles')
                 .select('*')
                 .eq('user_id', userId)
-                .single();
+                .limit(1)
+                .maybeSingle(); // Use maybeSingle
 
             if (error) {
-                if (error.code === 'PGRST116') {
-                    console.log('No vehicle found for user');
-                    return null;
-                }
                 console.error("Error fetching vehicle data:", error);
-                throw error;
+                setError(`Error loading vehicle information: ${error.message}`);
+                return null;
             }
 
-            return data || null; // Return the vehicle data or null if not found
-        } catch (error) {
+            console.log('Vehicle data response:', data); // ADD THIS
+
+            return data || null;
+        } catch (error: any) {
             console.error('Error fetching vehicle data:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-            setError(`Error loading vehicle information: ${errorMessage}`);
+            setError(`Error loading vehicle information: ${error.message}`);
             return null;
         }
     };
-
-    useEffect(() => {
-        const loadData = async () => {
-            setInitialLoading(true);
-            setError("");
-
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session?.user?.id) {
-                    navigate({ to: '/Login' });
-                    return;
-                }
-
-                const userId = session.user.id;
-
-                // Fetch both user profile and vehicle data in parallel
-                const [profile, vehicle] = await Promise.all([
-                    fetchUserProfile(userId),
-                    fetchVehicleData(userId)
-                ]);
-
-                setUserProfile(profile); // Set user profile data
-                if (vehicle) {
-                    // Vehicle data found, populate the form
-                    setHasVehicle(true);
-                    setFormData({
-                        user_id: userId,
-                        id: vehicle.id,
-                        brand: vehicle.brand || '',
-                        model: vehicle.model || '',
-                        year: vehicle.year?.toString() || '',
-                        plate: vehicle.plate || '',
-                        color: vehicle.color || '',
-                        body_type: vehicle.body_type || '',
-                        engine_number: vehicle.engine_number || '',
-                        chassis_number: vehicle.chassis_number || '',
-                        vin_number: vehicle.vin_number || '',
-                        photoUrl: vehicle.photo_url,
-                        photo: null // Reset the photo file
-                    });
-                    setViewMode(true);
-
-                } else {
-                    // No vehicle data found
-                    setHasVehicle(false);
-                }
-
-            } catch (err: any) {
-                console.error('Error during data load:', err);
-                setError(`Error loading data: ${err.message}`);
-            } finally {
-                setInitialLoading(false);
-            }
-        };
-
-        loadData();
-    }, [navigate]);
 
     const validateForm = (): boolean => {
         const newErrors: ValidationErrors = {};
@@ -248,12 +251,9 @@ const VehicleRegistration: React.FC = () => {
     };
 
     const handleInputChange = (name: string, value: string) => {
-        if (viewMode) return; // Disable changes in view mode
+        if (viewMode) return;
 
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
 
         if (errors[name]) {
             setErrors(prev => {
@@ -265,7 +265,7 @@ const VehicleRegistration: React.FC = () => {
     };
 
     const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (viewMode) return; // Disable changes in view mode
+        if (viewMode) return;
 
         const file = e.target.files?.[0];
         if (!file) return;
@@ -288,8 +288,8 @@ const VehicleRegistration: React.FC = () => {
             const filePath = `vehicle-photos/${fileName}`;
 
             const { error: uploadError } = await supabase.storage
-                .from('')
-                .upload(filePath, file);
+                .from('vehicles')
+                .upload(filePath, file, { upsert: true });
 
             if (uploadError) {
                 throw uploadError;
@@ -305,6 +305,17 @@ const VehicleRegistration: React.FC = () => {
             setError(`Error uploading photo: ${error}`);
             return null;
         }
+    };
+
+    const showSuccessNotification = (message: string) => {
+        notifications.show({
+            title: 'Operación exitosa',
+            message,
+            color: 'green',
+            icon: <CheckCircle size={20} />,
+            className: styles.successNotification,
+            autoClose: 3000,
+        });
     };
 
     const handleSubmit = async () => {
@@ -340,7 +351,7 @@ const VehicleRegistration: React.FC = () => {
                 photo_url: photoUrl,
             };
 
-            if (hasVehicle && formData.id) {  // Use ID when updating
+            if (hasVehicle && formData.id) {
                 const { error: updateError } = await supabase
                     .from('vehicles')
                     .update(vehicleData)
@@ -351,7 +362,29 @@ const VehicleRegistration: React.FC = () => {
                     setError(`Error updating vehicle: ${updateError.message}`);
                     throw updateError;
                 }
+                
+                showSuccessNotification('Información del vehículo actualizada correctamente');
+                setViewMode(true);
             } else {
+                const { data: existingVehicle, error: existingVehicleError } = await supabase
+                    .from('vehicles')
+                    .select('id')
+                    .eq('user_id', formData.user_id)
+                    .maybeSingle();
+
+                if (existingVehicleError) {
+                    console.error("Error checking for existing vehicle:", existingVehicleError);
+                    setError("Error al verificar si ya existe un vehículo registrado.");
+                    setLoading(false);
+                    return;
+                }
+
+                if (existingVehicle) {
+                    setError("Ya tienes un vehículo registrado. Para modificarlo, edita la información existente.");
+                    setLoading(false);
+                    return;
+                }
+
                 const { error: insertError } = await supabase
                     .from('vehicles')
                     .insert([vehicleData]);
@@ -361,6 +394,28 @@ const VehicleRegistration: React.FC = () => {
                     setError(`Error inserting vehicle: ${insertError.message}`);
                     throw insertError;
                 }
+                
+                showSuccessNotification('Vehículo registrado correctamente');
+            }
+
+            // Recargar los datos después de guardar
+            const updatedVehicle = await fetchVehicleData(formData.user_id);
+            if (updatedVehicle) {
+                setFormData(prev => ({
+                    ...prev,
+                    id: updatedVehicle.id,
+                    user_id: updatedVehicle.user_id || '',
+                    brand: updatedVehicle.brand || '',
+                    model: updatedVehicle.model || '',
+                    year: updatedVehicle.year?.toString() || '',
+                    plate: updatedVehicle.plate || '',
+                    color: updatedVehicle.color || '',
+                    body_type: updatedVehicle.body_type || '',
+                    engine_number: updatedVehicle.engine_number || '',
+                    chassis_number: updatedVehicle.chassis_number || '',
+                    vin_number: updatedVehicle.vin_number || '',
+                    photoUrl: updatedVehicle.photo_url || null
+                }));
             }
 
             navigate({ to: '/Perfil' });
@@ -381,6 +436,42 @@ const VehicleRegistration: React.FC = () => {
         setViewMode(!viewMode);
     };
 
+    const renderFormField = (
+        label: string,
+        name: keyof VehicleFormData,
+        type: 'text' | 'select' = 'text',
+        options?: { value: string; label: string }[]
+    ) => {
+        const value = formData[name]?.toString() || '';
+        const fieldError = errors[name];
+
+        return (
+            <div className={styles.formGroup}>
+                <label className={styles.label}>
+                    <FileText size={16} className={styles.labelIcon} />
+                    {label}
+                </label>
+                {type === 'select' ? (
+                    <Select
+                        data={options || []}
+                        value={value}
+                        onChange={(newValue) => handleInputChange(name, newValue || '')}
+                        disabled={viewMode}
+                        error={fieldError}
+                        className={viewMode ? styles.viewModeInput : ''}
+                    />
+                ) : (
+                    <TextInput
+                        value={value}
+                        onChange={(e) => handleInputChange(name, e.currentTarget.value)}
+                        disabled={viewMode}
+                        error={fieldError}
+                        className={viewMode ? styles.viewModeInput : ''}
+                    />
+                )}
+            </div>
+        );
+    };
 
     if (initialLoading) {
         return (
@@ -407,6 +498,14 @@ const VehicleRegistration: React.FC = () => {
                         <Text className={styles.title}>
                             {hasVehicle ? 'Información del Vehículo' : 'Registrar Vehículo'}
                         </Text>
+                        {hasVehicle && (
+                            <Button
+                                onClick={() => setViewMode(!viewMode)}
+                                variant="light"
+                            >
+                                {viewMode ? 'Editar' : 'Cancelar Edición'}
+                            </Button>
+                        )}
                     </Group>
                     <Text className={styles.subtitle}>
                         {hasVehicle
@@ -418,7 +517,6 @@ const VehicleRegistration: React.FC = () => {
                 {userProfile && (
                     <Box>
                         <Text>Bienvenido, {userProfile.first_name || 'Usuario'}</Text>
-                        {/* Display other user profile information here */}
                     </Box>
                 )}
 
@@ -470,134 +568,15 @@ const VehicleRegistration: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            <FileText size={16} className={styles.labelIcon} />
-                            Marca
-                        </label>
-                        <TextInput
-                            placeholder="ej. Toyota"
-                            value={formData.brand}
-                            onChange={(e) => handleInputChange('brand', e.currentTarget.value)}
-                            error={errors.brand}
-                            disabled={viewMode}
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            <FileText size={16} className={styles.labelIcon} />
-                            Modelo
-                        </label>
-                        <TextInput
-                            placeholder="ej. Corolla"
-                            value={formData.model}
-                            onChange={(e) => handleInputChange('model', e.currentTarget.value)}
-                            error={errors.model}
-                            disabled={viewMode}
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            <Calendar size={16} className={styles.labelIcon} />
-                            Año
-                        </label>
-                        <Select
-                            placeholder="Seleccione año"
-                            data={YEARS}
-                            value={formData.year}
-                            onChange={(value) => handleInputChange('year', value || '')}
-                            error={errors.year}
-                            disabled={viewMode}
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            <Shield size={16} className={styles.labelIcon} />
-                            Color
-                        </label>
-                        <Select
-                            placeholder="Seleccione color"
-                            data={COLORS}
-                            value={formData.color}
-                            onChange={(value) => handleInputChange('color', value || '')}
-                            error={errors.color}
-                            disabled={viewMode}
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            <FileText size={16} className={styles.labelIcon} />
-                            Placa
-                        </label>
-                        <TextInput
-                            placeholder="ABC123"
-                            value={formData.plate}
-                            onChange={(e) => handleInputChange('plate', e.currentTarget.value.toUpperCase())}
-                            error={errors.plate}
-                            disabled={viewMode}
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            <FileText size={16} className={styles.labelIcon} />
-                            Tipo de Vehículo
-                        </label>
-                        <Select
-                            placeholder="Seleccione tipo"
-                            data={BODY_TYPES}
-                            value={formData.body_type}
-                            onChange={(value) => handleInputChange('body_type', value || '')}
-                            error={errors.body_type}
-                            disabled={viewMode}
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            <FileText size={16} className={styles.labelIcon} />
-                            Número de Motor
-                        </label>
-                        <TextInput
-                            placeholder="Ingrese número de motor"
-                            value={formData.engine_number}
-                            onChange={(e) => handleInputChange('engine_number', e.currentTarget.value)}
-                            error={errors.engine_number}
-                            disabled={viewMode}
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            <FileText size={16} className={styles.labelIcon} />
-                            Número de Chasis
-                        </label>
-                        <TextInput
-                            placeholder="Ingrese número de chasis"
-                            value={formData.chassis_number}
-                            onChange={(e) => handleInputChange('chassis_number', e.currentTarget.value)}
-                            error={errors.chassis_number}
-                            disabled={viewMode}
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            <FileText size={16} className={styles.labelIcon} />
-                            Número VIN
-                        </label>
-                        <TextInput
-                            placeholder="Ingrese número VIN"
-                            value={formData.vin_number}
-                            onChange={(e) => handleInputChange('vin_number', e.currentTarget.value)}
-                            error={errors.vin_number}
-                            disabled={viewMode}
-                        />
-                    </div>
+                    {renderFormField('Marca', 'brand')}
+                    {renderFormField('Modelo', 'model')}
+                    {renderFormField('Año', 'year', 'select', YEARS)}
+                    {renderFormField('Color', 'color', 'select', COLORS)}
+                    {renderFormField('Placa', 'plate')}
+                    {renderFormField('Tipo de Vehículo', 'body_type', 'select', BODY_TYPES)}
+                    {renderFormField('Número de Motor', 'engine_number')}
+                    {renderFormField('Número de Chasis', 'chassis_number')}
+                    {renderFormField('Número VIN', 'vin_number')}
 
                     {error && (
                         <Text color="red" size="sm" mt="md" className={styles.errorMessage}>
