@@ -65,7 +65,7 @@
     "react-dom": "^19.0.0",
     "react-qr-scanner": "^1.0.0-alpha.11",
     "recharts": "^2.15.0",
-    "supabase": "^2.9.6",
+    "supabase": "^2.19.5",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "telefunc": "^0.1.83",
