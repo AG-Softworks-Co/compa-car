@@ -1,25 +1,14 @@
-
 import { createFileRoute } from '@tanstack/react-router';
-import Actividades from '../../components/Actividades/Actividades.tsx';
+import Actividades from '../../components/Actividades/Actividades';
 
 const ActividadesPage = () => {
-    const userId = localStorage.getItem('userId');
-    const token = localStorage.getItem('token');
-
-    return (
-        <div>
-        {userId && token ? (
-            <Actividades userId={Number.parseInt(userId, 10)} token={token} />
-        ) : (
-            <p>No se encontro el usuario. Inicie sesión nuevamente.</p>
-        )}
-        </div>
-    );
+    const userId = 0; // Replace with actual user ID
+    const token = ""; // Replace with actual token
+    return <Actividades userId={userId} token={token} />;
 };
 
-
 export const Route = createFileRoute('/Actividades/ActividadesPage')({
-  component: ActividadesPage,
+    component: ActividadesPage,
 });
 
 export default ActividadesPage;

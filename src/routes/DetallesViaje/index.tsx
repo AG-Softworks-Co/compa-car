@@ -30,11 +30,13 @@ import {
 } from 'lucide-react';
 import type { MantineTheme, } from '@mantine/core';
 import { DateTimePicker, } from '@mantine/dates';
+import { notifications } from '@mantine/notifications';
 import { tripStore, type TripData, type TripStopover } from '../../types/PublicarViaje/TripDataManagement';
 import { saveToLocalStorage, getFromLocalStorage } from '../../types/PublicarViaje/localStorageHelper';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import styles from './index.module.css';
+import { supabase } from '@/lib/supabaseClient';
 
 interface FormattedNumberInputProps extends Omit<NumberInputProps, 'onChange'> {
     onChange: (value: number) => void;
@@ -108,7 +110,7 @@ const PreviewInfo: React.FC<PreviewModalProps> = ({ isOpen, onClose, onConfirm, 
                                 {data.tripData.destination?.address}
                             </Text>
                         </div>
-                       {data.stopovers && data.stopovers.length > 0 && (
+                        {data.stopovers && data.stopovers.length > 0 && (
                             <div className={styles.stopoverPreview}>
                                 <Text fw={500} mb="sm">Paradas</Text>
                                 <Group gap="md">
@@ -226,9 +228,9 @@ function FormattedNumberInput({
     );
 }
 
-function DetallesViajeView() {
+const DetallesViajeView = () => {
     const navigate = useNavigate();
-    const [tripData] = useState<TripData>(tripStore.getStoredData());
+    const [tripData, setTripData] = useState<TripData>(tripStore.getStoredData());
     const [seats, setSeats] = useState<number>(1);
     const [pricePerSeat, setPricePerSeat] = useState<number>(0);
     const [description, setDescription] = useState<string>('');
@@ -239,13 +241,57 @@ function DetallesViajeView() {
     const [showPreviewModal, setShowPreviewModal] = useState<boolean>(false);
     const [dateTime, setDateTime] = useState<Date | null>(null);
     const [stopovers, setStopovers] = useState<TripStopover[]>([]);
-     const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
 
+    const calculateRequiredBalance = (seats: number, pricePerSeat: number): number => {
+        const totalTripValue = seats * pricePerSeat;
+        return Math.ceil(totalTripValue * 0.15); // 15% del valor total del viaje
+    };
+
+    const checkAndFreezeWalletBalance = async (userId: string, requiredAmount: number) => {
+        try {
+            const { data: wallet, error: walletError } = await supabase
+                .from('wallets')
+                .select('id, balance, frozen_balance')
+                .eq('user_id', userId)
+                .single();
+
+            if (walletError) throw walletError;
+            if (!wallet) {
+                throw new Error('No tienes una billetera activa. Por favor, recarga tu billetera primero.');
+            }
+
+            const availableBalance = (wallet.balance || 0) - (wallet.frozen_balance || 0);
+            if (availableBalance < requiredAmount) {
+                throw new Error(`Saldo insuficiente. Necesitas $${requiredAmount.toLocaleString()} disponibles en tu billetera para crear este viaje. Tu saldo disponible es $${availableBalance.toLocaleString()}`);
+            }
+
+            // Actualizar balance y frozen_balance
+            const { error: updateError } = await supabase
+                .from('wallets')
+                .update({
+                    balance: (wallet.balance ?? 0) - requiredAmount,
+                    frozen_balance: (wallet.frozen_balance || 0) + requiredAmount
+                })
+                .eq('id', wallet.id);
+
+            if (updateError) throw updateError;
+
+            return {
+                success: true,
+                message: `Se han congelado $${requiredAmount.toLocaleString()} de tu billetera como garantía para este viaje.`
+            };
+        } catch (error: any) {
+            console.error('Error checking wallet:', error);
+            throw error;
+        }
+    };
 
     useEffect(() => {
         const storedData = tripStore.getStoredData();
         setStopovers(storedData?.stopovers || []);
-        console.log("Datos del viaje en Detalles:", storedData);
+        console.log("Datos del viaje en Detalles (al cargar el componente):", storedData);
+        setTripData(storedData); // Actualiza el estado tripData con los datos almacenados
 
         if (!storedData.selectedRoute || !storedData.origin || !storedData.destination) {
             navigate({ to: '/publicarviaje' });
@@ -288,324 +334,224 @@ function DetallesViajeView() {
         }
     };
 
-    const createLocation = async (locationData: any): Promise<any> => {
-        const token = localStorage.getItem('token');
-          if (!token) {
-            console.error('No token found');
-            throw new Error('No token found');
-          }
+    const getOrCreateLocation = async (locationData: any) => {
         try {
-            const checkLocationResponse = await fetch(`${BASE_URL}/locations/placeid/${encodeURIComponent(locationData.place_id)}`, {
-                 headers: {
-                    'x-token': token,
-                }
-            });
+            // Primero intentar obtener la ubicación existente
+            const { data: existingLocation, error: queryError } = await supabase
+                .from('locations')
+                .select('*')
+                .eq('place_id', locationData.place_id)
+                .single();
 
-            if (checkLocationResponse.ok) {
-                 const checkLocationData = await checkLocationResponse.json();
-                 if (checkLocationData.data) {
-                     console.log("Location already exists:", checkLocationData.data);
-                     return checkLocationData.data;
-                   }
+            if (existingLocation) {
+                console.log('Location found:', existingLocation);
+                return existingLocation;
             }
 
-            const response = await fetch(`${BASE_URL}/locations`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-token': token,
-                },
-                body: JSON.stringify(locationData),
-            });
+            // Si no existe, crear nueva ubicación
+            const { data: newLocation, error: insertError } = await supabase
+                .from('locations')
+                .insert({
+                    place_id: locationData.place_id,
+                    address: locationData.address,
+                    latitude: locationData.latitude,
+                    longitude: locationData.longitude,
+                    postal_code: locationData.postal_code,
+                    main_text: locationData.main_text,
+                    secondary_text: locationData.secondary_text,
+                    user_id: locationData.user_id
+                })
+                .select()
+                .single();
 
-
-            if (!response.ok) {
-               const errorData = await response.json();
-                console.error("Error creating location:", errorData);
-                 throw new Error(errorData.msj || 'Failed to create location');
-            }
-
-            const data = await response.json();
-            console.log("Location created:", data);
-            return data.data;
-        } catch (error:any) {
-           console.error("Error creating or fetching location:", error.message);
-             throw new Error(error.message);
-        }
-    };
-
-    const createRoute = async (routeData: any): Promise<any> => {
-         const token = localStorage.getItem('token');
-           if (!token) {
-            console.error('No token found');
-            throw new Error('No token found');
-          }
-        try {
-            const response = await fetch(`${BASE_URL}/routes`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                     'x-token': token,
-                },
-                body: JSON.stringify(routeData),
-            });
-
-            if (!response.ok) {
-                 const errorData = await response.json();
-                console.error('Error creating route:', errorData);
-                  throw new Error(errorData.msj || 'Failed to create route');
-            }
-
-            const data = await response.json();
-            console.log('Route created:', data);
-            return data.data;
-
-        } catch (error: any) {
-           console.error('Error creating route:', error.message);
-             throw new Error(error.message);
-        }
-    };
-
-    const createTrip = async (tripData: any): Promise<any> => {
-        const token = localStorage.getItem('token');
-           if (!token) {
-            console.error('No token found');
-            throw new Error('No token found');
-          }
-        try {
-            const response = await fetch(`${BASE_URL}/trips`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-token': token,
-                },
-                body: JSON.stringify(tripData),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Error creating trip:', errorData);
-                throw new Error(errorData.msj || 'Failed to create trip');
-            }
-
-             const data = await response.json();
-             console.log('Trip created:', data);
-             return data.data;
-        } catch (error: any) {
-            console.error('Error creating trip:', error.message);
-              throw new Error(error.message)
-        }
-    };
-     const createStopover = async (stopoverData: any): Promise<any> => {
-          const token = localStorage.getItem('token');
-           if (!token) {
-            console.error('No token found');
-            throw new Error('No token found');
-          }
-         try {
-            const response = await fetch(`${BASE_URL}/stopovers`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                      'x-token': token,
-                },
-                body: JSON.stringify(stopoverData),
-            });
-             if (!response.ok) {
-                  const errorData = await response.json();
-                console.error('Error creating stopover:', errorData);
-               throw new Error(errorData.msj || 'Failed to create stopover');
-            }
-
-            const data = await response.json();
-            console.log('Stopover created:', data);
-             return data.data;
-        } catch (error: any) {
-            console.error('Error creating stopover:', error.message);
-            throw new Error(error.message)
-        }
-    };
-
-      const fetchVehicleId = async (userId: number): Promise<number | null> => {
-           const token = localStorage.getItem('token');
-           if (!token) {
-            console.error('No token found');
-            throw new Error('No token found');
-          }
-        try {
-            const response = await fetch(`${BASE_URL}/vehicles/userid/${userId}`, {
-                headers: {
-                   'x-token': token,
-                }
-            });
-
-            if (!response.ok) {
-                 const errorData = await response.json();
-                console.error('Error fetching vehicle:', errorData);
-                throw new Error(errorData.msj || 'Failed to fetch vehicle');
-            }
-
-
-            const data = await response.json();
-            if (data.data && data.data.length > 0) {
-              console.log('Vehicle ID fetched:', data.data[0].id);
-              return data.data[0].id;
-             } else {
-                console.error('No vehicle found for this user')
-                return null;
-            }
-        } catch (error: any) {
-            console.error('Error fetching vehicle ID:', error.message);
-              throw new Error(error.message);
-              return null;
+            if (insertError) throw insertError;
+            return newLocation;
+        } catch (error) {
+            console.error('Error in getOrCreateLocation:', error);
+            throw error;
         }
     };
 
     const handleSubmit = async () => {
         if (!validateForm()) return;
-         setLoading(true);
+        setLoading(true);
+
         try {
             if (!tripData.selectedRoute || !tripData.origin || !tripData.destination) {
-                setFormError("Los datos del viaje son incompletos.");
-                return;
-            }
-             const userId = localStorage.getItem('userId');
-            if (!userId) {
-                setFormError("Usuario no autenticado.");
-                return;
+                throw new Error("Los datos del viaje son incompletos.");
             }
 
-             const vehicleId = await fetchVehicleId(Number.parseInt(userId));
-            if (!vehicleId) {
-                setFormError("No se pudo encontrar el id del vehiculo para este usuario.");
-                return;
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.user?.id) {
+                throw new Error("Usuario no autenticado");
             }
 
-            const originLocationData = {
-                place_id: tripData.origin.placeId,
-                address: tripData.origin.address,
-                latitude: tripData.origin.coords.lat,
-                longitude: tripData.origin.coords.lng,
-               postal_code: tripData.origin.postalCode,
-                main_text: tripData.origin.mainText,
-                secondary_text: tripData.origin.secondaryText,
-            };
+            // Calcular y verificar el balance requerido
+            const requiredAmount = calculateRequiredBalance(seats, pricePerSeat);
 
-            const destinationLocationData = {
-                place_id: tripData.destination.placeId,
-                address: tripData.destination.address,
-                latitude: tripData.destination.coords.lat,
-                longitude: tripData.destination.coords.lng,
-                 postal_code: tripData.destination.postalCode,
-                 main_text: tripData.destination.mainText,
-                 secondary_text: tripData.destination.secondaryText,
-            };
+            // Intentar congelar el balance antes de crear el viaje
+            const walletCheck = await checkAndFreezeWalletBalance(session.user.id, requiredAmount);
 
-            const createdOriginLocation = await createLocation(originLocationData);
-             if (!createdOriginLocation) {
-                 setFormError("No se pudo crear la location de origen.");
-                 return;
-             }
-            const createdDestinationLocation = await createLocation(destinationLocationData);
-              if (!createdDestinationLocation) {
-                 setFormError("No se pudo crear la location de destino.");
-                 return;
-               }
+            // Si el congelamiento fue exitoso, mostrar mensaje y continuar con la creación del viaje
+            notifications.show({
+                title: 'Garantía reservada',
+                message: walletCheck.message,
+                color: 'green'
+            });
 
+            // 1. Verificar si el usuario ya tiene rutas
+            const { count: routeCount } = await supabase
+                .from('routes')
+                .select('*', { count: 'exact' })
+                .eq('user_id', session.user.id);
+
+            // 2. Obtener o crear ubicaciones
+            const [originLocation, destinationLocation] = await Promise.all([
+                getOrCreateLocation({
+                    place_id: tripData.origin.placeId,
+                    address: tripData.origin.address,
+                    latitude: tripData.origin.coords.lat.toString(),
+                    longitude: tripData.origin.coords.lng.toString(),
+                    postal_code: tripData.origin.postalCode || null,
+                    main_text: tripData.origin.mainText || null,
+                    secondary_text: tripData.origin.secondaryText || null,
+                    user_id: session.user.id
+                }),
+                getOrCreateLocation({
+                    place_id: tripData.destination.placeId,
+                    address: tripData.destination.address,
+                    latitude: tripData.destination.coords.lat.toString(),
+                    longitude: tripData.destination.coords.lng.toString(),
+                    postal_code: tripData.destination.postalCode || null,
+                    main_text: tripData.destination.mainText || null,
+                    secondary_text: tripData.destination.secondaryText || null,
+                    user_id: session.user.id
+                })
+            ]);
+
+            // 3. Crear la ruta con índice y bounds simplificados
+            console.log('Bounds structure:', tripData.selectedRoute.bounds);
+            console.log('Tipo de dato de bounds:', typeof tripData.selectedRoute.bounds);
 
             const routeData = {
-                index: tripData.selectedRoute.index,
+                user_id: session.user.id,
+                index: routeCount ? routeCount + 1 : 1,
                 distance: tripData.selectedRoute.distance,
                 duration: tripData.selectedRoute.duration,
-                summary: tripData.selectedRoute.summary,
                 start_address: tripData.selectedRoute.startAddress,
                 end_address: tripData.selectedRoute.endAddress,
+                summary: tripData.selectedRoute.summary,
+                polyline: tripData.selectedRoute.polyline || null,
+                bounds_ne_lat: 0,
+                bounds_ne_lng: 0,
+                bounds_sw_lat: 0,
+                bounds_sw_lng: 0
             };
 
-            const createdRoute = await createRoute(routeData);
-             if (!createdRoute) {
-                  setFormError("No se pudo crear la ruta.");
-                 return;
-              }
+            // Intentar extraer la información de los límites
+            try {
+                if (tripData.selectedRoute.bounds) {
+                    // Asumiendo que bounds es un objeto con northEast y southWest
+                    if (typeof tripData.selectedRoute.bounds === 'string') {
+                        // Si es una cadena JSON, parsearla
+                        tripData.selectedRoute.bounds = JSON.parse(tripData.selectedRoute.bounds);
+                    }
 
+                    const northEast = tripData.selectedRoute.bounds.getNorthEast();
+                    const southWest = tripData.selectedRoute.bounds.getSouthWest();
+                    routeData.bounds_ne_lat = Number(northEast.lat() || 0);
+                    routeData.bounds_ne_lng = Number(northEast.lng() || 0);
+                    routeData.bounds_sw_lat = Number(southWest.lat() || 0);
+                    routeData.bounds_sw_lng = Number(southWest.lng() || 0);
+                } else {
+                    console.warn('No se encontraron límites para la ruta.');
+                }
+            } catch (error) {
+                console.error('Error al procesar los límites:', error);
+            }
+
+            console.log('Route data a insertar:', routeData);
+
+            const { data: route, error: routeError } = await supabase
+                .from('routes')
+                .insert([routeData])
+                .select()
+                .single();
+
+            if (routeError) {
+                console.error('Route insertion error:', routeError);
+                throw routeError;
+            }
+
+            // 4. Crear el viaje (corregido para CHAR(1))
             const tripDetails = {
-                origin_id: createdOriginLocation.location_id,
-                destination_id: createdDestinationLocation.location_id,
-                route_id: createdRoute.route_id,
-                user_id: Number.parseInt(userId),
-                vehicle_id: vehicleId,
-                date_time: dateTime?.toISOString().replace('T', ' ').slice(0, 19),
-                seats,
-                price_per_seat: pricePerSeat,
+                user_id: session.user.id,
+                origin_id: originLocation.id,
+                destination_id: destinationLocation.id,
+                route_id: route.id,
+                date_time: dateTime?.toISOString(),
+                seats: Number(seats),
+                price_per_seat: Number(pricePerSeat),
                 description,
-                allow_pets: allowPets,
-                allow_smoking: allowSmoking,
+                allow_pets: allowPets ? 'Y' : 'N',      // Cambiado a CHAR(1)
+                allow_smoking: allowSmoking ? 'Y' : 'N', // Cambiado a CHAR(1)
+                status: 'A',
+                created_at: new Date().toISOString()
             };
 
-            const createdTrip =  await createTrip(tripDetails)
-            if (!createdTrip) {
-                 setFormError("No se pudo crear el viaje.");
-                 return;
-               }
-            
-              // Handle stopovers
+            console.log('Trip details to insert:', tripDetails); // Para debugging
+
+            const { data: newTrip, error: tripError } = await supabase
+                .from('trips')
+                .insert([tripDetails])
+                .select()
+                .single();
+
+            if (tripError) {
+                console.error('Trip insertion error:', tripError);
+                throw tripError;
+            }
+
+            // 5. Procesar paradas con índices secuenciales
             if (stopovers && stopovers.length > 0) {
-                for (const [index, stopover] of stopovers.entries()) {
-                      const stopoverLocationData = {
+                const stopoverPromises = stopovers.map(async (stopover, index) => {
+                    const stopLocation = await getOrCreateLocation({
                         place_id: stopover.location.placeId,
                         address: stopover.location.address,
-                        latitude: stopover.location.coords.lat,
-                        longitude: stopover.location.coords.lng,
-                          postal_code: stopover.location.postalCode,
-                            main_text: stopover.location.mainText,
-                            secondary_text: stopover.location.secondaryText,
-                     };
-                  
-                        const createdStopoverLocation = await createLocation(stopoverLocationData);
+                        latitude: stopover.location.coords.lat.toString(),
+                        longitude: stopover.location.coords.lng.toString(),
+                        postal_code: stopover.location.postalCode || null,
+                        main_text: stopover.location.mainText || null,
+                        secondary_text: stopover.location.secondaryText || null,
+                        user_id: session.user.id
+                    });
 
-                        if(createdStopoverLocation){
-                         const stopoverData = {
-                           trip_id: createdTrip.trip_id,
-                           location_id: createdStopoverLocation.location_id,
-                           order: index + 1,
-                             estimated_time: '5 minutes', // Default value for estimated time
-                           };
-                         await createStopover(stopoverData);
-                       }else{
-                           console.error("Failed to create location for stopover", stopover)
-                       }
-               }
-          }
+                    return supabase
+                        .from('stopovers')
+                        .insert({
+                            trip_id: newTrip.id,
+                            location_id: stopLocation.id,
+                            order: index + 1,
+                            user_id: session.user.id,
+                            estimated_time: '5 minutes'
+                        });
+                });
 
-            const tripDetailsLocal = {
-                id: Date.now().toString(),
-                ...tripData,
-                dateTime: dateTime?.toISOString(),
-                seats,
-                pricePerSeat,
-                description,
-                allowPets,
-                allowSmoking,
-                status: 'active',
-                createdAt: new Date().toISOString(),
-                stopovers: stopovers,
-            };
-
-            const existingTrips = getFromLocalStorage<TripData[]>('publishedTrips') || [];
-            saveToLocalStorage('publishedTrips', [...existingTrips, tripDetailsLocal]);
+                await Promise.all(stopoverPromises);
+            }
 
             setShowPreviewModal(false);
             setShowSuccessModal(true);
 
-             setTimeout(() => {
+            setTimeout(() => {
                 navigate({ to: '/Actividades' });
             }, 2000);
-        } catch (error:any) {
-            console.error("Error durante el proceso de publicación del viaje", error.message);
-            setFormError('Error al guardar el viaje. Intenta nuevamente.');
-        }
-        finally{
-            setLoading(false)
+
+        } catch (error: any) {
+            console.error("Error durante el proceso de publicación:", error);
+            setFormError(error.message || 'Error al guardar el viaje');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -613,7 +559,7 @@ function DetallesViajeView() {
 
     return (
         <Container fluid className={styles.container}>
-           <LoadingOverlay visible={loading}/>
+            <LoadingOverlay visible={loading} />
             <div className={styles.header}>
                 <UnstyledButton
                     onClick={() => navigate({ to: '/publicarviaje' })}
@@ -647,7 +593,7 @@ function DetallesViajeView() {
                                 {tripData.destination?.address}
                             </Text>
                         </div>
-                          {stopovers && stopovers.length > 0 && (
+                        {stopovers && stopovers.length > 0 && (
                             <div className={styles.stopoverSection}>
                                 <Text fw={500} mb="sm">Paradas</Text>
                                 <Group gap="md">

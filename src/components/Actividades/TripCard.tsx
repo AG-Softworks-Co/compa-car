@@ -6,17 +6,15 @@ import styles from './SrylesComponents/TripCard.module.css';
 import type { Trip } from './Actividades';
 import type { BookedPassenger } from '../../components/Cupos/types';
 import CuposReservados from '../../routes/CuposReservados';
+import { supabase } from '@/lib/supabaseClient';
 
 interface TripCardProps {
     trip: Trip;
     onEdit: () => void;
     onDelete: () => void;
     token: string;
-    userId: number;
-    index?: number;
+    userId: string;
 }
-
-const BASE_URL = 'https://rest-sorella-production.up.railway.app/api';
 
 const TripCard: React.FC<TripCardProps> = ({ trip, onEdit, onDelete, token, userId }) => {
     const [cuposModalOpen, setCuposModalOpen] = useState(false);
@@ -26,36 +24,21 @@ const TripCard: React.FC<TripCardProps> = ({ trip, onEdit, onDelete, token, user
     useEffect(() => {
         const fetchPassengerCount = async () => {
             try {
-                const response = await fetch(
-                    `${BASE_URL}/passengers/userid_trip_det/${userId}`,
-                    {
-                        headers: {
-                            'x-token': token,
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
+                const { data, error } = await supabase
+                    .from('booking_passengers')
+                    .select('count')
+                    .eq('trip_id', trip.id)
+                    .single();
 
-                if (!response.ok) {
-                   console.error("Error fetching passenger count", await response.json());
-                   return;
-                }
-                 const responseData = await response.json();
-                if (!responseData.ok || !responseData.data) {
-                    console.error("Error fetching passenger count", responseData)
-                     return;
-                }
-
-                 const passengers = responseData.data as BookedPassenger[];
-
-                const count = passengers.filter((passenger) => passenger.trip_id === trip.id).length;
-                setPassengerCount(count);
+                if (error) throw error;
+                setPassengerCount(data?.count || 0);
             } catch (error) {
-               console.error('Error al obtener la cantidad de pasajeros', error);
+                console.error('Error fetching passenger count:', error);
             }
         };
+
         fetchPassengerCount();
-    }, [trip.id, userId, token]);
+    }, [trip.id]);
 
     const handleCuposClick = () => {
         setCuposModalOpen(true);
@@ -136,7 +119,7 @@ const TripCard: React.FC<TripCardProps> = ({ trip, onEdit, onDelete, token, user
             onClose={handleCloseCuposModal}
         
             >
-              <CuposReservados tripId={trip.id} token={token} userId={userId}/>
+              <CuposReservados tripId={Number(trip.id)} token={token} userId={Number(userId)}/>
             </Modal>
         </div>
     );

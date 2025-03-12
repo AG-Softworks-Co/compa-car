@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useState, useEffect } from 'react';
 import { Container, Title, Text, LoadingOverlay, Button } from '@mantine/core';
+import { useNavigate } from '@tanstack/react-router';
 import { showNotification } from '@mantine/notifications';
 import dayjs from 'dayjs';
 import RolSelector from './RolSelector';
@@ -10,6 +11,7 @@ import DeleteTripModal from './DeleteTripModal';
 import Cupos from '../../routes/Cupos'; // Import Cupos
 import styles from './index.module.css';
 import TripCard from './TripCard';
+import { supabase } from '@/lib/supabaseClient';
 
 export interface Trip {
     id: number;
@@ -29,26 +31,10 @@ export interface Trip {
     date_time: string;
 }
 
-interface ApiTrip {
-    trip_id: number;
-    main_text_origen: string;
-    main_text_destination: string;
-    date_time: string;
-    duration: string;
-    distance: string;
-    seats: number;
-    price_per_seat: number;
-    description: string;
-    allow_pets: number;
-    allow_smoking: number;
-    status: string;
-    user_id: number;
-}
-
 interface UserProfile {
     id: number;
     email: string;
-    phone_number: string;
+    phone_number: string | null;
     first_name: string;
     last_name: string;
     identification_type: string;
@@ -56,14 +42,10 @@ interface UserProfile {
     user_type: string;
 }
 
-interface ActividadesProps {
-    userId: number;
-    token: string;
-}
 
-const BASE_URL = 'https://rest-sorella-production.up.railway.app/api';
 
-const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
+const Actividades: React.FC = () => {
+    const navigate = useNavigate(); // Mover useNavigate al nivel superior
     const [trips, setTrips] = useState<Trip[]>([]);
     const [filteredTrips, setFilteredTrips] = useState<Trip[]>([]);
     const [editModalOpen, setEditModalOpen] = useState(false);
@@ -74,148 +56,149 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const [dateFilter, setDateFilter] = useState<Date | null>(null);
     const [loading, setLoading] = useState(true);
-    const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
+    const ActivityType = {
+        VIAJES: 'Viajes Publicados',
+        CUPOS: 'Cupos Creados'
+    } as const;
+    type ActivityType = 'Viajes Publicados' | 'Cupos Creados' | null;
+    const [selectedActivity, setSelectedActivity] = useState<ActivityType>(null);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [token, setToken] = useState<string>('');
 
+    useEffect(() => {
+        const getToken = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            setToken(session?.access_token || '');
+        };
+        getToken();
+    }, []);
 
     const handleActivitySelect = (activity: string) => {
         console.log('Selected Activity:', activity);
-        setSelectedActivity(activity);
+        setSelectedActivity(activity as ActivityType);
     };
 
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
-                console.log('fetching user profile...')
-                const response = await fetch(`${BASE_URL}/users/${userId}`, {
-                    headers: { 'x-token': token },
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    throw new Error("No session found");
+                }
+
+                const { data, error } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('user_id', session.user.id)
+                    .single();
+
+                if (error) throw error;
+
+                setUserProfile({
+                    ...data,
+                    email: session.user.email || '',
+                    user_type: data.status // Asegurarnos de usar status como user_type
                 });
-
-                const responseData = await response.json();
-                console.log('Respuesta verificación perfil:', responseData);
-
-                if (!response.ok || !responseData.ok) {
-                    throw new Error(responseData.msj || "Error al obtener el perfil del usuario");
-                }
-                if (responseData.ok && responseData.data) {
-                    setUserProfile(responseData.data);
-                    console.log("User Role in Actividades:", responseData.data.user_type);
-                } else {
-                    throw new Error("Error al obtener el perfil del usuario: No data found");
-                }
-
-
+                console.log("User Role in Actividades:", data.status);
             } catch (error: any) {
-                console.error('Error al obtener el perfil del usuario:', error);
+                console.error('Error fetching user profile:', error);
                 showNotification({
-                    title: 'Error al obtener el perfil',
-                    message: `Hubo un error al cargar el perfil del usuario. Detalle: ${error.message || 'Desconocido'}`,
+                    title: 'Error',
+                    message: error.message,
                     color: 'red',
                 });
-                setUserProfile(null);
             } finally {
                 setLoading(false);
             }
         };
 
-        console.log('selectedActivity before fetchUserRole:', selectedActivity);
         fetchUserProfile();
-    }, [userId, token]);
+    }, []);
 
     useEffect(() => {
-       const fetchTrips = async () => {
-            console.log('Fetching trips...');
+        const loadTrips = async () => {
+            setLoading(true);
             try {
-                const response = await fetch(`${BASE_URL}/trips/user_id/${userId}`, {
-                    headers: {
-                        'x-token': token,
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    navigate({ to: '/Login' });
+                    return;
+                }
+
+                const { data: tripsData, error } = await supabase
+                    .from('trips')
+                    .select(`
+                        id,
+                        created_at,
+                        seats,
+                        price_per_seat,
+                        description,
+                        allow_pets,
+                        allow_smoking,
+                        status,
+                        user_id,
+                        route_id,
+                        routes (
+                            duration,
+                            distance,
+                            summary
+                        ),
+                        origin:locations!trips_origin_id_fkey (
+                            address
+                        ),
+                        destination:locations!trips_destination_id_fkey (
+                            address
+                        )
+                    `)
+                    .eq('user_id', session.user.id)
+                    .order('created_at', { ascending: false });
+
+                console.log('Trips raw data:', tripsData);
+
+                if (error) throw error;
+
+                const formattedTrips = tripsData.map(trip => ({
+                    id: trip.id,
+                    origin: { 
+                        address: trip.origin?.address || 'Dirección no disponible'
                     },
-                });
+                    destination: { 
+                        address: trip.destination?.address || 'Dirección no disponible'
+                    },
+                    date: trip.created_at ? new Date(trip.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
+                    time: new Date(trip.created_at ?? Date.now()).toLocaleTimeString(),
+                    duration: trip.routes?.duration || 'Desconocida',
+                    distance: trip.routes?.distance || 'Desconocida',
+                    seats: trip.seats || 0,
+                    pricePerSeat: trip.price_per_seat || 0,
+                    description: trip.description || '',
+                    allowPets: trip.allow_pets === 'Y',
+                    allowSmoking: trip.allow_smoking === 'Y',
+                    is_active: trip.status === 'A',
+                    user_id: Number(trip.user_id),
+                    date_time: trip.created_at || new Date().toISOString()
+                }));
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('Error fetching trips:', errorData);
-                    showNotification({
-                        title: 'Error al obtener los viajes',
-                        message: `Hubo un error al cargar los viajes desde el servidor. Detalle: ${
-                            errorData.msj || 'Desconocido'
-                        }`,
-                        color: 'red',
-                    });
-                    setLoading(false);
-                    return;
-                }
-                const responseData = await response.json();
-                 if (!responseData.data || !Array.isArray(responseData.data)) {
-                    console.error(
-                        'Invalid response from API: data array not found',
-                        responseData,
-                    );
-                    showNotification({
-                        title: 'Error al obtener los viajes',
-                        message: 'La respuesta del servidor no tiene el formato esperado.',
-                        color: 'red',
-                    });
-                    setLoading(false);
-                    return;
-                }
-
-                const tripsData = responseData.data;
-                console.log('Trips data:', tripsData);
-                const apiTrips = tripsData
-                .map((tripData: ApiTrip) => ({
-                    id: tripData.trip_id,
-                    origin: { address: tripData.main_text_origen },
-                    destination: { address: tripData.main_text_destination },
-                    date: new Date(tripData.date_time).toLocaleDateString(),
-                     time: new Date(tripData.date_time).toLocaleTimeString([], {
-                         hour: '2-digit',
-                        minute: '2-digit',
-                    }),
-                     duration: tripData.duration,
-                    distance: tripData.distance,
-                    seats: tripData.seats,
-                    pricePerSeat: tripData.price_per_seat,
-                     description: tripData.description,
-                     allowPets: tripData.allow_pets === 1,
-                    allowSmoking: tripData.allow_smoking === 1,
-                    is_active: tripData.status === 'active',
-                    user_id: tripData.user_id,
-                    date_time: tripData.date_time,
-                }))
-                .filter((trip: Trip) => {
-                     const userMatch = trip.user_id === userId;
-                    console.log(`Checking if user_id ${trip.user_id} matches userId ${userId}: ${userMatch}`);
-                    return userMatch;
-                })
-                .sort((a: Trip, b: Trip) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime())
-                .map((trip: Trip) => {
-                    const isPast = dayjs(trip.date_time).isBefore(dayjs(), 'day');
-                     return { ...trip, is_active: isPast ? false : trip.is_active };
-                 });
-
-                setTrips(apiTrips);
-                setFilteredTrips(apiTrips);
-                setLoading(false);
+                console.log('Formatted trips:', formattedTrips);
+                setTrips(formattedTrips);
+                setFilteredTrips(formattedTrips);
 
             } catch (error) {
-                console.error('Error fetching trips:', error);
-                 showNotification({
-                    title: 'Error al obtener los viajes',
-                    message:
-                        'Hubo un error al cargar los viajes desde el servidor. Intenta de nuevo más tarde.',
-                     color: 'red',
-                 });
+                console.error('Error loading trips:', error);
+                showNotification({
+                    title: 'Error',
+                    message: 'Error al cargar los viajes',
+                    color: 'red'
+                });
+            } finally {
                 setLoading(false);
             }
-         };
-         console.log('selectedActivity before trips fetch:', selectedActivity);
-         if (selectedActivity === "Viajes Publicados" && userProfile?.user_type === "DRIVER") {
-            console.log('fetching trips for drivers');
-            fetchTrips();
-        }
-    }, [userId, token, selectedActivity, userProfile?.user_type]);
+        };
 
+        if (selectedActivity === "Viajes Publicados") {
+            loadTrips();
+        }
+    }, [selectedActivity, navigate]); // Añadir navigate a las dependencias
 
     useEffect(() => {
         let filtered = [...trips];
@@ -252,53 +235,31 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
         setFilteredTrips(filtered);
     }, [trips, filterValue, statusFilter, dateFilter]);
 
-    const handleDelete = async () => {
-        if (selectedTripIndex === null) {
-            console.error("No trip selected to delete");
-            return;
-        }
-
-        const tripToDelete = trips[selectedTripIndex];
-        console.log("Deleting trip with ID:", tripToDelete.id);
-
+    const handleDelete = async (tripId: number) => {
         try {
-            const response = await fetch(`${BASE_URL}/trips/${tripToDelete.id}`, {
-                method: 'DELETE',
-                headers: {
-                    'x-token': token, // Using the token from props
-                },
-            });
-             console.log('Response status:', response.status);
-            if (!response.ok) {
-                 const errorData = await response.json();
-                 console.error('Error deleting trip:', errorData);
-                showNotification({
-                    title: 'Error al eliminar el viaje',
-                    message: `Hubo un error al intentar eliminar el viaje. Detalle: ${errorData.msj || "Desconocido"}`,
-                    color: 'red',
-                });
-                return;
-            }
+            const { error } = await supabase
+                .from('trips')
+                .delete()
+                .eq('id', tripId);
 
-            const updatedTrips = trips.filter((_, i) => i !== selectedTripIndex);
+            if (error) throw error;
+
+            const updatedTrips = trips.filter(trip => trip.id !== tripId);
             setTrips(updatedTrips);
             setFilteredTrips(updatedTrips);
-
             setDeleteModalOpen(false);
-            setSelectedTripIndex(null);
 
             showNotification({
                 title: 'Viaje eliminado',
-                message: 'El viaje ha sido eliminado exitosamente.',
-                color: 'red',
+                message: 'El viaje ha sido eliminado correctamente',
+                color: 'green'
             });
-        } catch (error: any) {
-            console.error('Error deleting trip:', error.message);
-           showNotification({
-                title: 'Error al eliminar el viaje',
-                message:
-                    'Hubo un error al intentar eliminar el viaje. Intenta de nuevo más tarde.',
-                color: 'red',
+        } catch (error) {
+            console.error('Error deleting trip:', error);
+            showNotification({
+                title: 'Error',
+                message: 'Error al eliminar el viaje',
+                color: 'red'
             });
         }
     };
@@ -310,56 +271,39 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
     };
 
     const handleEditSubmit = async () => {
-        if (selectedTripIndex === null || !editedTrip) return;
+        if (!editedTrip) return;
+
         try {
-            const response = await fetch(`${BASE_URL}/trips/${editedTrip.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-token': token,
-                },
-                body: JSON.stringify({
-                    summary: editedTrip.description,
+            const { error } = await supabase
+                .from('trips')
+                .update({
+                    description: editedTrip.description,
                     price_per_seat: editedTrip.pricePerSeat,
-                    allow_pets: editedTrip.allowPets,
-                    allow_smoking: editedTrip.allowSmoking,
-                }),
-            });
+                    allow_pets: editedTrip.allowPets ? 'Y' : 'N',
+                    allow_smoking: editedTrip.allowSmoking ? 'Y' : 'N'
+                })
+                .eq('id', editedTrip.id);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Error updating trip:', errorData);
-                showNotification({
-                    title: 'Error al editar el viaje',
-                    message: `Hubo un error al intentar editar el viaje. Detalle: ${
-                        errorData.msj || 'Desconocido'
-                    }`,
-                    color: 'red',
-                });
-                return;
-            }
+            if (error) throw error;
 
-            const updatedTrips = [...trips];
-            updatedTrips[selectedTripIndex] = editedTrip;
+            const updatedTrips = trips.map(trip => 
+                trip.id === editedTrip.id ? editedTrip : trip
+            );
             setTrips(updatedTrips);
             setFilteredTrips(updatedTrips);
-
             setEditModalOpen(false);
-            setSelectedTripIndex(null);
-            setEditedTrip(null);
 
             showNotification({
-                title: 'Viaje editado',
-                message: 'El viaje ha sido actualizado exitosamente.',
-                color: 'green',
+                title: 'Viaje actualizado',
+                message: 'El viaje ha sido actualizado correctamente',
+                color: 'green'
             });
         } catch (error) {
-             console.error('Error updating trip:', error);
+            console.error('Error updating trip:', error);
             showNotification({
-                title: 'Error al editar el viaje',
-                message:
-                    'Hubo un error al intentar editar el viaje. Intenta de nuevo más tarde.',
-                color: 'red',
+                title: 'Error',
+                message: 'Error al actualizar el viaje',
+                color: 'red'
             });
         }
     };
@@ -397,9 +341,7 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
                         ? <>Tus viajes, <span className={styles.userName}>{userProfile?.first_name || 'Cliente'}</span></>
                         : 'Mis Actividades'}
                 </Title>
-                 {userProfile && (
-                     <RolSelector userId={userId} token={token} onSelect={handleActivitySelect} role={userProfile?.user_type ?? null} />
-                )}
+                <RolSelector onSelect={handleActivitySelect} />
             </div>
 
             {selectedActivity === 'Viajes Publicados' && userProfile?.user_type === "DRIVER" && (
@@ -413,27 +355,27 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
                          dateFilter={dateFilter}
                         onDateFilterChange={handleDateFilterChange}
                     />
-                        <div className={styles.tripListContainer}>
-                            {filteredTrips.map((trip, index) => (
-                                <TripCard
-                                    key={trip.id}
-                                    trip={trip}
-                                    onEdit={() => handleEdit(index)}
-                                    onDelete={() => {
-                                        setSelectedTripIndex(index);
-                                        setDeleteModalOpen(true);
-                                    }}
-                                    token={token}
-                                    userId={userId}
-                                />
-                            ))}
-                        </div>
+            <div className={styles.tripListContainer}>
+                {filteredTrips.map((trip, index) => (
+                    <TripCard
+                        key={trip.id}
+                        trip={trip}
+                        onEdit={() => handleEdit(index)}
+                        onDelete={() => {
+                            setSelectedTripIndex(index);
+                            setDeleteModalOpen(true);
+                        }}
+                        token={token}
+                        userId={String(userProfile?.id || 0)}
+                    />
+                ))}
+            </div>
                </>
            )}
 
-            {selectedActivity === 'Cupos Creados' && (
-                <Cupos userId={userId} token={token} />
-            )}
+            {selectedActivity === 'Cupos Creados' && userProfile?.id && token && (
+                        <Cupos userId={userProfile.id} token={token} />
+                    )}
             {selectedActivity === 'Viajes Publicados' && userProfile?.user_type === "PASSENGER" && (
                 <Text className={styles.noTripsText}>
                     Para publicar viajes, necesitas completar tu perfil de conductor.
@@ -450,7 +392,7 @@ const Actividades: React.FC<ActividadesProps> = ({ userId, token }) => {
            <DeleteTripModal
                opened={deleteModalOpen}
                onClose={() => setDeleteModalOpen(false)}
-               onDelete={handleDelete}
+               onDelete={() => selectedTripIndex !== null ? handleDelete(trips[selectedTripIndex].id) : undefined}
             />
 
             {trips.length === 0 && selectedActivity === "Viajes Publicados" && userProfile?.user_type === "DRIVER" &&(

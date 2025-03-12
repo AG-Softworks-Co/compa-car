@@ -25,10 +25,9 @@ const TripList: React.FC<TripListProps> = ({ trips, onEdit, onDelete }) => {
        {trips.map((trip, index) => (
           <TripCard
             token=''
-            userId={0}
+            userId={'0'}
             key={trip.id}
             trip={trip}
-            index={index}
             onEdit={() => onEdit(index)}
             onDelete={() => onDelete(index)}
           />
