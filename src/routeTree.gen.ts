@@ -39,6 +39,7 @@ import { Route as CuposIndexImport } from './routes/Cupos/index'
 import { Route as CuponesIndexImport } from './routes/Cupones/index'
 import { Route as ConfirmarCupoIndexImport } from './routes/ConfirmarCupo/index'
 import { Route as CompletarRegistroIndexImport } from './routes/CompletarRegistro/index'
+import { Route as ChatIndexImport } from './routes/Chat/index'
 import { Route as ActividadesIndexImport } from './routes/Actividades/index'
 import { Route as ReservasTripReservationModalImport } from './routes/Reservas/TripReservationModal'
 import { Route as RegistrarVehiculoSoatImport } from './routes/RegistrarVehiculo/Soat'
@@ -221,6 +222,12 @@ const CompletarRegistroIndexRoute = CompletarRegistroIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const ChatIndexRoute = ChatIndexImport.update({
+  id: '/Chat/',
+  path: '/Chat/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const ActividadesIndexRoute = ActividadesIndexImport.update({
   id: '/Actividades/',
   path: '/Actividades/',
@@ -399,6 +406,13 @@ declare module '@tanstack/react-router' {
       path: '/Actividades'
       fullPath: '/Actividades'
       preLoaderRoute: typeof ActividadesIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/Chat/': {
+      id: '/Chat/'
+      path: '/Chat'
+      fullPath: '/Chat'
+      preLoaderRoute: typeof ChatIndexImport
       parentRoute: typeof rootRoute
     }
     '/CompletarRegistro/': {
@@ -609,6 +623,7 @@ export interface FileRoutesByFullPath {
   '/RegistrarVehiculo/Soat': typeof RegistrarVehiculoSoatRoute
   '/Reservas/TripReservationModal': typeof ReservasTripReservationModalRoute
   '/Actividades': typeof ActividadesIndexRoute
+  '/Chat': typeof ChatIndexRoute
   '/CompletarRegistro': typeof CompletarRegistroIndexRoute
   '/ConfirmarCupo': typeof ConfirmarCupoIndexRoute
   '/Cupones': typeof CuponesIndexRoute
@@ -652,6 +667,7 @@ export interface FileRoutesByTo {
   '/RegistrarVehiculo/Soat': typeof RegistrarVehiculoSoatRoute
   '/Reservas/TripReservationModal': typeof ReservasTripReservationModalRoute
   '/Actividades': typeof ActividadesIndexRoute
+  '/Chat': typeof ChatIndexRoute
   '/CompletarRegistro': typeof CompletarRegistroIndexRoute
   '/ConfirmarCupo': typeof ConfirmarCupoIndexRoute
   '/Cupones': typeof CuponesIndexRoute
@@ -696,6 +712,7 @@ export interface FileRoutesById {
   '/RegistrarVehiculo/Soat': typeof RegistrarVehiculoSoatRoute
   '/Reservas/TripReservationModal': typeof ReservasTripReservationModalRoute
   '/Actividades/': typeof ActividadesIndexRoute
+  '/Chat/': typeof ChatIndexRoute
   '/CompletarRegistro/': typeof CompletarRegistroIndexRoute
   '/ConfirmarCupo/': typeof ConfirmarCupoIndexRoute
   '/Cupones/': typeof CuponesIndexRoute
@@ -741,6 +758,7 @@ export interface FileRouteTypes {
     | '/RegistrarVehiculo/Soat'
     | '/Reservas/TripReservationModal'
     | '/Actividades'
+    | '/Chat'
     | '/CompletarRegistro'
     | '/ConfirmarCupo'
     | '/Cupones'
@@ -783,6 +801,7 @@ export interface FileRouteTypes {
     | '/RegistrarVehiculo/Soat'
     | '/Reservas/TripReservationModal'
     | '/Actividades'
+    | '/Chat'
     | '/CompletarRegistro'
     | '/ConfirmarCupo'
     | '/Cupones'
@@ -825,6 +844,7 @@ export interface FileRouteTypes {
     | '/RegistrarVehiculo/Soat'
     | '/Reservas/TripReservationModal'
     | '/Actividades/'
+    | '/Chat/'
     | '/CompletarRegistro/'
     | '/ConfirmarCupo/'
     | '/Cupones/'
@@ -869,6 +889,7 @@ export interface RootRouteChildren {
   RegistrarVehiculoSoatRoute: typeof RegistrarVehiculoSoatRoute
   ReservasTripReservationModalRoute: typeof ReservasTripReservationModalRoute
   ActividadesIndexRoute: typeof ActividadesIndexRoute
+  ChatIndexRoute: typeof ChatIndexRoute
   CompletarRegistroIndexRoute: typeof CompletarRegistroIndexRoute
   ConfirmarCupoIndexRoute: typeof ConfirmarCupoIndexRoute
   CuponesIndexRoute: typeof CuponesIndexRoute
@@ -913,6 +934,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegistrarVehiculoSoatRoute: RegistrarVehiculoSoatRoute,
   ReservasTripReservationModalRoute: ReservasTripReservationModalRoute,
   ActividadesIndexRoute: ActividadesIndexRoute,
+  ChatIndexRoute: ChatIndexRoute,
   CompletarRegistroIndexRoute: CompletarRegistroIndexRoute,
   ConfirmarCupoIndexRoute: ConfirmarCupoIndexRoute,
   CuponesIndexRoute: CuponesIndexRoute,
@@ -966,6 +988,7 @@ export const routeTree = rootRoute
         "/RegistrarVehiculo/Soat",
         "/Reservas/TripReservationModal",
         "/Actividades/",
+        "/Chat/",
         "/CompletarRegistro/",
         "/ConfirmarCupo/",
         "/Cupones/",
@@ -1033,6 +1056,9 @@ export const routeTree = rootRoute
     },
     "/Actividades/": {
       "filePath": "Actividades/index.tsx"
+    },
+    "/Chat/": {
+      "filePath": "Chat/index.tsx"
     },
     "/CompletarRegistro/": {
       "filePath": "CompletarRegistro/index.tsx"

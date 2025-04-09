@@ -21,6 +21,7 @@ import {
   Shield,
   AlertCircle,
   Wallet,
+  MessageCircle,
 } from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
 import styles from './index.module.css'
@@ -138,6 +139,14 @@ const ProfileView: React.FC = () => {
       subtitle: 'Centro de ayuda y contacto',
       path: '/Ayuda',
     },
+    {
+      id: 'chats',
+      icon: MessageCircle,
+      title: 'Chats',
+      subtitle: 'Conversaciones con conductores y pasajeros',
+      path: '/Chat',
+    }
+    
   ]
 
   const checkAndUpdateUserRole = async (userId: string, hasAllDocs: boolean) => {
