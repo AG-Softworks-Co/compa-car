@@ -27,6 +27,7 @@ interface ProfileFormData {
   identification_type: string;
   identification_number: string;
   user_type: string;
+
 }
 
 
@@ -57,6 +58,7 @@ const CompleteProfileView: React.FC = () => {
       first_name: (value) => {
         if (!value) return "El nombre es requerido";
         if (value.length < 3) return "El nombre debe tener al menos 3 caracteres";
+        if (value.length > 3) return "no se peuydes";
         return null;
       },
       last_name: (value) => {
