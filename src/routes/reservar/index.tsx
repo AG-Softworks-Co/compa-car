@@ -6,6 +6,7 @@ import { DatePickerInput } from '@mantine/dates';
 import { Calendar, User, Car, MapPin, Clock, Navigation } from 'lucide-react';
 import PassengerSelector from '../../components/ui/home/PassengerSelector';
 import dayjs from 'dayjs';
+import { supabase } from '@/lib/supabaseClient';
 import { getFromLocalStorage, saveToLocalStorage } from '../../types/PublicarViaje/localStorageHelper';
 import styles from './reservar.module.css';
 import { TripReservationModal } from '../Reservas/TripReservationModal';
@@ -19,8 +20,8 @@ interface PlaceSuggestion {
 
 interface Trip {
     id: string;
-    origin: { address: string, secondaryText: string };
-    destination: { address: string, secondaryText: string };
+    origin: { address: string; secondaryText: string };
+    destination: { address: string; secondaryText: string };
     dateTime: string;
     seats: number;
     pricePerSeat: number;
@@ -39,36 +40,34 @@ interface SearchFormData {
 const ReservarView = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState<SearchFormData>(() => {
-        // Initialize from localStorage, default to initial state
         const storedFormData = getFromLocalStorage<SearchFormData>('searchFormData');
         if (storedFormData && storedFormData.date) {
             return {
                 ...storedFormData,
-                date: new Date(storedFormData.date)
-            }
+                date: new Date(storedFormData.date),
+            };
         }
-         return storedFormData || {
+        return storedFormData || {
             origin: '',
             destination: '',
             date: null,
-            passengers: 1
+            passengers: 1,
         };
     });
-     const [selectedTrip, setSelectedTrip] = useState<Trip | null>(() => {
-           const storedTrip = getFromLocalStorage<Trip | null>('selectedTrip');
-           return storedTrip || null;
-       });
-    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [selectedTrip, setSelectedTrip] = useState<Trip | null>(() => {
+        const storedTrip = getFromLocalStorage<Trip | null>('selectedTrip');
+        return storedTrip || null;
+    });
+    const [searchResults, setSearchResults] = useState<Trip[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [showPassengerSelector, setShowPassengerSelector] = useState(false);
     const [originSuggestions, setOriginSuggestions] = useState<PlaceSuggestion[]>([]);
     const [destinationSuggestions, setDestinationSuggestions] = useState<PlaceSuggestion[]>([]);
     const [focusedInput, setFocusedInput] = useState<'origin' | 'destination' | null>(null);
-     const [reservationModalOpen, setReservationModalOpen] = useState(false);
+    const [reservationModalOpen, setReservationModalOpen] = useState(false);
     const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null);
     const placesService = useRef<google.maps.places.PlacesService | null>(null);
     const searchTimeout = useRef<NodeJS.Timeout>();
-
 
     useEffect(() => {
         if (window.google && !autocompleteService.current) {
@@ -77,24 +76,18 @@ const ReservarView = () => {
         }
     }, []);
 
-
     useEffect(() => {
-        // Save formData to localStorage whenever it changes
-          saveToLocalStorage('searchFormData', {
-              ...formData,
-              date: formData.date ? formData.date.toISOString() : null
-          });
+        saveToLocalStorage('searchFormData', {
+            ...formData,
+            date: formData.date ? formData.date.toISOString() : null,
+        });
     }, [formData]);
 
-     useEffect(() => {
-        // Save selectedTrip to localStorage whenever it changes
+    useEffect(() => {
         saveToLocalStorage('selectedTrip', selectedTrip);
     }, [selectedTrip]);
 
-    const handlePlaceSearch = (
-        input: string,
-        type: 'origin' | 'destination'
-    ) => {
+    const handlePlaceSearch = (input: string, type: 'origin' | 'destination') => {
         if (!input.trim() || !autocompleteService.current) {
             type === 'origin' ? setOriginSuggestions([]) : setDestinationSuggestions([]);
             return;
@@ -105,29 +98,25 @@ const ReservarView = () => {
         searchTimeout.current = setTimeout(() => {
             const request = {
                 input,
-                componentRestrictions: { country: 'co' }
+                componentRestrictions: { country: 'co' },
             };
 
-            autocompleteService.current?.getPlacePredictions(
-                request,
-                (predictions, status) => {
-                    if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-                        const suggestions = predictions.map(prediction => ({
-                            placeId: prediction.place_id,
-                            mainText: prediction.structured_formatting.main_text,
-                            secondaryText: prediction.structured_formatting.secondary_text,
-                            fullText: prediction.description
-                        }));
+            autocompleteService.current?.getPlacePredictions(request, (predictions, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+                    const suggestions = predictions.map((prediction) => ({
+                        placeId: prediction.place_id,
+                        mainText: prediction.structured_formatting.main_text,
+                        secondaryText: prediction.structured_formatting.secondary_text,
+                        fullText: prediction.description,
+                    }));
 
-                        type === 'origin'
-                            ? setOriginSuggestions(suggestions)
-                            : setDestinationSuggestions(suggestions);
-                    }
+                    type === 'origin'
+                        ? setOriginSuggestions(suggestions)
+                        : setDestinationSuggestions(suggestions);
                 }
-            );
+            });
         }, 300);
     };
-
 
     const fetchPlaceDetails = (placeId: string, type: 'origin' | 'destination') => {
         if (!placesService.current) return;
@@ -135,14 +124,21 @@ const ReservarView = () => {
             { placeId, fields: ['formatted_address', 'address_components'] },
             (place, status) => {
                 if (status === google.maps.places.PlacesServiceStatus.OK && place) {
-                    const secondaryText = place.address_components?.find(component => component.types.includes('locality'))?.long_name ||
-                        place.address_components?.find(component => component.types.includes('administrative_area_level_2'))?.long_name ||
-                        place.address_components?.find(component => component.types.includes('administrative_area_level_1'))?.long_name ||
+                    const secondaryText =
+                        place.address_components?.find((component) =>
+                            component.types.includes('locality')
+                        )?.long_name ||
+                        place.address_components?.find((component) =>
+                            component.types.includes('administrative_area_level_2')
+                        )?.long_name ||
+                        place.address_components?.find((component) =>
+                            component.types.includes('administrative_area_level_1')
+                        )?.long_name ||
                         place.formatted_address;
 
-                    setFormData(prev => ({
+                    setFormData((prev) => ({
                         ...prev,
-                        [type]: secondaryText || place.formatted_address
+                        [type]: secondaryText || place.formatted_address,
                     }));
                     type === 'origin' ? setOriginSuggestions([]) : setDestinationSuggestions([]);
                 }
@@ -154,7 +150,8 @@ const ReservarView = () => {
         event.preventDefault();
         setIsSearching(true);
         setSearchResults([]);
-        console.log("formData before API call:", formData);
+        console.log('formData before API call:', formData);
+
         try {
             if (!formData.origin || !formData.destination || !formData.date) {
                 console.error('Origin, destination, and date are required.');
@@ -163,75 +160,49 @@ const ReservarView = () => {
             }
 
             const formattedDate = dayjs(formData.date).format('YYYY-MM-DD HH:mm:ss');
-            const token = localStorage.getItem('token');
-            if (!token) {
-                console.error(
-                    'No authentication token found in localStorage. Please log in.'
-                );
+
+            const { data, error } = await supabase
+                .from('trips')
+                .select(`
+                    id,
+                    date_time,
+                    seats,
+                    price_per_seat,
+                    allow_pets,
+                    allow_smoking,
+                    route:routes(id, start_address, end_address, duration, distance)
+                `)
+                .gte('date_time', formattedDate);
+
+            if (error) {
+                console.error('Error fetching trips:', error);
                 setIsSearching(false);
                 return;
             }
 
-            // Validation Step: Check if the token is valid and non-empty.
-            if (typeof token !== 'string' || token.trim() === '') {
-                console.error('Invalid or empty token retrieved from localStorage:', token);
-                setIsSearching(false);
-                return;
-            }
-
-
-            const apiUrl = `https://rest-sorella-production.up.railway.app/api/trips/buscardetalle/${formData.origin}/${formData.destination}/${formattedDate.replace(
-                ' ',
-                '%20'
-            )}`;
-
-            console.log('Request URL:', apiUrl);
-
-            // Logging the Authorization Header for debugging purposes
-            const headers = {
-                'x-token': token,  // Changed to x-token
-                'Content-Type': 'application/json',
-            };
-            console.log('x-token Header:', headers['x-token'])
-
-            const response = await fetch(apiUrl, {
-                headers: headers,
-            });
-            console.log('Response Status:', response.status);
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Response Error:', errorText);
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log('Response Data:', data);
-
-            if (data.data && data.data.length > 0) {
-                const trips = data.data.map((item: any) => ({
-                    id: item.trip_id,
+            if (data && data.length > 0) {
+                const trips = data.map((item: any) => ({
+                    id: item.id,
                     origin: {
-                        address: item.secondary_text_origen,
-                        secondaryText: item.secondary_text_origen,
+                        address: item.route?.start_address || 'Origen no disponible',
+                        secondaryText: 'Información adicional no disponible',
                     },
                     destination: {
-                        address: item.secondary_text_destination,
-                        secondaryText: item.secondary_text_destination,
+                        address: item.route?.end_address || 'Destino no disponible',
+                        secondaryText: 'Información adicional no disponible',
                     },
-                    dateTime: item.date_time,
-                    seats: item.seats,
-                    pricePerSeat: Number(item.price_per_seat),
-                    allowPets: Boolean(item.allow_pets),
-                    allowSmoking: Boolean(item.allow_smoking),
+                    dateTime: item.date_time || 'Fecha no disponible',
+                    seats: item.seats || 0,
+                    pricePerSeat: item.price_per_seat || 0,
+                    allowPets: item.allow_pets === 'true',
+                    allowSmoking: item.allow_smoking === 'true',
                     selectedRoute: {
-                        duration: item.duration,
-                        distance: item.distance,
+                        duration: item.route?.duration || 'Duración no disponible',
+                        distance: item.route?.distance || 'Distancia no disponible',
                     },
                 }));
 
                 setSearchResults(trips);
-                console.log(trips);
             } else {
                 setSearchResults([]);
             }
@@ -242,41 +213,38 @@ const ReservarView = () => {
         }
     };
 
-
     const handleInputFocus = (type: 'origin' | 'destination') => {
         setFocusedInput(type);
     };
 
     const handleInputBlur = () => {
-        // Delay to allow click on suggestions
         setTimeout(() => setFocusedInput(null), 200);
     };
-
 
     const handleSuggestionClick = (suggestion: PlaceSuggestion, type: 'origin' | 'destination') => {
         fetchPlaceDetails(suggestion.placeId, type);
     };
-       const handleReservation = (trip: Trip) => {
+
+    const handleReservation = (trip: Trip) => {
         setSelectedTrip(trip);
         saveToLocalStorage('currentTrip', trip);
         navigate({ to: '/Reservas' });
     };
 
-
-     const handleCloseModal = () => {
+    const handleCloseModal = () => {
         setReservationModalOpen(false);
     };
 
     return (
-          <Container fluid className={styles.container}>
-              <div className={styles.logoOverlay}></div>
+        <Container fluid className={styles.container}>
+            <div className={styles.logoOverlay}></div>
             <Container size="md" className={styles.content}>
+                {/* Search Section */}
                 <Box className={styles.searchSection}>
                     <Title className={styles.searchTitle}>
                         Encuentra tu viaje ideal
                         <div className={styles.titleUnderline} />
                     </Title>
-
                     <Card className={styles.searchCard}>
                         <form onSubmit={searchTrips}>
                             <div className={styles.searchInputs}>
@@ -292,7 +260,7 @@ const ReservarView = () => {
                                             value={formData.origin}
                                             onChange={(e) => {
                                                 const value = e.currentTarget.value;
-                                                setFormData(prev => ({ ...prev, origin: value }));
+                                                setFormData((prev) => ({ ...prev, origin: value }));
                                                 handlePlaceSearch(value, 'origin');
                                             }}
                                             onFocus={() => handleInputFocus('origin')}
@@ -312,8 +280,12 @@ const ReservarView = () => {
                                                 >
                                                     <MapPin size={16} className={styles.suggestionIcon} />
                                                     <div>
-                                                        <Text className={styles.suggestionMain}>{suggestion.mainText}</Text>
-                                                        <Text className={styles.suggestionSecondary}>{suggestion.secondaryText}</Text>
+                                                        <Text className={styles.suggestionMain}>
+                                                            {suggestion.mainText}
+                                                        </Text>
+                                                        <Text className={styles.suggestionSecondary}>
+                                                            {suggestion.secondaryText}
+                                                        </Text>
                                                     </div>
                                                 </button>
                                             ))}
@@ -333,7 +305,7 @@ const ReservarView = () => {
                                             value={formData.destination}
                                             onChange={(e) => {
                                                 const value = e.currentTarget.value;
-                                                setFormData(prev => ({ ...prev, destination: value }));
+                                                setFormData((prev) => ({ ...prev, destination: value }));
                                                 handlePlaceSearch(value, 'destination');
                                             }}
                                             onFocus={() => handleInputFocus('destination')}
@@ -348,13 +320,19 @@ const ReservarView = () => {
                                                 <button
                                                     key={suggestion.placeId}
                                                     className={styles.suggestionItem}
-                                                    onClick={() => handleSuggestionClick(suggestion, 'destination')}
+                                                    onClick={() =>
+                                                        handleSuggestionClick(suggestion, 'destination')
+                                                    }
                                                     type="button"
                                                 >
                                                     <MapPin size={16} className={styles.suggestionIcon} />
                                                     <div>
-                                                        <Text className={styles.suggestionMain}>{suggestion.mainText}</Text>
-                                                        <Text className={styles.suggestionSecondary}>{suggestion.secondaryText}</Text>
+                                                        <Text className={styles.suggestionMain}>
+                                                            {suggestion.mainText}
+                                                        </Text>
+                                                        <Text className={styles.suggestionSecondary}>
+                                                            {suggestion.secondaryText}
+                                                        </Text>
                                                     </div>
                                                 </button>
                                             ))}
@@ -371,13 +349,13 @@ const ReservarView = () => {
                                         className={styles.input}
                                         placeholder="¿Cuándo viajas?"
                                         value={formData.date}
-                                        onChange={(date) => setFormData(prev => ({ ...prev, date }))}
+                                        onChange={(date) => setFormData((prev) => ({ ...prev, date }))}
                                         minDate={new Date()}
                                         classNames={{
                                             input: styles.dateInput,
                                             day: styles.dateDay,
                                             weekday: styles.dateWeekday,
-                                            month: styles.dateMonth
+                                            month: styles.dateMonth,
                                         }}
                                     />
                                 </div>
@@ -392,13 +370,19 @@ const ReservarView = () => {
                                     </div>
                                     <TextInput
                                         className={styles.input}
-                                        value={`${formData.passengers} ${formData.passengers > 1 ? 'Pasajeros' : 'Pasajero'}`}
+                                        value={`${formData.passengers} ${
+                                            formData.passengers > 1 ? 'Pasajeros' : 'Pasajero'
+                                        }`}
                                         readOnly
                                         variant="unstyled"
                                         rightSection={
                                             <div className={styles.passengerIconWrapper}>
                                                 {Array.from({ length: formData.passengers }).map((_, i) => (
-                                                    <User key={`passenger-${i}`} size={16} className={styles.passengerIcon} />
+                                                    <User
+                                                        key={`passenger-${i}`}
+                                                        size={16}
+                                                        className={styles.passengerIcon}
+                                                    />
                                                 ))}
                                             </div>
                                         }
@@ -417,7 +401,9 @@ const ReservarView = () => {
 
                                 {/* Search Button */}
                                 <Button
-                                    className={`${styles.searchButton} ${isSearching ? styles.searching : ''}`}
+                                    className={`${styles.searchButton} ${
+                                        isSearching ? styles.searching : ''
+                                    }`}
                                     type="submit"
                                     disabled={isSearching}
                                 >
@@ -439,10 +425,9 @@ const ReservarView = () => {
                     </Card>
                 </Box>
 
+                {/* Results Section */}
                 <Box className={styles.resultsSection}>
-                    <Title className={styles.resultsTitle}>
-                        Viajes disponibles
-                    </Title>
+                    <Title className={styles.resultsTitle}>Viajes disponibles</Title>
 
                     {searchResults.length > 0 ? (
                         <div className={styles.tripsGrid}>
@@ -470,26 +455,41 @@ const ReservarView = () => {
                                     </div>
 
                                     <Group mt="md" mb="xs">
-                                        <Badge leftSection={<Clock size={14} />}>{trip.selectedRoute.duration}</Badge>
-                                        <Badge leftSection={<Navigation size={14} />}>{trip.selectedRoute.distance}</Badge>
-                                        <Badge leftSection={<User size={14} />}>{trip.seats} asientos</Badge>
+                                        <Badge leftSection={<Clock size={14} />}>
+                                            {trip.selectedRoute.duration}
+                                        </Badge>
+                                        <Badge leftSection={<Navigation size={14} />}>
+                                            {trip.selectedRoute.distance}
+                                        </Badge>
+                                        <Badge leftSection={<User size={14} />}>
+                                            {trip.seats} asientos
+                                        </Badge>
                                     </Group>
 
                                     <Group gap="apart" mt="lg">
                                         <Group>
-                                            <Badge color={trip.allowPets ? "green" : "red"} variant="light">
-                                                {trip.allowPets ? "Mascotas permitidas" : "No mascotas"}
+                                            <Badge
+                                                color={trip.allowPets ? 'green' : 'red'}
+                                                variant="light"
+                                            >
+                                                {trip.allowPets
+                                                    ? 'Mascotas permitidas'
+                                                    : 'No mascotas'}
                                             </Badge>
-                                            <Badge color={trip.allowSmoking ? "green" : "red"} variant="light">
-                                                {trip.allowSmoking ? "Fumar permitido" : "No fumar"}
+                                            <Badge
+                                                color={trip.allowSmoking ? 'green' : 'red'}
+                                                variant="light"
+                                            >
+                                                {trip.allowSmoking
+                                                    ? 'Fumar permitido'
+                                                    : 'No fumar'}
                                             </Badge>
                                         </Group>
                                         <Button
-                                           className={styles.reserveButton}
-                                           onClick={() => {
-                                               handleReservation(trip)
-                                                setReservationModalOpen(true)
-
+                                            className={styles.reserveButton}
+                                            onClick={() => {
+                                                handleReservation(trip);
+                                                setReservationModalOpen(true);
                                             }}
                                         >
                                             Reservar
@@ -511,7 +511,7 @@ const ReservarView = () => {
                     <TripReservationModal
                         trip={selectedTrip}
                         isOpen={reservationModalOpen}
-                         onClose={handleCloseModal}
+                        onClose={handleCloseModal}
                     />
                 )}
             </Container>
@@ -520,5 +520,5 @@ const ReservarView = () => {
 };
 
 export const Route = createFileRoute('/reservar/')({
-    component: ReservarView
+    component: ReservarView,
 });

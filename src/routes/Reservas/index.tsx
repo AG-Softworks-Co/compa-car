@@ -12,8 +12,8 @@ import styles from './index.module.css';
 
 interface Trip {
     id: string;
-    origin: { address: string, secondaryText: string };
-    destination: { address: string, secondaryText: string };
+    origin: { address: string; secondaryText: string };
+    destination: { address: string; secondaryText: string };
     dateTime: string;
     seats: number;
     pricePerSeat: number;

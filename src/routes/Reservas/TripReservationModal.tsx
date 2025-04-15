@@ -1,6 +1,5 @@
-// TripReservationModal.tsx
 import React from 'react';
-import {createFileRoute ,useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import {
     Card,
     Group,
@@ -9,13 +8,12 @@ import {
     Badge,
     Modal,
     NumberInput,
-    Textarea,
-    Divider,
+    TextInput,
     Button,
     Center,
 } from '@mantine/core';
-import { Clock, Navigation, User, Check } from 'lucide-react';
-import { saveToLocalStorage, getFromLocalStorage } from '../../types/PublicarViaje/localStorageHelper';
+import { Clock, Navigation, User } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 import dayjs from 'dayjs';
 import styles from './index.module.css';
 
@@ -34,14 +32,9 @@ interface Trip {
     };
 }
 
-interface ReservationData {
-    tripId: string;
-    passengersCount: number;
-    totalPrice: number;
-    comment: string;
-    status: 'pending' | 'confirmed' | 'rejected';
-    createdAt: string;
-      bookingId?: number;
+interface Passenger {
+    fullName: string;
+    identificationNumber: string;
 }
 
 interface TripReservationModalProps {
@@ -51,76 +44,181 @@ interface TripReservationModalProps {
 }
 
 export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip, isOpen, onClose }) => {
-    const navigate = useNavigate();
     const [passengersCount, setPassengersCount] = React.useState(1);
-    const [comment, setComment] = React.useState('');
-    const [showConfirmation, setShowConfirmation] = React.useState(false);
+    const [passengers, setPassengers] = React.useState<Passenger[]>([]);
+    const [currentStep, setCurrentStep] = React.useState<'confirm' | 'passengers' | 'finalize'>('confirm');
+    const [bookingId, setBookingId] = React.useState<number | null>(null);
 
-    const handleSubmit = async () => {
-        const token = localStorage.getItem('token');
+    const handleConfirmReservation = async () => {
         const userId = localStorage.getItem('userId');
-
-        if (!token || !userId) {
-            console.error('No authentication token or user ID found in localStorage. Please log in.');
+    
+        if (!userId) {
+            console.error('No se encontró el ID del usuario en localStorage. Por favor, inicia sesión.');
             return;
         }
-
-        const reservationData = {
-            trip_id: trip.id,
-            user_id: Number.parseInt(userId), // Asumo que el user_id es un número
+    
+        if (passengersCount < 1 || passengersCount > trip.seats) {
+            console.error('Cantidad de asientos inválida. Por favor, verifica los campos.');
+            return;
+        }
+    
+        const bookingQr = `${trip.id}-${userId}-${Date.now()}`;
+        const bookingData = {
+            trip_id: Number(trip.id), // Convertir a número si es string
+            user_id: userId,
             seats_booked: passengersCount,
             total_price: passengersCount * trip.pricePerSeat,
             booking_status: 'pending',
-            booking_message: comment
+            booking_qr: bookingQr,
+            booking_date: dayjs().toISOString(),
         };
-           console.log('Data to send in /api/bookings:', reservationData);
-
+    
         try {
-             const bookingResponse = await fetch('https://rest-sorella-production.up.railway.app/api/bookings', {
-              method: 'POST',
-              headers: {
-                    'Content-Type': 'application/json',
-                  'x-token': token,
-              },
-             body: JSON.stringify(reservationData),
-           });
-
-                console.log('Response from /api/bookings:', bookingResponse);
-             if (!bookingResponse.ok) {
-              const errorText = await bookingResponse.text();
-                  console.error('Booking Response Error:', errorText);
-                   throw new Error(`HTTP error! status: ${bookingResponse.status}`);
-             }
-              const bookingData = await bookingResponse.json();
-               console.log('Response data from /api/bookings:', bookingData);
-            const bookingId = bookingData.data.booking_id;
-            const reservation: ReservationData = {
-            tripId: trip.id,
-            passengersCount,
-            totalPrice: passengersCount * trip.pricePerSeat,
-            comment,
-            status: 'pending',
-            createdAt: new Date().toISOString(),
-            bookingId: bookingId, // Save the bookingId
-             };
-            const existingReservations = getFromLocalStorage<ReservationData[]>('tripReservations') || [];
-            saveToLocalStorage('tripReservations', [...existingReservations, reservation]);
-             saveToLocalStorage('currentReservation',  reservation);
-              console.log('reservation to save in localStorage:', reservation)
-             setShowConfirmation(true);
-                setTimeout(() => {
-                setShowConfirmation(false);
-              navigate({ to: '/PagarCupo' });
-            }, 2000);
-        }catch (error) {
-           console.error('Error creating booking:', error);
+            const { data: bookings, error: bookingError } = await supabase
+                .from('bookings')
+                .insert(bookingData)
+                .select();
+    
+            if (bookingError) {
+                console.error('Error al crear la reserva en bookings:', bookingError);
+                return;
+            }
+    
+            const booking = bookings?.[0];
+            if (!booking) {
+                console.error('No se pudo obtener el booking después de la inserción.');
+                return;
+            }
+    
+            console.log('Reserva creada con éxito en bookings:', booking);
+            setBookingId(booking.id); // Guardar el ID del booking
+            setPassengers(Array(passengersCount).fill({ fullName: '', identificationNumber: '' }));
+            setCurrentStep('passengers');
+        } catch (error) {
+            console.error('Error al procesar la reserva:', error);
         }
+    };
+
+    const handleSavePassengers = () => {
+        // Validar que todos los pasajeros tengan datos completos
+        for (const passenger of passengers) {
+            if (!passenger.fullName || !passenger.identificationNumber) {
+                console.error('Todos los pasajeros deben tener nombre e identificación.');
+                return;
+            }
+        }
+
+        setCurrentStep('finalize'); // Pasar a la subvista de confirmación
+    };
+
+    const handleFinalizeReservation = async () => {
+        if (!bookingId) {
+            console.error('No se encontró el ID del booking. No se puede continuar.');
+            return;
+        }
+    
+        const userId = localStorage.getItem('userId'); // Asegúrate de obtener userId aquí
+    
+        if (!userId) {
+            console.error('No se encontró el ID del usuario en localStorage. Por favor, inicia sesión.');
+            return;
+        }
+    
+        try {
+            console.log('Intentando actualizar el estado del booking con ID:', bookingId);
+    
+            // Actualizar el estado del booking a "reserved"
+            const { data: updatedBooking, error: bookingUpdateError } = await supabase
+                .from('bookings')
+                .update({ booking_status: 'reserved' })
+                .eq('id', bookingId)
+                .select();
+    
+            if (bookingUpdateError) {
+                console.error('Error al actualizar el estado del booking:', bookingUpdateError);
+                return;
+            }
+    
+            console.log('Estado del booking actualizado a "reserved":', updatedBooking);
+    
+            // Actualizar los asientos disponibles en la tabla trips
+            const { data: tripData, error: tripError } = await supabase
+                .from('trips')
+                .select('seats, seats_reserved')
+                .eq('id', Number(trip.id)) // Asegúrate de que trip.id sea un número
+                .single();
+    
+            if (tripError || !tripData) {
+                console.error('Error al obtener los datos del viaje:', tripError);
+                return;
+            }
+    
+            if (tripData.seats === null) {
+                console.error('El número de asientos no está disponible.');
+                return;
+            }
+    
+            // Calcular los nuevos valores de seats_reserved y seats
+            const newSeatsReserved = (tripData.seats_reserved || 0) + passengersCount;
+            const newSeatsAvailable = tripData.seats - passengersCount;
+    
+            // Actualizar los valores en la tabla trips
+            const { error: tripUpdateError } = await supabase
+                .from('trips')
+                .update({ seats_reserved: newSeatsReserved, seats: newSeatsAvailable })
+                .eq('id', Number(trip.id));
+    
+            if (tripUpdateError) {
+                console.error('Error al actualizar los asientos del viaje:', tripUpdateError);
+                return;
+            }
+    
+            console.log('Asientos actualizados en el viaje:', {
+                seats_reserved: newSeatsReserved,
+                seats: newSeatsAvailable,
+            });
+    
+            // Insertar los pasajeros en la tabla booking_passengers
+            const passengerData = passengers.map((passenger) => ({
+                booking_id: bookingId,
+                full_name: passenger.fullName,
+                identification_number: passenger.identificationNumber,
+                user_id: userId, // Ahora userId está definido
+                status: 'confirmed',
+            }));
+    
+            const { error: passengerError } = await supabase
+                .from('booking_passengers')
+                .insert(passengerData);
+    
+            if (passengerError) {
+                console.error('Error al crear los pasajeros en booking_passengers:', passengerError);
+                return;
+            }
+    
+            console.log('Pasajeros creados con éxito en booking_passengers');
+            setCurrentStep('confirm');
+            onClose();
+        } catch (error) {
+            console.error('Error al procesar la reserva:', error);
+        }
+    };
+
+    const handlePassengerChange = (index: number, field: keyof Passenger, value: string) => {
+        setPassengers((prevPassengers) => {
+            const updatedPassengers = [...prevPassengers];
+            updatedPassengers[index] = {
+                ...updatedPassengers[index],
+                [field]: value,
+            };
+            return updatedPassengers;
+        });
     };
 
     return (
         <>
             <Modal
-                opened={isOpen && !showConfirmation}
+                opened={isOpen && currentStep === 'confirm'}
                 onClose={onClose}
                 title="Reservar Viaje"
                 size="lg"
@@ -162,15 +260,6 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
                                     {trip.seats} disponibles
                                 </Badge>
                             </Group>
-
-                            <Group mt="md">
-                                <Badge color={trip.allowPets ? 'green' : 'red'} variant="light">
-                                    {trip.allowPets ? 'Mascotas permitidas' : 'No mascotas'}
-                                </Badge>
-                                <Badge color={trip.allowSmoking ? 'green' : 'red'} variant="light">
-                                    {trip.allowSmoking ? 'Fumar permitido' : 'No fumar'}
-                                </Badge>
-                            </Group>
                         </Card>
                     </Center>
 
@@ -189,39 +278,11 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
                         }
                     />
 
-                    <Card className={styles.priceCard} shadow="sm" withBorder>
-                        <Group gap="apart">
-                            <Text>Precio por asiento</Text>
-                            <Text>${trip.pricePerSeat.toLocaleString()}</Text>
-                        </Group>
-                        <Group gap="apart">
-                            <Text>Cantidad de asientos</Text>
-                            <Text>{passengersCount}</Text>
-                        </Group>
-                        <Divider my="sm" />
-                        <Group gap="apart" style={{ fontSize: '1.2em' }}>
-                            <Text fw={500}>Total a pagar</Text>
-                            <Text fw={700} color="green">
-                                ${((passengersCount * trip.pricePerSeat)).toLocaleString()}
-                            </Text>
-                        </Group>
-                    </Card>
-
-                    <Textarea
-                        label="Mensaje para el conductor"
-                        description="Opcional: Añade información adicional sobre tu viaje"
-                        placeholder="Ej: Llevo una maleta mediana..."
-                        value={comment}
-                        onChange={(e) => setComment(e.currentTarget.value)}
-                        minRows={3}
-                    />
-
                     <Button
                         fullWidth
                         size="lg"
-                        onClick={handleSubmit}
+                        onClick={handleConfirmReservation}
                         className={styles.confirmButton}
-                        disabled={passengersCount > trip.seats}
                     >
                         Confirmar Reserva
                     </Button>
@@ -229,22 +290,70 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
             </Modal>
 
             <Modal
-                opened={showConfirmation}
-                onClose={() => { }}
-                withCloseButton={false}
+                opened={isOpen && currentStep === 'passengers'}
+                onClose={onClose}
+                title="Datos de los Pasajeros"
+                size="lg"
                 centered
                 closeOnClickOutside={false}
             >
-                <Stack align="center" py="xl">
-                    <div className={styles.successIcon}>
-                        <Check size={32} />
-                    </div>
-                    <Text size="lg" fw={600} ta="center">
-                        ¡Reserva enviada con éxito!
+                <Stack gap="xl">
+                    {passengers.map((passenger, index) => (
+                        <Card key={index} shadow="sm" withBorder>
+                            <Text fw={500}>Pasajero {index + 1}</Text>
+                            <TextInput
+                                label="Nombre completo"
+                                placeholder="Ej: Juan Pérez"
+                                value={passenger.fullName}
+                                onChange={(e) =>
+                                    handlePassengerChange(index, 'fullName', e.currentTarget.value)
+                                }
+                                required
+                            />
+                            <TextInput
+                                label="Número de identificación"
+                                placeholder="Ej: 123456789"
+                                value={passenger.identificationNumber}
+                                onChange={(e) =>
+                                    handlePassengerChange(index, 'identificationNumber', e.currentTarget.value)
+                                }
+                                required
+                            />
+                        </Card>
+                    ))}
+
+                    <Button
+                        fullWidth
+                        size="lg"
+                        onClick={handleSavePassengers}
+                        className={styles.confirmButton}
+                    >
+                        Confirmar Pasajeros
+                    </Button>
+                </Stack>
+            </Modal>
+
+            <Modal
+                opened={isOpen && currentStep === 'finalize'}
+                onClose={onClose}
+                title="Confirmar Reserva"
+                size="lg"
+                centered
+                closeOnClickOutside={false}
+            >
+                <Stack gap="xl">
+                    <Text>
+                        Está a punto de confirmar su reserva. Recuerde que debe realizar el pago
+                        directamente con el conductor (en efectivo, Nequi o Bancolombia).
                     </Text>
-                    <Text size="sm" c="dimmed" ta="center">
-                        Serás redirigido al pago
-                    </Text>
+                    <Button
+                        fullWidth
+                        size="lg"
+                        onClick={handleFinalizeReservation}
+                        className={styles.confirmButton}
+                    >
+                        Reservar
+                    </Button>
                 </Stack>
             </Modal>
         </>

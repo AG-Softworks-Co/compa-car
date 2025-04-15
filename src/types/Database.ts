@@ -611,6 +611,7 @@ export type Database = {
           price_per_seat: number | null
           route_id: number | null
           seats: number | null
+          seats_reserved: number | null
           status: string | null
           user_id: string | null
           vehicle_id: number | null
@@ -627,6 +628,7 @@ export type Database = {
           price_per_seat?: number | null
           route_id?: number | null
           seats?: number | null
+          seats_reserved?: number | null
           status?: string | null
           user_id?: string | null
           vehicle_id?: number | null
@@ -643,6 +645,7 @@ export type Database = {
           price_per_seat?: number | null
           route_id?: number | null
           seats?: number | null
+          seats_reserved?: number | null
           status?: string | null
           user_id?: string | null
           vehicle_id?: number | null
