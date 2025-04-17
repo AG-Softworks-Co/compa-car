@@ -89,10 +89,12 @@ const RootComponent = () => {
               <Text className={styles.logo}>Cupo</Text>
               <Button
                 className={styles.registerButton}
-                component={Link}
-                to="/CompletarRegistro"
+                component="a" // Cambiar a un enlace HTML
+                href="https://www.cupo.dev" // URL de destino
+                target="_blank" // Abrir en una nueva pestaña
+                rel="noopener noreferrer" // Seguridad para enlaces externos
               >
-                <span>Inscríbete aquí</span>
+                <span>Más información</span>
               </Button>
             </Group>
           </AppShell.Header>

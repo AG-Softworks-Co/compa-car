@@ -82,7 +82,7 @@ const HomeView = () => {
               variant="outline"
               className={styles.secondaryButton}
               component={Link}
-              to="/publish"
+              to="/publicarviaje"
             >
               Publicar viaje
             </Button>
@@ -124,12 +124,13 @@ const HomeView = () => {
             Únete a nuestra comunidad y comienza a ahorrar
           </Text>
           <Button
-            size="lg"
-            className={styles.ctaButton}
-            component={Link}
-            to="/register"
+            className={styles.registerButton}
+            component="a" // Usar un enlace HTML
+            href="https://www.cupo.dev" // URL de destino
+            target="_blank" // Abrir en una nueva pestaña
+            rel="noopener noreferrer" // Seguridad para enlaces externos
           >
-            Crear cuenta
+            <span>Más información</span>
           </Button>
           <div className={styles.ctaGlow} />
         </Card>

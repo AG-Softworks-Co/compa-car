@@ -70,7 +70,6 @@ interface SubMenuItem {
   title: string
   path: string
 }
-const BASE_URL = 'https://rest-sorella-production.up.railway.app/api'
 
 const ProfileView: React.FC = () => {
   // Estados

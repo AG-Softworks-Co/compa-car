@@ -350,81 +350,205 @@
   gap: 1.5rem;
   margin-top: 2rem;
  }
- 
- .tripCard {
-  background: rgba(20, 20, 20, 0.95) !important;
-  border: 1px solid rgba(0, 255, 157, 0.2) !important;
-  border-radius: 16px !important;
-  padding: 1.5rem !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
- }
- 
- .tripCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 255, 157, 0.15);
- }
- 
- .tripRoute {
-  margin: 1.5rem 0;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
- }
- 
- .routeLine {
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(0, 255, 157, 0.3),
-    transparent
-  );
-  margin: 1rem 0;
- }
- 
- .tripCard badge {
-  font-size: 0.9rem;
-  padding: 0.5rem 0.75rem;
- }
- 
- /* Estilos para los badges */
- .tripBadge {
-  background: rgba(0, 255, 157, 0.1) !important;
-  color: #00ff9d !important;
-  font-weight: 500 !important;
-  padding: 0.5rem 1rem !important;
- }
- 
- /* Estilos para textos dentro de la tarjeta */
- .tripCard Text {
-  color: white !important;
- }
- 
- .tripCard Text[c="dimmed"] {
-  color: rgba(255, 255, 255, 0.6) !important;
-  font-size: 0.9rem;
- }
- 
- /* Botón de reserva */
- .reserveButton {
-  background: rgba(0, 255, 157, 0.1) !important;
-  color: #00ff9d !important;
-  border: 1px solid rgba(0, 255, 157, 0.3) !important;
-  transition: all 0.2s ease;
- }
- 
- .reserveButton:hover {
-  background: rgba(0, 255, 157, 0.2) !important;
-  transform: translateY(-2px);
- }
- 
- /* Animaciones al cargar */
- .tripCard {
-  animation: fadeInUp 0.3s ease forwards;
-  opacity: 0;
-  transform: translateY(20px);
- }
- 
+/* Estilos para la tarjeta del viaje */
+.tripCard {
+    border: 1px solid rgba(0, 255, 157, 0.2);
+    border-radius: 16px;
+    padding: 1.5rem;
+    background: rgba(20, 20, 20, 0.95);
+    box-shadow: 0 8px 24px rgba(0, 255, 157, 0.15);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow: hidden; /* Evita que los elementos se salgan del contenedor */
+}
+
+.tripCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 255, 157, 0.3);
+}
+
+/* Sección de fecha y precio */
+.headerSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dateText {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.2rem; /* Aumenta el tamaño de la fuente */
+  font-weight: 600; /* Opcional: hace que el texto sea más grueso */
+}
+
+.priceBadge {
+    background: rgba(0, 255, 157, 0.1);
+    color: #00ff9d;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+}
+
+/* Sección del conductor */
+.driverSection {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.driverPhoto {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(0, 255, 157, 0.3);
+}
+
+.driverLabel {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.driverName {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+/* Información adicional */
+.additionalInfo {
+    display: flex;
+    justify-content: space-between; /* Distribuye los elementos horizontalmente */
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-wrap: nowrap; /* Evita que los elementos se apilen */
+}
+
+.infoItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1; /* Asegura que los elementos ocupen el mismo espacio */
+    text-align: center;
+    white-space: nowrap; /* Evita que el texto se corte en varias líneas */
+}
+
+.infoIcon {
+    color: rgba(0, 255, 157, 0.8);
+}
+
+.infoText {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .additionalInfo {
+        flex-wrap: wrap; /* Permite que los elementos se apilen en pantallas pequeñas */
+        justify-content: flex-start; /* Alinea los elementos al inicio */
+    }
+
+    .infoItem {
+        flex: none; /* Evita que los elementos se estiren en pantallas pequeñas */
+        width: 100%; /* Cada elemento ocupa toda la fila */
+        justify-content: flex-start;
+        text-align: left;
+    }
+}
+
+/* Ruta de origen a destino */
+.tripRoute {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.routePoint {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.iconWrapper {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 255, 157, 0.1);
+    border-radius: 50%;
+}
+
+.routeDetails {
+    flex: 1;
+}
+
+.routeLabel {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.25rem;
+}
+
+.routeAddress {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+.routeLineWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 40px;
+}
+
+.routeLine {
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(to bottom, #00ff9d, #00ff9d);
+    position: absolute;
+}
+
+/* Botón de reservar */
+.reserveButton {
+    background: rgba(0, 255, 157, 0.1);
+    color: #00ff9d;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 157, 0.3);
+    transition: background-color 0.3s, transform 0.2s ease;
+}
+
+.reserveButton:hover {
+    background: rgba(0, 255, 157, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .tripsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .tripCard {
+        padding: 1rem !important;
+    }
+}
  @keyframes fadeInUp {
   to {
     opacity: 1;

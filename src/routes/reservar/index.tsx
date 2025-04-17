@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Box, TextInput, Button, Title, Card, Text, Container, Badge, Group } from '@mantine/core';
+import { Box, TextInput, Button, Title, Card, Text, Container, Badge } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { Calendar, User, Car, MapPin, Clock, Navigation } from 'lucide-react';
 import PassengerSelector from '../../components/ui/home/PassengerSelector';
@@ -28,8 +28,9 @@ interface Trip {
     allowPets: boolean;
     allowSmoking: boolean;
     selectedRoute: { duration: string; distance: string };
+    driverName: string;
+    photo: string; // Propiedad obligatoria
 }
-
 interface SearchFormData {
     origin: string;
     destination: string;
@@ -151,16 +152,16 @@ const ReservarView = () => {
         setIsSearching(true);
         setSearchResults([]);
         console.log('formData before API call:', formData);
-
+    
         try {
             if (!formData.origin || !formData.destination || !formData.date) {
                 console.error('Origin, destination, and date are required.');
                 setIsSearching(false);
                 return;
             }
-
+    
             const formattedDate = dayjs(formData.date).format('YYYY-MM-DD HH:mm:ss');
-
+    
             const { data, error } = await supabase
                 .from('trips')
                 .select(`
@@ -170,42 +171,58 @@ const ReservarView = () => {
                     price_per_seat,
                     allow_pets,
                     allow_smoking,
-                    route:routes(id, start_address, end_address, duration, distance)
+                    route:routes(id, start_address, end_address, duration, distance),
+                    user_id
                 `)
                 .gte('date_time', formattedDate);
-
+    
             if (error) {
                 console.error('Error fetching trips:', error);
                 setIsSearching(false);
                 return;
             }
-
-            if (data && data.length > 0) {
-                const trips = data.map((item: any) => ({
-                    id: item.id,
+    
+            // Obtener los perfiles de usuario relacionados
+            const userIds = data.map((trip) => trip.user_id).filter((id): id is string => id !== null);
+            const { data: userProfiles, error: userProfilesError } = await supabase
+                .from('user_profiles')
+                .select('user_id, first_name, last_name, photo_user')
+                .in('user_id', userIds);
+    
+            if (userProfilesError) {
+                console.error('Error fetching user profiles:', userProfilesError);
+                setIsSearching(false);
+                return;
+            }
+    
+            // Mapear los perfiles de usuario a los viajes
+            const trips = data.map((trip) => {
+                const userProfile = userProfiles.find((profile) => profile.user_id === trip.user_id);
+                return {
+                    id: trip.id.toString(),
                     origin: {
-                        address: item.route?.start_address || 'Origen no disponible',
+                        address: trip.route?.start_address || 'Origen no disponible',
                         secondaryText: 'Información adicional no disponible',
                     },
                     destination: {
-                        address: item.route?.end_address || 'Destino no disponible',
+                        address: trip.route?.end_address || 'Destino no disponible',
                         secondaryText: 'Información adicional no disponible',
                     },
-                    dateTime: item.date_time || 'Fecha no disponible',
-                    seats: item.seats || 0,
-                    pricePerSeat: item.price_per_seat || 0,
-                    allowPets: item.allow_pets === 'true',
-                    allowSmoking: item.allow_smoking === 'true',
+                    dateTime: trip.date_time || 'Fecha no disponible',
+                    seats: trip.seats || 0,
+                    pricePerSeat: trip.price_per_seat || 0,
+                    allowPets: trip.allow_pets === 'true',
+                    allowSmoking: trip.allow_smoking === 'true',
                     selectedRoute: {
-                        duration: item.route?.duration || 'Duración no disponible',
-                        distance: item.route?.distance || 'Distancia no disponible',
+                        duration: trip.route?.duration || 'Duración no disponible',
+                        distance: trip.route?.distance || 'Distancia no disponible',
                     },
-                }));
-
-                setSearchResults(trips);
-            } else {
-                setSearchResults([]);
-            }
+                    driverName: userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'No disponible',
+                    photo: userProfile?.photo_user || 'https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/SinFotoPerfil.png', // Imagen predeterminada
+                };
+            });
+    
+            setSearchResults(trips);
         } catch (error) {
             console.error('Error searching trips:', error);
         } finally {
@@ -433,68 +450,95 @@ const ReservarView = () => {
                         <div className={styles.tripsGrid}>
                             {searchResults.map((trip) => (
                                 <Card key={trip.id} className={styles.tripCard}>
-                                    <Group gap="apart" mb="md">
-                                        <Text fw={500} size="lg">
-                                            {dayjs(trip.dateTime).format('DD MMM YYYY, hh:mm A')}
+                                    {/* Fecha y precio */}
+                                    <div className={styles.headerSection}>
+                                        <Text fw={600} size="md" className={styles.dateText}>
+                                            FECHA:   
+                                            {new Date(trip.dateTime).toLocaleDateString('es-ES', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric',
+                                            })}
                                         </Text>
-                                        <Badge color="green" size="lg">
-                                            ${trip.pricePerSeat.toLocaleString()}
+                                        <Badge className={styles.priceBadge}>
+                                            ${trip.pricePerSeat.toLocaleString()} / Cupo
                                         </Badge>
-                                    </Group>
-
-                                    <div className={styles.tripRoute}>
+                                    </div>
+                            
+                                    {/* Información del conductor */}
+                                    <div className={styles.driverSection}>
+                                        <img
+                                            src={trip.photo}
+                                            alt="Foto del conductor"
+                                            className={styles.driverPhoto}
+                                        />
                                         <div>
-                                            <Text c="dimmed">Origen</Text>
-                                            <Text>{trip.origin.address}</Text>
+                                            <Text fw={500} size="xs" className={styles.driverLabel}>
+                                                Conductor:
+                                            </Text>
+                                            <Text fw={500} size="sm" className={styles.driverName}>
+                                                {trip.driverName || 'No disponible'}
+                                            </Text>
                                         </div>
-                                        <div className={styles.routeLine} />
-                                        <div>
-                                            <Text c="dimmed">Destino</Text>
-                                            <Text>{trip.destination.address}</Text>
+                                    </div>
+                            
+                                    {/* Ruta de origen a destino */}
+                                    <div className={styles.tripRoute}>
+                                        <div className={styles.routePoint}>
+                                            <div className={styles.iconWrapper}>
+                                                <MapPin size={20} className={`${styles.routeIcon} ${styles.originIcon}`} />
+                                            </div>
+                                            <div className={styles.routeDetails}>
+                                                <Text fw={600} className={styles.routeLabel}>Origen</Text>
+                                                <Text fw={500} className={styles.routeAddress}>{trip.origin.address}</Text>
+                                            </div>
+                                        </div>
+                                        <div className={styles.routeLineWrapper}>
+                                            <div className={styles.routeLine}></div>
+                                        </div>
+                                        <div className={styles.routePoint}>
+                                            <div className={styles.iconWrapper}>
+                                                <MapPin size={20} className={`${styles.routeIcon} ${styles.destinationIcon}`} />
+                                            </div>
+                                            <div className={styles.routeDetails}>
+                                                <Text fw={600} className={styles.routeLabel}>Destino</Text>
+                                                <Text fw={500} className={styles.routeAddress}>{trip.destination.address}</Text>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <Group mt="md" mb="xs">
-                                        <Badge leftSection={<Clock size={14} />}>
-                                            {trip.selectedRoute.duration}
-                                        </Badge>
-                                        <Badge leftSection={<Navigation size={14} />}>
-                                            {trip.selectedRoute.distance}
-                                        </Badge>
-                                        <Badge leftSection={<User size={14} />}>
-                                            {trip.seats} asientos
-                                        </Badge>
-                                    </Group>
-
-                                    <Group gap="apart" mt="lg">
-                                        <Group>
-                                            <Badge
-                                                color={trip.allowPets ? 'green' : 'red'}
-                                                variant="light"
-                                            >
-                                                {trip.allowPets
-                                                    ? 'Mascotas permitidas'
-                                                    : 'No mascotas'}
-                                            </Badge>
-                                            <Badge
-                                                color={trip.allowSmoking ? 'green' : 'red'}
-                                                variant="light"
-                                            >
-                                                {trip.allowSmoking
-                                                    ? 'Fumar permitido'
-                                                    : 'No fumar'}
-                                            </Badge>
-                                        </Group>
-                                        <Button
-                                            className={styles.reserveButton}
-                                            onClick={() => {
-                                                handleReservation(trip);
-                                                setReservationModalOpen(true);
-                                            }}
-                                        >
-                                            Reservar
-                                        </Button>
-                                    </Group>
+                                     {/* Información adicional */}
+                                    <div className={styles.additionalInfo}>
+                                        <div className={styles.infoItem}>
+                                            <Clock size={16} className={styles.infoIcon} />
+                                            <Text fw={500} size="sm" className={styles.infoText}>
+                                                {trip.selectedRoute.duration} - Tiempo de Viaje
+                                            </Text>
+                                        </div>
+                                        <div className={styles.infoItem}>
+                                            <Navigation size={16} className={styles.infoIcon} />
+                                            <Text fw={500} size="sm" className={styles.infoText}>
+                                                {trip.selectedRoute.distance} - Distancia de Viaje
+                                            </Text>
+                                        </div>
+                                        <div className={styles.infoItem}>
+                                            <User size={16} className={styles.infoIcon} />
+                                            <Text fw={500} size="sm" className={styles.infoText}>
+                                                {trip.seats} - Cupos disponibles
+                                            </Text>
+                                        </div>
+                                    </div>
+                            
+                                    {/* Botón de reservar */}
+                                    <Button
+                                        className={styles.reserveButton}
+                                        onClick={() => {
+                                            handleReservation(trip);
+                                            setReservationModalOpen(true);
+                                        }}
+                                    >
+                                        Reservar
+                                    </Button>
                                 </Card>
                             ))}
                         </div>
