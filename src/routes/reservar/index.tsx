@@ -18,19 +18,9 @@ interface PlaceSuggestion {
     fullText: string;
 }
 
-interface Trip {
-    id: string;
-    origin: { address: string; secondaryText: string };
-    destination: { address: string; secondaryText: string };
-    dateTime: string;
-    seats: number;
-    pricePerSeat: number;
-    allowPets: boolean;
-    allowSmoking: boolean;
-    selectedRoute: { duration: string; distance: string };
-    driverName: string;
-    photo: string; // Propiedad obligatoria
-}
+import type { Trip } from '@/types/Trip';
+
+
 interface SearchFormData {
     origin: string;
     destination: string;
@@ -165,16 +155,27 @@ const ReservarView = () => {
             const { data, error } = await supabase
                 .from('trips')
                 .select(`
-                    id,
-                    date_time,
-                    seats,
-                    price_per_seat,
-                    allow_pets,
-                    allow_smoking,
-                    route:routes(id, start_address, end_address, duration, distance),
-                    user_id
+                  id,
+                  date_time,
+                  seats,
+                  price_per_seat,
+                  allow_pets,
+                  allow_smoking,
+                  vehicle_id,
+                  user_id,
+                  route:routes(id, start_address, end_address, duration, distance),
+                  vehicle:vehicles(
+                    brand,
+                    model,
+                    plate,
+                    color,
+                    photo_url,
+                    year
+                  )
                 `)
                 .gte('date_time', formattedDate);
+              
+              
     
             if (error) {
                 console.error('Error fetching trips:', error);
@@ -184,6 +185,22 @@ const ReservarView = () => {
     
             // Obtener los perfiles de usuario relacionados
             const userIds = data.map((trip) => trip.user_id).filter((id): id is string => id !== null);
+            const vehicleIds = data.map((trip) => trip.vehicle_id).filter((id): id is number => !!id);
+            // Licencias por user_id
+            const { data: licenses } = await supabase
+              .from('driver_licenses')
+              .select('user_id, license_number, license_category, expiration_date');
+            
+            // Propiedad por vehículo
+            const { data: propertyCards } = await supabase
+              .from('property_cards')
+              .select('vehicle_id, passager_capacity');
+            
+            // SOAT por vehículo
+            const { data: soats } = await supabase
+              .from('soat_details')
+              .select('vehicle_id, validity_to, insurance_company');
+            
             const { data: userProfiles, error: userProfilesError } = await supabase
                 .from('user_profiles')
                 .select('user_id, first_name, last_name, photo_user')
@@ -197,30 +214,53 @@ const ReservarView = () => {
     
             // Mapear los perfiles de usuario a los viajes
             const trips = data.map((trip) => {
-                const userProfile = userProfiles.find((profile) => profile.user_id === trip.user_id);
-                return {
-                    id: trip.id.toString(),
-                    origin: {
-                        address: trip.route?.start_address || 'Origen no disponible',
-                        secondaryText: 'Información adicional no disponible',
-                    },
-                    destination: {
-                        address: trip.route?.end_address || 'Destino no disponible',
-                        secondaryText: 'Información adicional no disponible',
-                    },
-                    dateTime: trip.date_time || 'Fecha no disponible',
-                    seats: trip.seats || 0,
-                    pricePerSeat: trip.price_per_seat || 0,
-                    allowPets: trip.allow_pets === 'true',
-                    allowSmoking: trip.allow_smoking === 'true',
-                    selectedRoute: {
-                        duration: trip.route?.duration || 'Duración no disponible',
-                        distance: trip.route?.distance || 'Distancia no disponible',
-                    },
-                    driverName: userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'No disponible',
-                    photo: userProfile?.photo_user || 'https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/SinFotoPerfil.png', // Imagen predeterminada
-                };
+              const userProfile = userProfiles.find((profile) => profile.user_id === trip.user_id);
+              const licenseRaw = licenses?.find((l) => l.user_id === trip.user_id);
+
+              const license = licenseRaw &&
+                licenseRaw.license_number &&
+                licenseRaw.license_category &&
+                licenseRaw.expiration_date &&
+                licenseRaw.user_id
+                ? {
+                    license_number: licenseRaw.license_number!,
+                    license_category: licenseRaw.license_category!,
+                    expiration_date: licenseRaw.expiration_date!,
+                    user_id: licenseRaw.user_id!,
+                  }
+                : undefined;
+              const propertyCard = propertyCards?.find((p) => p.vehicle_id === trip.vehicle_id) || null;
+              const soat = soats?.find((s) => s.vehicle_id === trip.vehicle_id) || null;
+            
+              return {
+                id: trip.id.toString(),
+                origin: {
+                  address: trip.route?.start_address || 'Origen no disponible',
+                  secondaryText: 'Información adicional no disponible',
+                },
+                destination: {
+                  address: trip.route?.end_address || 'Destino no disponible',
+                  secondaryText: 'Información adicional no disponible',
+                },
+                dateTime: trip.date_time || '',
+                seats: trip.seats || 0,
+                pricePerSeat: trip.price_per_seat || 0,
+                allowPets: trip.allow_pets === 'true',
+                allowSmoking: trip.allow_smoking === 'true',
+                selectedRoute: {
+                  duration: trip.route?.duration || 'Duración no disponible',
+                  distance: trip.route?.distance || 'Distancia no disponible',
+                },
+                driverName: userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'No disponible',
+                photo: userProfile?.photo_user || 'https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/SinFotoPerfil.png',
+                vehicle: trip.vehicle,
+                license,
+                propertyCard,
+                soat,
+              };
             });
+              
+            
     
             setSearchResults(trips);
         } catch (error) {

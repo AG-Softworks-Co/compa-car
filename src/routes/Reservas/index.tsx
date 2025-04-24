@@ -10,20 +10,7 @@ import { getFromLocalStorage } from '../../types/PublicarViaje/localStorageHelpe
 import { TripReservationModal } from './TripReservationModal';
 import styles from './index.module.css';
 
-interface Trip {
-    id: string;
-    origin: { address: string; secondaryText: string };
-    destination: { address: string; secondaryText: string };
-    dateTime: string;
-    seats: number;
-    pricePerSeat: number;
-    allowPets: boolean;
-    allowSmoking: boolean;
-    selectedRoute: {
-        duration: string;
-        distance: string;
-    };
-}
+import type { Trip } from '@/types/Trip';
 
 const ReservasView = () => {
     const navigate = useNavigate();

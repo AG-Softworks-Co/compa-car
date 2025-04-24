@@ -17,20 +17,10 @@ import { supabase } from '@/lib/supabaseClient';
 import dayjs from 'dayjs';
 import styles from './index.module.css';
 
-interface Trip {
-    id: string;
-    origin: { address: string; secondaryText: string };
-    destination: { address: string; secondaryText: string };
-    dateTime: string;
-    seats: number;
-    pricePerSeat: number;
-    allowPets: boolean;
-    allowSmoking: boolean;
-    selectedRoute: {
-        duration: string;
-        distance: string;
-    };
-}
+import type { Trip } from '@/types/Trip';
+
+
+
 
 interface Passenger {
     fullName: string;
@@ -262,7 +252,64 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
                             </Group>
                         </Card>
                     </Center>
-
+                        <Card className={styles.tripSummary} shadow="sm" withBorder>
+                          <Text fw={600} size="lg" mb="xs">Información del Conductor</Text>
+                          <Group gap="md" align="start">
+                            <img
+                              src={trip.photo || 'https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/SinFotoPerfil.png'}
+                              alt="Foto del conductor"
+                              width={60}
+                              height={60}
+                              style={{ borderRadius: '50%', objectFit: 'cover', border: '2px solid #e0e0e0' }}
+                            />
+                            <div>
+                              <Text fw={500}>{trip.driverName || 'No disponible'}</Text>
+                        
+                              {trip.license && (
+                                <>
+                                  <Text size="sm" c="dimmed">Licencia: {trip.license.license_number}</Text>
+                                  <Text size="sm" c="dimmed">Categoría: {trip.license.license_category}</Text>
+                                  <Text size="sm" c="yellow">
+                                    Válida hasta: {dayjs(trip.license.expiration_date).format('DD/MM/YYYY')}
+                                  </Text>
+                                  <Badge mt={4} color="green" variant="light">
+                                    VERIFICADO
+                                  </Badge>
+                                </>
+                              )}
+                            </div>
+                          </Group>
+                        
+                          <div className={styles.routeDivider} />
+                        
+                          <Text fw={600} size="lg" mt="md" mb="xs">Vehículo</Text>
+                          <Group gap="md" align="start">
+                            <img
+                              src={trip.vehicle?.photo_url || 'https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/SinFotoAuto.png'}
+                              alt="Foto del vehículo"
+                              width={90}
+                              height={60}
+                              style={{ borderRadius: 8, objectFit: 'cover', border: '2px solid #eee' }}
+                            />
+                            <div>
+                              <Text fw={500}>{trip.vehicle?.brand} {trip.vehicle?.model} - {trip.vehicle?.plate}</Text>
+                              {trip.vehicle?.color && (
+                                <Text size="sm" c="dimmed">Color: {trip.vehicle.color}</Text>
+                              )}
+                              {trip.vehicle?.year && (
+                                <Text size="sm" c="dimmed">Año: {trip.vehicle.year}</Text>
+                              )}
+                              {trip.propertyCard?.passager_capacity && (
+                                <Text size="sm">Capacidad: {trip.propertyCard.passager_capacity} pasajeros</Text>
+                              )}
+                              {trip.soat && (
+                                <Text size="sm" c="yellow">
+                                  SOAT válido hasta: {dayjs(trip.soat.validity_to).format('DD/MM/YYYY')}
+                                </Text>
+                              )}
+                            </div>
+                          </Group>
+                        </Card>
                     <NumberInput
                         label="Número de asientos"
                         description="Selecciona cuántos asientos deseas reservar"
