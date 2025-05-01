@@ -30,7 +30,6 @@ import { Route as PagarCupoIndexImport } from './routes/PagarCupo/index'
 import { Route as OrigenIndexImport } from './routes/Origen/index'
 import { Route as LoginIndexImport } from './routes/Login/index'
 import { Route as GatewayIndexImport } from './routes/Gateway/index'
-import { Route as EmpezarViajeIndexImport } from './routes/EmpezarViaje/index'
 import { Route as DetallesViajeIndexImport } from './routes/DetallesViaje/index'
 import { Route as DestinoIndexImport } from './routes/Destino/index'
 import { Route as DateSelectedIndexImport } from './routes/DateSelected/index'
@@ -52,7 +51,7 @@ import { Route as CuposViewTicketImport } from './routes/Cupos/ViewTicket'
 import { Route as CuposViewPassengersImport } from './routes/Cupos/ViewPassengers'
 import { Route as CuposViewBookingDetailsImport } from './routes/Cupos/ViewBookingDetails'
 import { Route as ActividadesActividadesPageImport } from './routes/Actividades/ActividadesPage'
-import { Route as CuposReservadosValidarCupoPassengerIdTokenUserIdImport } from './routes/CuposReservados/ValidarCupo.$passengerId.$token.$userId'
+import { Route as CuposReservadosValidarCupoBookingIdImport } from './routes/CuposReservados/ValidarCupo.$bookingId'
 
 // Create Virtual Routes
 
@@ -165,12 +164,6 @@ const LoginIndexRoute = LoginIndexImport.update({
 const GatewayIndexRoute = GatewayIndexImport.update({
   id: '/Gateway/',
   path: '/Gateway/',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const EmpezarViajeIndexRoute = EmpezarViajeIndexImport.update({
-  id: '/EmpezarViaje/',
-  path: '/EmpezarViaje/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -306,10 +299,10 @@ const ActividadesActividadesPageRoute = ActividadesActividadesPageImport.update(
   } as any,
 )
 
-const CuposReservadosValidarCupoPassengerIdTokenUserIdRoute =
-  CuposReservadosValidarCupoPassengerIdTokenUserIdImport.update({
-    id: '/CuposReservados/ValidarCupo/$passengerId/$token/$userId',
-    path: '/CuposReservados/ValidarCupo/$passengerId/$token/$userId',
+const CuposReservadosValidarCupoBookingIdRoute =
+  CuposReservadosValidarCupoBookingIdImport.update({
+    id: '/CuposReservados/ValidarCupo/$bookingId',
+    path: '/CuposReservados/ValidarCupo/$bookingId',
     getParentRoute: () => rootRoute,
   } as any)
 
@@ -471,13 +464,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DetallesViajeIndexImport
       parentRoute: typeof rootRoute
     }
-    '/EmpezarViaje/': {
-      id: '/EmpezarViaje/'
-      path: '/EmpezarViaje'
-      fullPath: '/EmpezarViaje'
-      preLoaderRoute: typeof EmpezarViajeIndexImport
-      parentRoute: typeof rootRoute
-    }
     '/Gateway/': {
       id: '/Gateway/'
       path: '/Gateway'
@@ -597,11 +583,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReservarIndexImport
       parentRoute: typeof rootRoute
     }
-    '/CuposReservados/ValidarCupo/$passengerId/$token/$userId': {
-      id: '/CuposReservados/ValidarCupo/$passengerId/$token/$userId'
-      path: '/CuposReservados/ValidarCupo/$passengerId/$token/$userId'
-      fullPath: '/CuposReservados/ValidarCupo/$passengerId/$token/$userId'
-      preLoaderRoute: typeof CuposReservadosValidarCupoPassengerIdTokenUserIdImport
+    '/CuposReservados/ValidarCupo/$bookingId': {
+      id: '/CuposReservados/ValidarCupo/$bookingId'
+      path: '/CuposReservados/ValidarCupo/$bookingId'
+      fullPath: '/CuposReservados/ValidarCupo/$bookingId'
+      preLoaderRoute: typeof CuposReservadosValidarCupoBookingIdImport
       parentRoute: typeof rootRoute
     }
   }
@@ -632,7 +618,6 @@ export interface FileRoutesByFullPath {
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Destino': typeof DestinoIndexRoute
   '/DetallesViaje': typeof DetallesViajeIndexRoute
-  '/EmpezarViaje': typeof EmpezarViajeIndexRoute
   '/Gateway': typeof GatewayIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
@@ -650,7 +635,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof HomeIndexRoute
   '/publicarviaje': typeof PublicarviajeIndexRoute
   '/reservar': typeof ReservarIndexRoute
-  '/CuposReservados/ValidarCupo/$passengerId/$token/$userId': typeof CuposReservadosValidarCupoPassengerIdTokenUserIdRoute
+  '/CuposReservados/ValidarCupo/$bookingId': typeof CuposReservadosValidarCupoBookingIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -676,7 +661,6 @@ export interface FileRoutesByTo {
   '/DateSelected': typeof DateSelectedIndexRoute
   '/Destino': typeof DestinoIndexRoute
   '/DetallesViaje': typeof DetallesViajeIndexRoute
-  '/EmpezarViaje': typeof EmpezarViajeIndexRoute
   '/Gateway': typeof GatewayIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
@@ -694,7 +678,7 @@ export interface FileRoutesByTo {
   '/home': typeof HomeIndexRoute
   '/publicarviaje': typeof PublicarviajeIndexRoute
   '/reservar': typeof ReservarIndexRoute
-  '/CuposReservados/ValidarCupo/$passengerId/$token/$userId': typeof CuposReservadosValidarCupoPassengerIdTokenUserIdRoute
+  '/CuposReservados/ValidarCupo/$bookingId': typeof CuposReservadosValidarCupoBookingIdRoute
 }
 
 export interface FileRoutesById {
@@ -721,7 +705,6 @@ export interface FileRoutesById {
   '/DateSelected/': typeof DateSelectedIndexRoute
   '/Destino/': typeof DestinoIndexRoute
   '/DetallesViaje/': typeof DetallesViajeIndexRoute
-  '/EmpezarViaje/': typeof EmpezarViajeIndexRoute
   '/Gateway/': typeof GatewayIndexRoute
   '/Login/': typeof LoginIndexRoute
   '/Origen/': typeof OrigenIndexRoute
@@ -739,7 +722,7 @@ export interface FileRoutesById {
   '/home/': typeof HomeIndexRoute
   '/publicarviaje/': typeof PublicarviajeIndexRoute
   '/reservar/': typeof ReservarIndexRoute
-  '/CuposReservados/ValidarCupo/$passengerId/$token/$userId': typeof CuposReservadosValidarCupoPassengerIdTokenUserIdRoute
+  '/CuposReservados/ValidarCupo/$bookingId': typeof CuposReservadosValidarCupoBookingIdRoute
 }
 
 export interface FileRouteTypes {
@@ -767,7 +750,6 @@ export interface FileRouteTypes {
     | '/DateSelected'
     | '/Destino'
     | '/DetallesViaje'
-    | '/EmpezarViaje'
     | '/Gateway'
     | '/Login'
     | '/Origen'
@@ -785,7 +767,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/publicarviaje'
     | '/reservar'
-    | '/CuposReservados/ValidarCupo/$passengerId/$token/$userId'
+    | '/CuposReservados/ValidarCupo/$bookingId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -810,7 +792,6 @@ export interface FileRouteTypes {
     | '/DateSelected'
     | '/Destino'
     | '/DetallesViaje'
-    | '/EmpezarViaje'
     | '/Gateway'
     | '/Login'
     | '/Origen'
@@ -828,7 +809,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/publicarviaje'
     | '/reservar'
-    | '/CuposReservados/ValidarCupo/$passengerId/$token/$userId'
+    | '/CuposReservados/ValidarCupo/$bookingId'
   id:
     | '__root__'
     | '/'
@@ -853,7 +834,6 @@ export interface FileRouteTypes {
     | '/DateSelected/'
     | '/Destino/'
     | '/DetallesViaje/'
-    | '/EmpezarViaje/'
     | '/Gateway/'
     | '/Login/'
     | '/Origen/'
@@ -871,7 +851,7 @@ export interface FileRouteTypes {
     | '/home/'
     | '/publicarviaje/'
     | '/reservar/'
-    | '/CuposReservados/ValidarCupo/$passengerId/$token/$userId'
+    | '/CuposReservados/ValidarCupo/$bookingId'
   fileRoutesById: FileRoutesById
 }
 
@@ -898,7 +878,6 @@ export interface RootRouteChildren {
   DateSelectedIndexRoute: typeof DateSelectedIndexRoute
   DestinoIndexRoute: typeof DestinoIndexRoute
   DetallesViajeIndexRoute: typeof DetallesViajeIndexRoute
-  EmpezarViajeIndexRoute: typeof EmpezarViajeIndexRoute
   GatewayIndexRoute: typeof GatewayIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   OrigenIndexRoute: typeof OrigenIndexRoute
@@ -916,7 +895,7 @@ export interface RootRouteChildren {
   HomeIndexRoute: typeof HomeIndexRoute
   PublicarviajeIndexRoute: typeof PublicarviajeIndexRoute
   ReservarIndexRoute: typeof ReservarIndexRoute
-  CuposReservadosValidarCupoPassengerIdTokenUserIdRoute: typeof CuposReservadosValidarCupoPassengerIdTokenUserIdRoute
+  CuposReservadosValidarCupoBookingIdRoute: typeof CuposReservadosValidarCupoBookingIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -943,7 +922,6 @@ const rootRouteChildren: RootRouteChildren = {
   DateSelectedIndexRoute: DateSelectedIndexRoute,
   DestinoIndexRoute: DestinoIndexRoute,
   DetallesViajeIndexRoute: DetallesViajeIndexRoute,
-  EmpezarViajeIndexRoute: EmpezarViajeIndexRoute,
   GatewayIndexRoute: GatewayIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   OrigenIndexRoute: OrigenIndexRoute,
@@ -961,8 +939,8 @@ const rootRouteChildren: RootRouteChildren = {
   HomeIndexRoute: HomeIndexRoute,
   PublicarviajeIndexRoute: PublicarviajeIndexRoute,
   ReservarIndexRoute: ReservarIndexRoute,
-  CuposReservadosValidarCupoPassengerIdTokenUserIdRoute:
-    CuposReservadosValidarCupoPassengerIdTokenUserIdRoute,
+  CuposReservadosValidarCupoBookingIdRoute:
+    CuposReservadosValidarCupoBookingIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -997,7 +975,6 @@ export const routeTree = rootRoute
         "/DateSelected/",
         "/Destino/",
         "/DetallesViaje/",
-        "/EmpezarViaje/",
         "/Gateway/",
         "/Login/",
         "/Origen/",
@@ -1015,7 +992,7 @@ export const routeTree = rootRoute
         "/home/",
         "/publicarviaje/",
         "/reservar/",
-        "/CuposReservados/ValidarCupo/$passengerId/$token/$userId"
+        "/CuposReservados/ValidarCupo/$bookingId"
       ]
     },
     "/": {
@@ -1084,9 +1061,6 @@ export const routeTree = rootRoute
     "/DetallesViaje/": {
       "filePath": "DetallesViaje/index.tsx"
     },
-    "/EmpezarViaje/": {
-      "filePath": "EmpezarViaje/index.tsx"
-    },
     "/Gateway/": {
       "filePath": "Gateway/index.tsx"
     },
@@ -1138,8 +1112,8 @@ export const routeTree = rootRoute
     "/reservar/": {
       "filePath": "reservar/index.tsx"
     },
-    "/CuposReservados/ValidarCupo/$passengerId/$token/$userId": {
-      "filePath": "CuposReservados/ValidarCupo.$passengerId.$token.$userId.tsx"
+    "/CuposReservados/ValidarCupo/$bookingId": {
+      "filePath": "CuposReservados/ValidarCupo.$bookingId.tsx"
     }
   }
 }

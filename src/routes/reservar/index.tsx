@@ -185,7 +185,6 @@ const ReservarView = () => {
     
             // Obtener los perfiles de usuario relacionados
             const userIds = data.map((trip) => trip.user_id).filter((id): id is string => id !== null);
-            const vehicleIds = data.map((trip) => trip.vehicle_id).filter((id): id is number => !!id);
             // Licencias por user_id
             const { data: licenses } = await supabase
               .from('driver_licenses')

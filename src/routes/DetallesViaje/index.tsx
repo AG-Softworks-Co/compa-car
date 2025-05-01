@@ -32,7 +32,6 @@ import type { MantineTheme, } from '@mantine/core';
 import { DateTimePicker, } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
 import { tripStore, type TripData, type TripStopover } from '../../types/PublicarViaje/TripDataManagement';
-import { saveToLocalStorage, getFromLocalStorage } from '../../types/PublicarViaje/localStorageHelper';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import styles from './index.module.css';
@@ -60,8 +59,6 @@ interface PreviewModalProps {
     };
 }
 
-
-const BASE_URL = 'https://rest-sorella-production.up.railway.app/api';
 
 const PreviewInfo: React.FC<PreviewModalProps> = ({ isOpen, onClose, onConfirm, data }) => {
     if (!data.tripData.selectedRoute) return null;
@@ -337,7 +334,7 @@ const DetallesViajeView = () => {
     const getOrCreateLocation = async (locationData: any) => {
         try {
             // Primero intentar obtener la ubicación existente
-            const { data: existingLocation, error: queryError } = await supabase
+            const { data: existingLocation, } = await supabase
                 .from('locations')
                 .select('*')
                 .eq('place_id', locationData.place_id)

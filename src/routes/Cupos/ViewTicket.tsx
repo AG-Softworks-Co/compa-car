@@ -1,9 +1,4 @@
-import { useEffect, useState } from 'react'
-import {
-  createFileRoute,
-  useNavigate,
-  useLocation,
-} from '@tanstack/react-router'
+import { useEffect, useState } from 'react';
 import {
   Container,
   Card,
@@ -11,78 +6,142 @@ import {
   Text,
   Title,
   Button,
-  Center,
-} from '@mantine/core'
-import { QRCodeCanvas } from 'qrcode.react'
-import { Download, AlertCircle } from 'lucide-react'
-import styles from './ViewTicket.module.css'
-import html2canvas from 'html2canvas'
-import type { Booking, Passenger } from '../../components/Cupos/types'
+  Divider,
+  LoadingOverlay,
+} from '@mantine/core';
+import { QRCodeCanvas } from 'qrcode.react';
+import { Download, ArrowLeft, AlertCircle, Navigation } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import { supabase } from '@/lib/supabaseClient';
+import dayjs from 'dayjs';
+import styles from './ViewTicket.module.css';
+import { useNavigate, useSearch, createFileRoute } from '@tanstack/react-router';
 
 interface PassengerData {
-  passenger_id: number
-  full_name: string
-  identification_number: string
-  booking_qr: string
-  payment_id: number
+  id: number;
+  full_name: string;
+  identification_number: string;
 }
-interface LocationState {
-  booking?: Booking
-  passenger?: Passenger
-  selectedBooking?: Booking
-  showPassengers?: boolean
+
+interface TripLocation {
+  origin: { address: string };
+  destination: { address: string };
 }
 
 const ViewTicket = () => {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [parsedPassenger, setParsedPassenger] = useState<PassengerData | null>(
-    null,
-  )
+  const navigate = useNavigate();
+  const { booking_id } = useSearch({ from: Route.id });
+
+  const [passengers, setPassengers] = useState<PassengerData[]>([]);
+  const [tripLocations, setTripLocations] = useState<TripLocation | null>(null);
+  const [bookingQr, setBookingQr] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const booking = (location.state as LocationState)?.booking
-    const passenger = (location.state as LocationState)?.passenger
+    const fetchData = async () => {
+      if (!booking_id) {
+        console.error('booking_id inválido');
+        navigate({ to: '/Actividades' });
+        return;
+      }
 
-    if (!booking || !passenger) {
-      navigate({ to: '/reservar' })
-      return
-    }
+      try {
+        // 1. Obtener booking
+        const { data: bookingData, error: bookingError } = await supabase
+          .from('bookings')
+          .select('trip_id, booking_qr')
+          .eq('id', Number(booking_id))
+          .single();
 
-    try {
-      setParsedPassenger(passenger)
-    } catch (error) {
-      console.error('ViewTicket: Error parsing passenger data:', error)
-      navigate({ to: '/reservar' })
-    }
-  }, [navigate, location.state])
+        if (bookingError || !bookingData) {
+          throw new Error('No se pudo obtener el booking');
+        }
+
+        const tripId = bookingData.trip_id;
+        setBookingQr(bookingData.booking_qr || '');
+
+        // 2. Obtener pasajeros asociados a ese booking
+        const { data: passengersData, error: passengersError } = await supabase
+          .from('booking_passengers')
+          .select('id, full_name, identification_number')
+          .eq('booking_id', Number(booking_id));
+
+        if (passengersError || !passengersData?.length) {
+          throw new Error('No se encontraron pasajeros');
+        }
+
+        setPassengers(passengersData);
+
+        // 3. Obtener viaje
+        const { data: tripData, error: tripError } = await supabase
+          .from('trips')
+          .select('origin_id, destination_id')
+          .eq('id', Number(tripId))
+          .single();
+
+        if (tripError || !tripData) {
+          throw new Error('No se pudo obtener el viaje');
+        }
+
+        // 4. Obtener direcciones
+        const { data: originLocation } = await supabase
+          .from('locations')
+          .select('address')
+          .eq('id', Number(tripData.origin_id ?? -1))
+          .single();
+
+        const { data: destinationLocation } = await supabase
+          .from('locations')
+          .select('address')
+          .eq('id', Number(tripData.destination_id ?? -1))
+          .single();
+
+        setTripLocations({
+          origin: originLocation || { address: 'Origen no disponible' },
+          destination: destinationLocation || { address: 'Destino no disponible' },
+        });
+      } catch (error) {
+        console.error('Error cargando datos del tiquete:', error);
+        navigate({ to: '/Actividades' });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [navigate, booking_id]);
 
   const handleDownload = async () => {
-    if (!parsedPassenger) return
-    const ticketElement = document.getElementById(
-      `ticket-${parsedPassenger.passenger_id}`,
-    )
-    if (!ticketElement) return
+    const ticketElement = document.getElementById(`ticket-${booking_id}`);
+    if (!ticketElement) return;
 
     try {
       const canvas = await html2canvas(ticketElement, {
         scale: 2,
         backgroundColor: '#ffffff',
-        logging: false,
-      })
-      const url = canvas.toDataURL('image/png')
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `ticket-${parsedPassenger.full_name}-${parsedPassenger.passenger_id}.png`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      });
+      const url = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `ticket-${booking_id}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
-      console.error('Error generating the ticket:', error)
+      console.error('Error generando el ticket:', error);
     }
+  };
+
+  if (loading) {
+    return (
+      <Container className={styles.ticketContainer}>
+        <LoadingOverlay visible />
+        <Title className={styles.ticketTitle}>Cargando tiquete...</Title>
+      </Container>
+    );
   }
 
-  if (!parsedPassenger) {
+  if (!passengers.length || !tripLocations) {
     return (
       <Container className={styles.ticketContainer}>
         <Card className={styles.ticketCard}>
@@ -91,120 +150,112 @@ const ViewTicket = () => {
             <Text ta="center" size="lg" c="white">
               No se encontró información del tiquete
             </Text>
-            <Button
-              onClick={() => navigate({ to: '/reservar' })}
-              variant="light"
-            >
-              Volver a reservas
+            <Button onClick={() => navigate({ to: '/Actividades' })} variant="light">
+              Volver a actividades
             </Button>
           </Stack>
         </Card>
       </Container>
-    )
+    );
   }
 
   return (
-    <Container className={styles.ticketContainer}>
-      <Card className={styles.ticketCard}>
-        <div
-          id={`ticket-${parsedPassenger.passenger_id}`}
-          className={styles.ticketWrapper}
-          style={{ position: 'relative', overflow: 'hidden' }}
-        >
-          <div className={styles.ticketHeader}>
-            <div className={styles.ticketLogo}>
-              <img src="/Logo.png" alt="CompaCar" className={styles.logo} />
-            </div>
-            <Title order={3} className={styles.ticketTitle}>
-              Tu tiquete en Cupo
-            </Title>
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              marginBottom: '15px',
-              position: 'relative',
-              zIndex: 1,
-            }}
-          >
-            <Text
-              size="md"
-              c="#34D399"
-              fw={700}
-              style={{
-                marginBottom: '10px',
-                display: 'block',
-                textAlign: 'center',
-              }}
-            >
-              Viaja seguro con Cupo
-            </Text>
-            <div
-              style={{
-                display: 'block',
-                textAlign: 'center',
-                padding: '10px',
-                borderRadius: '8px',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                border: '1px solid #eee',
-              }}
-            >
-              <QRCodeCanvas
-                value={parsedPassenger.booking_qr || ''}
-                size={250}
-                level="L"
-                includeMargin={true}
-              />
-            </div>
-          </div>
-          <Center>
-            <Text size="lg" mt="md" fw={600} style={{ color: '#333' }}>
-              {parsedPassenger.full_name}
-            </Text>
-            <Text size="md" mt="xs" fw={500} style={{ color: '#555' }}>
-              {parsedPassenger.identification_number}
-            </Text>
-          </Center>
-          <div
-            style={{
-              marginTop: '20px',
-              marginBottom: '10px',
-              textAlign: 'center',
-            }}
-          >
-            <Text
-              size="xs"
-              c="dimmed"
-              style={{
-                display: 'block',
-                padding: '5px 10px',
-                verticalAlign: 'middle',
-              }}
-            >
-              Términos y Condiciones
-            </Text>
-          </div>
+    <Container className={styles.ticketContainer} size="xs">
+      <button className={styles.backButton} onClick={() => navigate({ to: '/Actividades' })}>
+        <ArrowLeft size={16} />
+        Volver
+      </button>
+
+      <Card
+        id={`ticket-${booking_id}`}
+        shadow="xl"
+        radius="xl"
+        padding="xl"
+        className={styles.ticketCard}
+      >
+        <div className={styles.logoWrapper}>
+          <img src="/Logo.png" alt="Cupo" className={styles.logo} />
+          <span className={styles.brandName}>Cupo</span>
         </div>
-        <Button
-          variant="light"
-          leftSection={<Download size={16} />}
-          onClick={handleDownload}
-          fullWidth
-          className={styles.downloadButton}
-          mt="md"
-        >
-          Descargar Tiquete
-        </Button>
+
+        <Stack align="center" gap="md" mt={40}>
+          <Title order={2} className={styles.ticketTitle}>Tiquete Digital</Title>
+          <Text size="xs" c="dimmed">Emitido: {dayjs().format('DD/MM/YYYY HH:mm')}</Text>
+
+          <Divider my="sm" color="gray" />
+
+          <div className={styles.routeInfo}>
+            <div className={styles.location}>
+              <Text size="sm" color="dimmed">Origen</Text>
+              <Text className={styles.direccion}>{tripLocations.origin.address}</Text>
+            </div>
+            <div className={styles.carIcon}>
+              <Navigation size={20} strokeWidth={2} />
+            </div>
+            <div className={styles.location}>
+              <Text size="sm" color="dimmed">Destino</Text>
+              <Text className={styles.direccion}>{tripLocations.destination.address}</Text>
+            </div>
+          </div>
+
+          <Divider my="sm" color="gray" />
+
+          <Stack gap="xs" align="center">
+            <Text size="sm" color="dimmed">Pasajeros</Text>
+            {passengers.map((p) => (
+              <div key={p.id} style={{ textAlign: 'center' }}>
+                <Text size="lg" fw={600}>{p.full_name}</Text>
+                <Text size="sm" color="dimmed">Identificación: {p.identification_number}</Text>
+              </div>
+            ))}
+          </Stack>
+
+          <Divider my="sm" color="gray" />
+
+          <Text size="sm" c="#34D399" fw={500}>Código QR del viaje</Text>
+          <QRCodeCanvas
+            value={bookingQr}
+            size={200}
+            level="H"
+            includeMargin={true}
+            style={{
+              backgroundColor: '#fff',
+              padding: '10px',
+              borderRadius: '16px',
+              boxShadow: '0 0 12px rgba(0,0,0,0.25)',
+            }}
+          />
+
+          <Divider my="sm" color="gray" />
+
+          <Text size="xs" color="dimmed" ta="center">
+            Este tiquete es válido únicamente para los pasajeros registrados. <br />
+            Preséntalo al conductor al abordar.
+          </Text>
+
+          <Button
+            onClick={handleDownload}
+            leftSection={<Download size={16} />}
+            radius="xl"
+            fullWidth
+            mt="sm"
+            color="teal"
+            variant="gradient"
+            gradient={{ from: 'teal', to: 'green', deg: 90 }}
+          >
+            Descargar Tiquete
+          </Button>
+        </Stack>
       </Card>
     </Container>
-  )
-}
+  );
+};
 
-// Definimos la ruta de manera simple
 export const Route = createFileRoute('/Cupos/ViewTicket')({
   component: ViewTicket,
-})
+  validateSearch: (search) => ({
+    booking_id: String(search.booking_id ?? ''),
+  }),
+});
 
-export default ViewTicket
+export default ViewTicket;

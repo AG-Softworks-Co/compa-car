@@ -16,6 +16,8 @@ import { Clock, Navigation, User } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import dayjs from 'dayjs';
 import styles from './index.module.css';
+import { useNavigate } from '@tanstack/react-router';
+
 
 import type { Trip } from '@/types/Trip';
 
@@ -38,6 +40,8 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
     const [passengers, setPassengers] = React.useState<Passenger[]>([]);
     const [currentStep, setCurrentStep] = React.useState<'confirm' | 'passengers' | 'finalize'>('confirm');
     const [bookingId, setBookingId] = React.useState<number | null>(null);
+    const navigate = useNavigate();
+
 
     const handleConfirmReservation = async () => {
         const userId = localStorage.getItem('userId');
@@ -167,28 +171,43 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
                 seats_reserved: newSeatsReserved,
                 seats: newSeatsAvailable,
             });
-    
-            // Insertar los pasajeros en la tabla booking_passengers
+
+            // Preparar los datos de los pasajeros
             const passengerData = passengers.map((passenger) => ({
                 booking_id: bookingId,
                 full_name: passenger.fullName,
                 identification_number: passenger.identificationNumber,
-                user_id: userId, // Ahora userId está definido
+                user_id: userId,
                 status: 'confirmed',
-            }));
-    
-            const { error: passengerError } = await supabase
+              }));
+              
+              // Insertar los pasajeros en Supabase y obtener sus IDs
+              const { data: insertedPassengers, error: passengerError } = await supabase
                 .from('booking_passengers')
-                .insert(passengerData);
-    
-            if (passengerError) {
+                .insert(passengerData)
+                .select();
+              
+              if (passengerError || !insertedPassengers?.length) {
                 console.error('Error al crear los pasajeros en booking_passengers:', passengerError);
                 return;
-            }
-    
-            console.log('Pasajeros creados con éxito en booking_passengers');
-            setCurrentStep('confirm');
-            onClose();
+              }
+              
+              console.log('Pasajeros creados con éxito en booking_passengers');
+              
+              // Buscar el pasajero vinculado al usuario actual
+              const userPassenger = insertedPassengers.find((p) => p.user_id === userId);
+              
+              if (!userPassenger) {
+                console.error('No se encontró un pasajero asociado al usuario actual.');
+                return;
+              }
+              
+              // Redirigir al ticket con solo los parámetros necesarios
+              navigate({
+                to: '/Cupos/ViewTicket',
+                search: { booking_id: bookingId.toString() }, // ✅ solo booking_id como string
+              });     
+            
         } catch (error) {
             console.error('Error al procesar la reserva:', error);
         }

@@ -24,7 +24,6 @@ const TripList: React.FC<TripListProps> = ({ trips, onEdit, onDelete }) => {
     <Stack gap="lg">
        {trips.map((trip, index) => (
           <TripCard
-            token=''
             userId={'0'}
             key={trip.id}
             trip={trip}

@@ -1,91 +1,114 @@
-import type React from 'react';
-import { useState, useEffect } from 'react';
-import { Text, Center, Container, Title, Group, Button, Badge } from '@mantine/core';
-import { showNotification } from '@mantine/notifications';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { IconX } from '@tabler/icons-react';
-import styles from './index.module.css';
+import { useState, useEffect } from 'react'
+import {
+  Text,
+  Center,
+  Container,
+  Title,
+  Group,
+  Button,
+  Badge,
+  Loader,
+  Stack,
+} from '@mantine/core'
+import { showNotification } from '@mantine/notifications'
+import { useNavigate } from '@tanstack/react-router'
+import { IconX } from '@tabler/icons-react'
+import { supabase } from '@/lib/supabaseClient'
+import styles from './index.module.css'
 
-export interface BookedPassenger {
-  passenger_id: number;
-  trip_id: number;
-  full_name: string;
-  identification_number: string;
-  payment_status: 'completed' | 'pending';
+// Asegúrate de tener este archivo creado: src/routes/CuposReservados/ValidarCupo.$bookingId.tsx
+import { Route as ValidarCupoRoute } from './ValidarCupo.$bookingId'
+import { createFileRoute } from '@tanstack/react-router'
+
+interface BookingWithPassengers {
+  booking_id: number
+  trip_id: number
+  booking_status: 'payed' | 'pending' | string | null
+  passengers: {
+    passenger_id: number
+    full_name: string
+    identification_number: string
+  }[]
 }
 
 interface CuposReservadosProps {
-  tripId: number;
-  token: string;
-  userId: number;
+  tripId: number
+  userId: string
 }
 
-const BASE_URL = 'https://rest-sorella-production.up.railway.app/api';
-
-const CuposReservadosComponent: React.FC<CuposReservadosProps> = ({ tripId, token, userId }) => {
-  const [allPassengers, setAllPassengers] = useState<BookedPassenger[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filteredPassengers, setFilteredPassengers] = useState<BookedPassenger[]>([]);
-  const navigate = useNavigate();
+const CuposReservadosComponent: React.FC<CuposReservadosProps> = ({
+  tripId,
+  userId,
+}) => {
+  const [bookings, setBookings] = useState<BookingWithPassengers[]>([])
+  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
-    const fetchPassengers = async () => {
+    const fetchData = async () => {
+      setLoading(true)
       try {
-        setLoading(true);
-        const response = await fetch(`${BASE_URL}/passengers/userid_trip_det/${userId}`, {
-          headers: {
-            'x-token': token,
-            'Content-Type': 'application/json',
-          },
-        });
+        const { data, error } = await supabase
+          .from('booking_passengers')
+          .select(
+            `id, full_name, identification_number, booking_id, bookings ( trip_id, booking_status )`,
+          )
+          .eq('user_id', userId)
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          showNotification({
-            title: 'Error al obtener los pasajeros',
-            message: `Error: ${errorData.msj || 'Desconocido'}`,
-            color: 'red',
-          });
-          return;
-        }
+        if (error) throw error
 
-        const responseData = await response.json();
-        if (responseData.ok && responseData.data) {
-          setAllPassengers(responseData.data);
-        }
+        const grouped: Record<number, BookingWithPassengers> = {}
+
+        data?.forEach((p) => {
+          const bookingId = p.booking_id
+          const tripId = p.bookings?.trip_id
+
+          if (bookingId != null && tripId != null) {
+            if (!grouped[bookingId]) {
+              grouped[bookingId] = {
+                booking_id: bookingId,
+                trip_id: tripId,
+                booking_status: p.bookings!.booking_status,
+                passengers: [],
+              }
+            }
+            grouped[bookingId].passengers.push({
+              passenger_id: p.id,
+              full_name: p.full_name,
+              identification_number: p.identification_number,
+            })
+          }
+        })
+
+        const filtered = Object.values(grouped).filter(
+          (b) => b.trip_id === tripId,
+        )
+
+        setBookings(filtered)
       } catch (error) {
         showNotification({
-          title: 'Error al obtener los pasajeros',
-          message: 'Error al cargar los pasajeros. Intente nuevamente.',
+          title: 'Error al obtener los cupos',
+          message: 'No fue posible cargar la información.',
           color: 'red',
-        });
+        })
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchPassengers();
-  }, [userId, token]);
+    fetchData()
+  }, [tripId, userId])
 
-  useEffect(() => {
-    const filtered = allPassengers.filter((passenger) => passenger.trip_id === tripId);
-    setFilteredPassengers(filtered);
-  }, [allPassengers, tripId]);
-
-  const handleValidateCupo = (passenger: BookedPassenger) => {
+  const handleValidateCupo = (bookingId: number) => {
     navigate({
-      to: '/CuposReservados/ValidarCupo/$passengerId/$token/$userId',
-      params: {
-        passengerId: passenger.passenger_id.toString(),
-        token: token,
-        userId: userId.toString()
-      },
-    });
-  };
+      to: ValidarCupoRoute.to,
+      params: { bookingId: `${bookingId}` },
+    })
+  }
 
   const handleClose = () => {
-    navigate({ to: '/' });
-  };
+    navigate({ to: '/' })
+  }
 
   return (
     <Container className={styles.container}>
@@ -93,57 +116,73 @@ const CuposReservadosComponent: React.FC<CuposReservadosProps> = ({ tripId, toke
         <Title order={2} className={styles.title}>
           Cupos Reservados - Viaje {tripId}
         </Title>
-        <Button variant="subtle" color="gray" onClick={handleClose} className={styles.closeButton}>
+        <Button
+          variant="subtle"
+          color="gray"
+          onClick={handleClose}
+          className={styles.closeButton}
+        >
           <IconX size={20} stroke={2} className={styles.closeIcon} />
         </Button>
       </Group>
+
       <div className={styles.passengersContainer}>
         {loading ? (
           <Center>
-            <Text className={styles.loadingText}>Cargando...</Text>
+            <Loader />
           </Center>
-        ) : filteredPassengers.length > 0 ? (
-          filteredPassengers.map((passenger) => (
-            <div key={passenger.passenger_id} className={styles.passengerCard}>
-              <Group gap="apart" className={styles.passengerHeader}>
-                <Text fw={700} className={styles.passengerName}>
-                  {passenger.full_name}
-                </Text>
+        ) : bookings.length > 0 ? (
+          bookings.map((booking) => (
+            <div key={booking.booking_id} className={styles.passengerCard}>
+              <Stack gap="xs">
+                {booking.passengers.map((passenger) => (
+                  <div key={passenger.passenger_id}>
+                    <Group gap="apart">
+                      <Text fw={700}>{passenger.full_name}</Text>
+                    </Group>
+                    <Text size="sm">
+                      ID: {passenger.identification_number}
+                    </Text>
+                  </div>
+                ))}
+
                 <Badge
-                  className={styles.badge}
-                  color={passenger.payment_status === 'completed' ? 'green' : 'red'}
+                  color={
+                    booking.booking_status === 'payed' ? 'green' : 'yellow'
+                  }
                   variant="filled"
+                  mt="xs"
                 >
-                  {passenger.payment_status === 'completed' ? 'Pagado' : 'Pendiente'}
+                  Estado: {booking.booking_status === 'payed' ? 'Pagado' : 'Pendiente'}
                 </Badge>
-              </Group>
-              <Text size="sm" className={styles.passengerId}>
-                ID: {passenger.identification_number}
-              </Text>
-              <Button
-                variant="light"
-                className={styles.validateButton}
-                onClick={() => handleValidateCupo(passenger)}
-              >
-                Validar Cupo
-              </Button>
+
+                {booking.booking_status !== 'payed' && (
+                  <Button
+                    variant="light"
+                    className={styles.validateButton}
+                    onClick={() => handleValidateCupo(booking.booking_id)}
+                    mt="sm"
+                  >
+                    Validar Cupo
+                  </Button>
+                )}
+              </Stack>
             </div>
           ))
         ) : (
           <Center>
             <Text size="lg" className={styles.noTripsText}>
-              No hay pasajeros registrados para este viaje.
+              No hay cupos registrados para este viaje.
             </Text>
           </Center>
         )}
       </div>
     </Container>
-  );
-};
+  )
+}
 
 export const Route = createFileRoute('/CuposReservados/')({
   component: CuposReservadosComponent,
-});
+})
 
-export default CuposReservadosComponent;
-
+export default CuposReservadosComponent

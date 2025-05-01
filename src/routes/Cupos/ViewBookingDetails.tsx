@@ -1,20 +1,34 @@
-import type React from 'react';
+import {
+  Card,
+  Stack,
+  Group,
+  Text,
+  Button,
+  LoadingOverlay,
+  Badge,
+  Divider,
+  Title,
+  Container,
+} from '@mantine/core';
 import { useState, useEffect } from 'react';
-import { Card, Stack, Group, Text, Button, LoadingOverlay, Badge } from '@mantine/core';
-import styles from './index.module.css';
 import detailStyles from './ViewBookingDetails.module.css';
 import dayjs from 'dayjs';
-import type { Booking } from '../../components/Cupos/types';
-import { createFileRoute } from '@tanstack/react-router';
+import { useNavigate, useSearch, createFileRoute } from '@tanstack/react-router';
 import { showNotification } from '@mantine/notifications';
+import { supabase } from '@/lib/supabaseClient';
 
-interface ViewBookingDetailsProps {
-    booking?: Booking;
-    onClose: () => void;
-    token: string;
-}
+export const Route = createFileRoute('/Cupos/ViewBookingDetails')({
+  component: ViewBookingDetails,
+  validateSearch: (search) => ({
+    booking_id: String(search.booking_id ?? ''),
+  }),
+});
 
-interface TripDetails {
+function ViewBookingDetails() {
+  const navigate = useNavigate();
+  const { booking_id } = useSearch({ from: Route.id });
+
+  const [tripDetails, setTripDetails] = useState<{
     main_text_origen: string;
     main_text_destination: string;
     date_time: string | null;
@@ -22,217 +36,145 @@ interface TripDetails {
     loading: boolean;
     tripStatus: string;
     vehicle: {
-        brand: string;
-        model: string;
-        year: number;
-        plate: string;
-        color: string;
+      brand: string;
+      model: string;
+      year: number;
+      plate: string;
+      color: string;
     };
+  }>({
+    main_text_origen: '',
+    main_text_destination: '',
+    date_time: null, // ahora es string | null, así que está bien
+    driverName: '',
+    loading: true,
+    tripStatus: '',
+    vehicle: {
+      brand: '',
+      model: '',
+      year: 0,
+      plate: '',
+      color: '',
+    },
+  });
+  
+
+  useEffect(() => {
+    const fetchDetails = async () => {
+      if (!booking_id) {
+        showNotification({
+          title: 'Error',
+          message: 'ID de reserva no válido',
+          color: 'red',
+        });
+        navigate({ to: '/Cupos' });
+        return;
+      }
+
+      try {
+        const { data: booking, error: bookingError } = await supabase
+          .from('bookings')
+          .select('trip_id')
+          .eq('id', Number(booking_id)) // ✅ se convierte a number
+          .single();
+
+        if (bookingError || !booking?.trip_id) throw new Error('Reserva no válida');
+
+        const { data: tripData, error: tripError } = await supabase
+          .from('trips')
+          .select(`
+            date_time,
+            status,
+            origin:locations!trips_origin_id_fkey(address),
+            destination:locations!trips_destination_id_fkey(address),
+            vehicle:vehicles(brand, model, year, plate, color),
+            user_id
+          `)
+          .eq('id', booking.trip_id)
+          .single();
+
+        if (tripError || !tripData) throw new Error('Viaje no encontrado');
+        if (!tripData.user_id) throw new Error('Falta user_id');
+
+        const { data: driverData } = await supabase
+          .from('user_profiles')
+          .select('first_name, last_name')
+          .eq('user_id', tripData.user_id)
+          .single();
+
+        setTripDetails({
+          main_text_origen: tripData.origin?.address || 'Origen no disponible',
+          main_text_destination: tripData.destination?.address || 'Destino no disponible',
+          date_time: tripData.date_time,
+          driverName: `${driverData?.first_name ?? ''} ${driverData?.last_name ?? ''}`,
+          loading: false,
+          tripStatus: tripData.status || '',
+          vehicle: {
+            brand: tripData.vehicle?.brand || 'No disponible',
+            model: tripData.vehicle?.model || 'No disponible',
+            year: tripData.vehicle?.year ?? 0,
+            plate: tripData.vehicle?.plate || 'No disponible',
+            color: tripData.vehicle?.color || 'No disponible',
+          },
+        });
+      } catch (err) {
+        showNotification({
+          title: 'Error',
+          message: 'No se pudieron cargar los detalles.',
+          color: 'red',
+        });
+        navigate({ to: '/Cupos' });
+      }
+    };
+
+    fetchDetails();
+  }, [booking_id, navigate]);
+
+  return (
+    <Container size="sm" className={detailStyles.detailsContainer}>
+      <Card withBorder shadow="sm" radius="md" className={detailStyles.detailsCard}>
+        <LoadingOverlay visible={tripDetails.loading} />
+        <Stack gap="lg">
+          <Title order={2} style={{ color: '#34D399', textAlign: 'center' }}>
+            Detalles de tu Reserva
+          </Title>
+
+          <Divider label="Información del Viaje" labelPosition="center" my="sm" />
+
+          <Group gap="md"><Text fw={600}>Conductor:</Text><Text>{tripDetails.driverName}</Text></Group>
+          <Group gap="md"><Text fw={600}>Origen:</Text><Text>{tripDetails.main_text_origen}</Text></Group>
+          <Group gap="md"><Text fw={600}>Destino:</Text><Text>{tripDetails.main_text_destination}</Text></Group>
+          <Group gap="md">
+            <Text fw={600}>Fecha y Hora:</Text>
+            <Text>{tripDetails.date_time ? dayjs(tripDetails.date_time).format('DD/MM/YYYY HH:mm') : 'No disponible'}</Text>
+          </Group>
+          <Group gap="md">
+            <Text fw={600}>Estado:</Text>
+            <Badge color={tripDetails.tripStatus === 'active' ? 'green' : 'yellow'}>
+              {tripDetails.tripStatus || 'No disponible'}
+            </Badge>
+          </Group>
+
+          <Divider label="Vehículo" labelPosition="center" my="sm" />
+          <Text fw={600}>Marca: {tripDetails.vehicle.brand}</Text>
+          <Text fw={600}>Modelo: {tripDetails.vehicle.model}</Text>
+          <Text fw={600}>Año: {tripDetails.vehicle.year}</Text>
+          <Text fw={600}>Placa: {tripDetails.vehicle.plate}</Text>
+          <Text fw={600}>Color: {tripDetails.vehicle.color}</Text>
+
+          <Button
+            mt="md"
+            fullWidth
+            variant="light"
+            onClick={() => navigate({ to: '/Actividades' })}
+            style={{ color: '#34D399', border: '1px solid #34D399' }}
+          >
+            Regresar
+          </Button>
+        </Stack>
+      </Card>
+    </Container>
+  );
 }
 
-interface TripDetailsResponse {
-  ok: boolean;
-  data: TripDetailsData[]
-}
-
-interface TripDetailsData {
-     passenger_id: number;
-    full_name: string;
-    identification_number: string;
-    booking_qr: string;
-     status_passenger: string;
-    payment_id: number;
-    payment_date: string;
-    payment_method: string;
-     amount: string;
-    payment_status: string;
-     booking_id: number;
-    seats_booked: number;
-     booking_date: string;
-    total_price: string;
-    booking_status: string;
-    booking_message: string;
-    trip_id: number;
-    origin_id: number;
-    destination_id: number;
-    route_id: number;
-    user_id: number;
-     vehicle_id: number;
-    date_time: string;
-   seats: number;
-    price_per_seat: string;
-     description: string;
-    allow_pets: number;
-    allow_smoking: number;
-    status: string;
-    created_at: string;
-    main_text_origen: string;
-    secondary_text_origen: string;
-    main_text_destination: string;
-    secondary_text_destination: string;
-    brand: string;
-    model: string;
-    year: number;
-    plate: string;
-    color: string;
-     body_type: string;
-    first_name: string;
-    last_name: string;
-    phone_number: string;
-    user_type: string;
-    distance: string;
-    duration: string;
-    summary: string;
-}
-
-const ViewBookingDetails: React.FC<ViewBookingDetailsProps> = ({ booking, onClose, token }) => {
-    const [tripDetails, setTripDetails] = useState<TripDetails>({
-        main_text_origen: '',
-        main_text_destination: '',
-        date_time: null,
-        driverName: '',
-        loading: true,
-        tripStatus: '',
-        vehicle: {
-            brand: '',
-            model: '',
-            year: 0,
-            plate: '',
-            color: ''
-        }
-    });
-
-    useEffect(() => {
-        const fetchTripDetails = async () => {
-            if (!booking || !booking.trip_id) {
-                console.error("No booking or trip_id found");
-                return;
-            }
-              setTripDetails(prev => ({ ...prev, loading: true }));
-             const url = `https://rest-sorella-production.up.railway.app/api/passengers/tripid_det/${booking.trip_id}`;
-            console.log("Fetching trip details from:", url);
-            try {
-                   const response = await fetch(
-                     url,
-                    {
-                        headers: { 'x-token': token },
-                    }
-                 );
-                 console.log("Raw response:", response);
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('Error fetching trip details:', errorData);
-                    showNotification({
-                        title: 'Error al obtener detalles del viaje',
-                       message: `Hubo un error al cargar los detalles del viaje desde el servidor. Detalle: ${
-                           errorData.msj || 'Desconocido'
-                       }`,
-                        color: 'red',
-                    });
-                     setTripDetails(prev => ({ ...prev, loading: false }));
-                     return;
-                }
-                 const responseData = await response.json() as TripDetailsResponse;
-                    console.log("Parsed JSON:", responseData);
-               if (!responseData.data || !Array.isArray(responseData.data) || responseData.data.length === 0 ) {
-                    console.error('Invalid response from API: data array not found', responseData);
-                    showNotification({
-                        title: 'Error al obtener las detalles del viaje',
-                         message: 'La respuesta del servidor no tiene el formato esperado o no se encontraron los datos.',
-                        color: 'red',
-                    });
-                      setTripDetails(prev => ({ ...prev, loading: false }));
-                   return;
-              }
-               const tripData = responseData.data[0] as TripDetailsData;
-                 setTripDetails({
-                     main_text_origen: tripData?.secondary_text_origen || '',
-                     main_text_destination: tripData?.secondary_text_destination || '',
-                     date_time: tripData?.date_time || null,
-                    driverName: `${tripData?.first_name || ''} ${tripData?.last_name || ''}`,
-                    loading: false,
-                    tripStatus: tripData.status || '',
-                     vehicle: {
-                       brand: tripData?.brand || '',
-                        model: tripData?.model || '',
-                         year: tripData?.year || 0,
-                         plate: tripData?.plate || '',
-                         color: tripData?.color || ''
-                   }
-               });
-           } catch (error) {
-               console.error('Error fetching trip details:', error);
-               showNotification({
-                    title: 'Error al obtener detalles del viaje',
-                     message:
-                       'Hubo un error al cargar los detalles del viaje desde el servidor. Intenta de nuevo más tarde.',
-                    color: 'red',
-               });
-                 setTripDetails(prev => ({ ...prev, loading: false }));
-            }
-       };
-       fetchTripDetails();
-    }, [booking, token]);
-
-
-    if (!booking) return null;
-
-    return (
-        <Card className={`${styles.cupoCard} ${detailStyles.detailsCard}`} style={{  borderRadius: '12px',  background: 'linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))', border: '1px solid rgba(0, 255, 157, 0.1)', boxShadow:'0 4px 10px rgba(0, 255, 157, 0.05)' }}>
-            <LoadingOverlay visible={tripDetails.loading}      />
-            <Stack gap="xs">
-                   <Group gap="apart" className={detailStyles.detailItem}>
-                    <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>ID de la reserva:</Text>
-                     <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{booking.booking_id}</Text>
-                </Group>
-                 <Group gap="apart" className={detailStyles.detailItem}>
-                       <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>ID del viaje:</Text>
-                       <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{booking.trip_id}</Text>
-                  </Group>
-                <Group gap="apart" className={detailStyles.detailItem}>
-                   <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Conductor:</Text>
-                     <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{tripDetails.driverName}</Text>
-                </Group>
-                <Group gap="apart" className={detailStyles.detailItem}>
-                    <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Origen:</Text>
-                     <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{tripDetails.main_text_origen}</Text>
-                 </Group>
-                <Group gap="apart" className={detailStyles.detailItem}>
-                   <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Destino:</Text>
-                   <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{tripDetails.main_text_destination}</Text>
-                </Group>
-                 <Group gap="apart" className={detailStyles.detailItem}>
-                   <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Fecha y Hora:</Text>
-                    <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{tripDetails.date_time ? dayjs(tripDetails.date_time).format('DD/MM/YYYY HH:mm') : 'No disponible'}</Text>
-                </Group>
-                  <Group gap="apart" className={detailStyles.detailItem}>
-                     <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Mensaje:</Text>
-                     <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{booking.booking_message}</Text>
-                 </Group>
-                <Group gap="apart" className={detailStyles.detailItem}>
-                     <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Estado:</Text>
-                    <Badge color={tripDetails.tripStatus === 'active' ? 'green' : 'yellow'} variant="filled">{booking.booking_status}</Badge>
-                 </Group>
-                <Group gap="apart" className={detailStyles.detailItem}>
-                     <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Precio Total:</Text>
-                      <Text className={detailStyles.detailValue} style={{color:'#fff'}}>${booking.total_price?.toLocaleString()}</Text>
-                 </Group>
-                <Group gap="apart" className={detailStyles.detailItem}>
-                   <Text fw={600} className={detailStyles.detailLabel} style={{color:'#ddd'}}>Vehiculo:</Text>
-                    <Text className={detailStyles.detailValue} style={{color:'#fff'}}>{`${tripDetails.vehicle.brand} ${tripDetails.vehicle.model} (${tripDetails.vehicle.year}) - ${tripDetails.vehicle.plate} - ${tripDetails.vehicle.color}`}</Text>
-                </Group>
-                  <Button onClick={onClose} mt="md" size="xs"  style={{ borderRadius:'8px',  borderColor:'#ccc' , transition: 'background-color 0.3s, color 0.3s',  '&:hover': {
-                    backgroundColor: '#f0f0f0',
-                    color: '#333'
-                  }}}>
-                    Cerrar Detalles
-                </Button>
-            </Stack>
-        </Card>
-    );
-};
-
-export const Route = createFileRoute('/Cupos/ViewBookingDetails')({
-    component: ViewBookingDetails,
-})
 export default ViewBookingDetails;

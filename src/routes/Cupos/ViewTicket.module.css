@@ -1,104 +1,102 @@
-.ticketContainer{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+.ticketContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding-top: 2rem;
+  background-color: #111827;
 }
+
 .ticketCard {
   background-color: #18181b;
   color: white;
-  border-radius: 8px;
-  padding: 1rem;
-   max-width: 500px;
-}
-.ticketWrapper{
-      margin: 0 auto;
-}
-.downloadButton {
-    background-color: #3a3a3f !important;
-    color: white !important;
-    transition: background-color 0.3s ease !important;
-      border: 1px solid #4b4b4f;
-    &:hover {
-        background-color: #4b4b4f !important;
-    }
-}
-.ticketTemplate {
-  display: flex;
-  flex-direction: column;
-    width: 450px;
-     margin: 0 auto;
+  border-radius: 1rem;
+  padding: 2rem;
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
-.ticketHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
+.ticketTitle {
+  font-weight: 800;
+  color: #34D399;
+  text-align: center;
+  margin-top: 1rem;
 }
 
-.ticketLogo {
+.logoWrapper {
+  position: absolute;
+  top: 20px;
+  left: 20px;
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
 .logo {
-  max-width: 80px;
-    height: auto;
-}
-.ticketTitle{
-    margin: 0 10px;
-}
-.ticketSubtitle{
-    font-size: .9em;
-    margin: 0 10px;
-    color: #999;
-    font-weight: 500;
+  max-width: 40px;
+  height: auto;
+  opacity: 0.9;
 }
 
-
-.ticketContent{
-      padding: 1rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+.brandName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #34D399;
 }
 
-
-.passengerInfo{
-    grid-column: 1/2;
-}
-.passengerName{
-    margin-bottom: 5px;
-    font-size: 1.2em;
-}
-.idNumber,
-.seatNumber{
-      font-size: .9em;
-       color: #999;
-    font-weight: 500;
+.routeInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
-.qrSection{
-      grid-column: 2/3;
-      display: flex;
-    justify-content: flex-end;
-    align-items: center;
+.location {
+  display: flex;
+  flex-direction: column;
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.tripDetails{
-    grid-column: 1/3;
-     border-top: 1px solid #2a2a2e;
-    padding-top: 1rem;
-
+.direccion {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.tripDetails  .icon{
-    margin-right: 8px;
-    color: #999;
+.carIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #34D399;
+  font-size: 1.2rem;
 }
-.ticketFooter{
-    text-align: center;
-        padding: 1rem;
-     border-top: 1px solid #2a2a2e;
+
+.backButton {
+  background-color: transparent;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-left: 0.25rem;
+  cursor: pointer;
+}
+
+.backButton:hover {
+  color: #34D399;
 }

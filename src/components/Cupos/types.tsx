@@ -3,26 +3,19 @@ export interface Passenger {
     full_name: string;
     identification_number: string;
     booking_qr: string;
-    payment_id: number;
 }
 
 export interface Booking {
-    booking_id: number;
-    trip_id: number;
-    user_id: number;
-    seats_booked: number;
-    booking_date: string;
-    total_price: number;
-    booking_status: string;
-    booking_message: string;
-    main_text_origen?: string;
-    main_text_destination?: string;
-    date_time?: string;
-    passengers?: Passenger[];
+  booking_id: number; // Corresponde a `id` en `bookings`
+  trip_id: number | null; // Puede ser `null` según la base de datos
+  user_id: string | null; // Puede ser `null` según la base de datos
+  seats_booked: number | null; // Puede ser `null` según la base de datos
+  booking_date: string | null; // Puede ser `null` según la base de datos
+  total_price: number;
+  booking_status: string | null; // Puede ser `null` según la base de datos
+  booking_qr?: string; // Opcional, ya que puede ser generado
+  passengers?: Passenger[]; // Relación con `booking_passengers`
 }
-
-
-
 
 
 export interface Passenger {
@@ -80,20 +73,6 @@ export interface Passenger {
     summary: string;
 }
 
-export interface Booking {
-    booking_id: number;
-    trip_id: number;
-    user_id: number;
-    seats_booked: number;
-    booking_date: string;
-    total_price: number;
-    booking_status: string;
-    booking_message: string;
-    main_text_origen?: string;
-    main_text_destination?: string;
-    date_time?: string;
-    passengers?: Passenger[];
-}
 
 
 export interface BookedPassenger {
