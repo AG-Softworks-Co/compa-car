@@ -491,14 +491,16 @@ const ReservarView = () => {
                                 <Card key={trip.id} className={styles.tripCard}>
                                     {/* Fecha y precio */}
                                     <div className={styles.headerSection}>
-                                        <Text fw={600} size="md" className={styles.dateText}>
-                                            FECHA:   
-                                            {new Date(trip.dateTime).toLocaleDateString('es-ES', {
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric',
-                                            })}
-                                        </Text>
+                                       <Text fw={600} size="md" className={styles.dateText}>
+                                         {new Date(trip.dateTime).toLocaleString('es-ES', {
+                                           day: '2-digit',
+                                           month: '2-digit',
+                                           year: 'numeric',
+                                           hour: '2-digit',
+                                           minute: '2-digit',
+                                           hour12: true, // si prefieres formato 12h con AM/PM, cámbialo a false si prefieres 24h
+                                         })}
+                                       </Text>
                                         <Badge className={styles.priceBadge}>
                                             ${trip.pricePerSeat.toLocaleString()} / Cupo
                                         </Badge>

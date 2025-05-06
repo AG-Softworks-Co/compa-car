@@ -1,3 +1,5 @@
+// Actividades.tsx
+
 import React, { useState, useEffect } from 'react';
 import { Container, Title, Text, LoadingOverlay, Button } from '@mantine/core';
 import { useNavigate } from '@tanstack/react-router';
@@ -21,18 +23,19 @@ export interface Trip {
   duration: string;
   distance: string;
   seats: number;
+  seats_reserved: number;
   pricePerSeat: number;
   description: string;
   allowPets: boolean;
   allowSmoking: boolean;
   is_active: boolean;
-  user_id: string; // UUID del usuario
+  user_id: string;
   date_time: string;
-  status: string; // Aseguramos que esta propiedad esté presente
+  status: string;
 }
 
 interface UserProfile {
-  user_id: string; // UUID del usuario
+  user_id: string;
   email: string;
   phone_number: string | null;
   first_name: string;
@@ -48,7 +51,7 @@ const Actividades: React.FC = () => {
   const [filteredTrips, setFilteredTrips] = useState<Trip[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedTripIndex, setSelectedTripIndex] = useState<number | null>(null);
+  const [selectedTripIndex, ] = useState<number | null>(null);
   const [editedTrip, setEditedTrip] = useState<Trip | null>(null);
   const [filterValue, setFilterValue] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -74,7 +77,7 @@ const Actividades: React.FC = () => {
         const { data, error } = await supabase
           .from('user_profiles')
           .select('*')
-          .eq('user_id', session.user.id) // Usamos user_id en lugar de id
+          .eq('user_id', session.user.id)
           .single();
 
         if (error) throw error;
@@ -82,7 +85,7 @@ const Actividades: React.FC = () => {
         setUserProfile({
           ...data,
           email: session.user.email || '',
-          user_type: data.status, // Asegurarnos de usar el campo correcto
+          user_type: data.status,
         });
       } catch (error: any) {
         console.error('Error fetching user profile:', error);
@@ -115,6 +118,7 @@ const Actividades: React.FC = () => {
             id,
             created_at,
             seats,
+            seats_reserved,
             price_per_seat,
             description,
             allow_pets,
@@ -134,7 +138,7 @@ const Actividades: React.FC = () => {
               address
             )
           `)
-          .eq('user_id', session.user.id) // Usamos user_id en lugar de id
+          .eq('user_id', session.user.id)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -156,6 +160,7 @@ const Actividades: React.FC = () => {
           duration: trip.routes?.duration || 'Desconocida',
           distance: trip.routes?.distance || 'Desconocida',
           seats: trip.seats || 0,
+          seats_reserved: Number(trip.seats_reserved) || 0,
           pricePerSeat: trip.price_per_seat || 0,
           description: trip.description || '',
           allowPets: trip.allow_pets === 'Y',
@@ -163,7 +168,7 @@ const Actividades: React.FC = () => {
           is_active: trip.status === 'A',
           user_id: trip.user_id || '',
           date_time: trip.created_at || new Date().toISOString(),
-          status: trip.status || 'inactive', // Aseguramos que 'status' esté presente
+          status: trip.status || 'inactive',
         }));
 
         setTrips(formattedTrips);
@@ -187,45 +192,32 @@ const Actividades: React.FC = () => {
 
   useEffect(() => {
     let filtered = [...trips];
-
-    // Filter by address
     if (filterValue) {
       filtered = filtered.filter(
         (trip) =>
           trip.origin.address.toLowerCase().includes(filterValue.toLowerCase()) ||
-          trip.destination.address.toLowerCase().includes(filterValue.toLowerCase()),
+          trip.destination.address.toLowerCase().includes(filterValue.toLowerCase())
       );
     }
-
-    // Filter by status
     if (statusFilter) {
       filtered = filtered.filter((trip) => trip.status === statusFilter);
     }
-
-    // Filter by date
     if (dateFilter) {
       filtered = filtered.filter((trip) =>
-        dayjs(trip.date_time).isSame(dateFilter, 'day'),
+        dayjs(trip.date_time).isSame(dateFilter, 'day')
       );
     }
-
     setFilteredTrips(filtered);
   }, [trips, filterValue, statusFilter, dateFilter]);
 
   const handleDelete = async (tripId: number) => {
     try {
-      const { error } = await supabase
-        .from('trips')
-        .delete()
-        .eq('id', tripId);
-
+      const { error } = await supabase.from('trips').delete().eq('id', tripId);
       if (error) throw error;
-
       const updatedTrips = trips.filter((trip) => trip.id !== tripId);
       setTrips(updatedTrips);
       setFilteredTrips(updatedTrips);
       setDeleteModalOpen(false);
-
       showNotification({
         title: 'Viaje eliminado',
         message: 'El viaje ha sido eliminado correctamente',
@@ -241,15 +233,9 @@ const Actividades: React.FC = () => {
     }
   };
 
-  const handleEdit = (index: number) => {
-    setSelectedTripIndex(index);
-    setEditedTrip(trips[index]);
-    setEditModalOpen(true);
-  };
 
   const handleEditSubmit = async () => {
     if (!editedTrip) return;
-
     try {
       const { error } = await supabase
         .from('trips')
@@ -260,16 +246,13 @@ const Actividades: React.FC = () => {
           allow_smoking: editedTrip.allowSmoking ? 'Y' : 'N',
         })
         .eq('id', editedTrip.id);
-
       if (error) throw error;
-
       const updatedTrips = trips.map((trip) =>
-        trip.id === editedTrip.id ? editedTrip : trip,
+        trip.id === editedTrip.id ? editedTrip : trip
       );
       setTrips(updatedTrips);
       setFilteredTrips(updatedTrips);
       setEditModalOpen(false);
-
       showNotification({
         title: 'Viaje actualizado',
         message: 'El viaje ha sido actualizado correctamente',
@@ -310,7 +293,7 @@ const Actividades: React.FC = () => {
         <>
           <TripFilter
             trips={trips}
-            filterValue={filterValue || ''} // Convertir null a una cadena vacía
+            filterValue={filterValue || ''}
             onFilterChange={setFilterValue}
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
@@ -318,17 +301,12 @@ const Actividades: React.FC = () => {
             onDateFilterChange={setDateFilter}
           />
           <div className={styles.tripListContainer}>
-            {filteredTrips.map((trip, index) => (
-            <TripCard
-              key={trip.id}
-              trip={trip}
-              onEdit={() => handleEdit(index)}
-              onDelete={() => {
-                setSelectedTripIndex(index);
-                setDeleteModalOpen(true);
-              }}
-              userId={userProfile?.user_id || ''}
-            />
+            {filteredTrips.map((trip, ) => (
+              <TripCard
+                key={trip.id}
+                trip={trip}
+                userId={userProfile?.user_id || ''}
+              />
             ))}
           </div>
         </>
@@ -355,21 +333,23 @@ const Actividades: React.FC = () => {
       <DeleteTripModal
         opened={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        onDelete={() => selectedTripIndex !== null ? handleDelete(trips[selectedTripIndex].id) : undefined}
+        onDelete={() =>
+          selectedTripIndex !== null
+            ? handleDelete(trips[selectedTripIndex].id)
+            : undefined
+        }
       />
 
-      {trips.length === 0 && selectedActivity === 'Viajes Publicados' && userProfile?.user_type === 'DRIVER' && (
-        <Container className={styles.container}>
-          <Text className={styles.noTripsText}>No tienes viajes publicados.</Text>
-          <Button
-            className={styles.publishButton}
-            component="a"
-            href="/publicarviaje"
-          >
-            Publica tu primer viaje
-          </Button>
-        </Container>
-      )}
+      {trips.length === 0 &&
+        selectedActivity === 'Viajes Publicados' &&
+        userProfile?.user_type === 'DRIVER' && (
+          <Container className={styles.container}>
+            <Text className={styles.noTripsText}>No tienes viajes publicados.</Text>
+            <Button className={styles.publishButton} component="a" href="/publicarviaje">
+              Publica tu primer viaje
+            </Button>
+          </Container>
+        )}
     </Container>
   );
 };

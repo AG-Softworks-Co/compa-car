@@ -17,6 +17,7 @@ import {
     Switch,
     Modal,
     LoadingOverlay,
+    Select,
 } from '@mantine/core';
 import {
     ArrowLeft,
@@ -239,6 +240,9 @@ const DetallesViajeView = () => {
     const [dateTime, setDateTime] = useState<Date | null>(null);
     const [stopovers, setStopovers] = useState<TripStopover[]>([]);
     const [loading, setLoading] = useState(false);
+    const [vehicles, setVehicles] = useState<any[]>([]);
+    const [vehicleId, setVehicleId] = useState<string | null>(null);
+
 
     const calculateRequiredBalance = (seats: number, pricePerSeat: number): number => {
         const totalTripValue = seats * pricePerSeat;
@@ -247,53 +251,97 @@ const DetallesViajeView = () => {
 
     const checkAndFreezeWalletBalance = async (userId: string, requiredAmount: number) => {
         try {
-            const { data: wallet, error: walletError } = await supabase
-                .from('wallets')
-                .select('id, balance, frozen_balance')
-                .eq('user_id', userId)
-                .single();
-
-            if (walletError) throw walletError;
-            if (!wallet) {
-                throw new Error('No tienes una billetera activa. Por favor, recarga tu billetera primero.');
-            }
-
-            const availableBalance = (wallet.balance || 0) - (wallet.frozen_balance || 0);
-            if (availableBalance < requiredAmount) {
-                throw new Error(`Saldo insuficiente. Necesitas $${requiredAmount.toLocaleString()} disponibles en tu billetera para crear este viaje. Tu saldo disponible es $${availableBalance.toLocaleString()}`);
-            }
-
-            // Actualizar balance y frozen_balance
-            const { error: updateError } = await supabase
-                .from('wallets')
-                .update({
-                    balance: (wallet.balance ?? 0) - requiredAmount,
-                    frozen_balance: (wallet.frozen_balance || 0) + requiredAmount
-                })
-                .eq('id', wallet.id);
-
-            if (updateError) throw updateError;
-
-            return {
-                success: true,
-                message: `Se han congelado $${requiredAmount.toLocaleString()} de tu billetera como garantía para este viaje.`
-            };
+          const { data: wallet, error: walletError } = await supabase
+            .from('wallets')
+            .select('id, balance, frozen_balance')
+            .eq('user_id', userId)
+            .single();
+      
+          if (walletError) throw walletError;
+          if (!wallet) {
+            throw new Error('No tienes una billetera activa. Por favor, recarga tu billetera primero.');
+          }
+      
+          const availableBalance = (wallet.balance || 0) - (wallet.frozen_balance || 0);
+          if (availableBalance < requiredAmount) {
+            throw new Error(`Saldo insuficiente. Necesitas $${requiredAmount.toLocaleString()} disponibles en tu billetera para crear este viaje. Tu saldo disponible es $${availableBalance.toLocaleString()}`);
+          }
+      
+          // Actualizar balance y frozen_balance
+          const { error: updateError } = await supabase
+            .from('wallets')
+            .update({
+              balance: (wallet.balance ?? 0) - requiredAmount,
+              frozen_balance: (wallet.frozen_balance || 0) + requiredAmount
+            })
+            .eq('id', wallet.id);
+      
+          if (updateError) throw updateError;
+      
+          // Registrar transacción tipo "congelado"
+          const { error: insertError } = await supabase
+            .from('wallet_transactions')
+            .insert([{
+              wallet_id: wallet.id,
+              transaction_type: 'congelado',
+              amount: requiredAmount,
+              detail: 'Monto congelado al publicar viaje',
+              status: 'completed',
+              payment_gateway_id: null
+            }]);
+      
+          if (insertError) throw insertError;
+      
+          return {
+            success: true,
+            message: `Se han congelado $${requiredAmount.toLocaleString()} de tu billetera como garantía para este viaje.`
+          };
         } catch (error: any) {
-            console.error('Error checking wallet:', error);
-            throw error;
+          console.error('Error checking wallet:', error);
+          throw error;
         }
-    };
+      };
+      
 
     useEffect(() => {
         const storedData = tripStore.getStoredData();
         setStopovers(storedData?.stopovers || []);
         console.log("Datos del viaje en Detalles (al cargar el componente):", storedData);
-        setTripData(storedData); // Actualiza el estado tripData con los datos almacenados
-
+        setTripData(storedData);
+      
+        const fetchVehicles = async () => {
+          const { data: sessionData, error: sessionError } = await supabase.auth.getUser();
+      
+          if (sessionError || !sessionData?.user) {
+            console.error('Usuario no autenticado o error al obtener sesión:', sessionError?.message);
+            return;
+          }
+      
+          const { user } = sessionData;
+      
+          const { data, error } = await supabase
+            .from('vehicles')
+            .select('id, brand, model, plate')
+            .eq('user_id', user.id);
+      
+          if (error) {
+            console.error('Error obteniendo vehículos:', error.message);
+            return;
+          }
+      
+          setVehicles(data);
+          if (data.length === 1) {
+            setVehicleId(data[0].id.toString());
+          }
+        };
+      
+        fetchVehicles();
+      
         if (!storedData.selectedRoute || !storedData.origin || !storedData.destination) {
-            navigate({ to: '/publicarviaje' });
+          navigate({ to: '/publicarviaje' });
         }
     }, [navigate]);
+      
 
 
     const validateForm = () => {
@@ -486,13 +534,14 @@ const DetallesViajeView = () => {
                 origin_id: originLocation.id,
                 destination_id: destinationLocation.id,
                 route_id: route.id,
-                date_time: dateTime?.toISOString(),
+                date_time: dayjs(dateTime).format('YYYY-MM-DD HH:mm:ss'),
                 seats: Number(seats),
                 price_per_seat: Number(pricePerSeat),
                 description,
+                vehicle_id: Number(vehicleId),
                 allow_pets: allowPets ? 'Y' : 'N',      // Cambiado a CHAR(1)
                 allow_smoking: allowSmoking ? 'Y' : 'N', // Cambiado a CHAR(1)
-                status: 'A',
+                status: 'pending',
                 created_at: new Date().toISOString()
             };
 
@@ -508,7 +557,34 @@ const DetallesViajeView = () => {
                 console.error('Trip insertion error:', tripError);
                 throw tripError;
             }
-
+              
+            // Crear el chat vinculado al nuevo trip
+            const { data: newChat, error: chatError } = await supabase
+              .from('chats')
+              .insert([{ trip_id: newTrip.id }])
+              .select()
+              .single();
+            
+            if (chatError) {
+              console.error('Chat creation error:', chatError);
+              throw chatError;
+            }
+            
+            // ➕ Insertar conductor como participante en el chat
+            const { error: participantError } = await supabase
+              .from('chat_participants')
+              .insert([{
+                chat_id: newChat.id,
+                user_id: session.user.id,
+                role: 'driver'
+              }]);
+            
+            if (participantError) {
+              console.error('Error al agregar conductor al chat:', participantError);
+              throw participantError;
+            }
+          
+              
             // 5. Procesar paradas con índices secuenciales
             if (stopovers && stopovers.length > 0) {
                 const stopoverPromises = stopovers.map(async (stopover, index) => {
@@ -641,6 +717,20 @@ const DetallesViajeView = () => {
                                 />
                             </Card>
                         </div>
+                        {vehicles.length > 0 && (
+                          <Select
+                            label="Vehículo"
+                            placeholder="Selecciona un vehículo"
+                            data={vehicles.map((v) => ({
+                              value: v.id.toString(),
+                              label: `${v.brand} ${v.model} (${v.plate})`,
+                            }))}
+                            value={vehicleId}
+                            onChange={setVehicleId}
+                            required
+                            error={!vehicleId ? 'Selecciona un vehículo' : undefined}
+                          />
+                        )}
 
                         <Group grow>
                             <FormattedNumberInput

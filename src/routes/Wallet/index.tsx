@@ -4,113 +4,78 @@ import {
   Container,
   Title,
   Text,
-  LoadingOverlay,
   Card,
   Group,
   Badge,
-  Divider,
+  Tabs,
 } from '@mantine/core';
-import { ArrowLeft, Clock3, Wallet, Lock, DollarSign } from 'lucide-react';
+import { ArrowLeft, DollarSign, Lock } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import styles from './index.module.css';
 
 interface WalletData {
+  id: number;
   balance: number;
   frozen_balance: number;
 }
 
-interface Trip {
+interface WalletTransaction {
   id: number;
-  created_at: string;
-  price_per_seat: number;
-  seats: number;
-  locations: {
-    address: string;
-  };
-}
-
-interface FrozenFunds {
-  trip_id: number;
   amount: number;
-  created_at: string;
-  origin: string;
-  destination: string;
+  detail: string | null;
+  transaction_date: string | null;
+  transaction_type: string;
 }
 
 const WalletDetailView: React.FC = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [walletData, setWalletData] = useState<WalletData>({ balance: 0, frozen_balance: 0 });
-  const [frozenFunds, setFrozenFunds] = useState<FrozenFunds[]>([]);
+  const [walletData, setWalletData] = useState<WalletData>({ id: 0, balance: 0, frozen_balance: 0 });
+  const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
+  const [activeTab, setActiveTab] = useState<string>('transactions');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchWalletData = async () => {
       try {
-        setLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
           navigate({ to: '/Login' });
           return;
         }
 
-        // Obtener el balance de la wallet
         const { data: wallet, error: walletError } = await supabase
           .from('wallets')
-          .select('balance, frozen_balance')
+          .select('id, balance, frozen_balance')
           .eq('user_id', session.user.id)
           .single();
 
-        // Obtener los viajes del usuario
-        const { data: trips, error: tripsError } = await supabase
-          .from('trips')
-          .select(`
-            id,
-            created_at,
-            price_per_seat,
-            seats,
-            origin:locations!trips_origin_id_fkey(address),
-            destination:locations!trips_destination_id_fkey(address)
-          `)
-          .eq('user_id', session.user.id);
-
         if (walletError) throw walletError;
-        if (tripsError) throw tripsError;
-        if (wallet) {
-          console.log('Wallet data:', wallet);
-          
-          setWalletData({
-            balance: wallet.balance || 0,
-            frozen_balance: wallet.frozen_balance || 0
-          });
 
-          // Procesar información de fondos congelados por viaje
-          const tripFunds = trips?.map(trip => ({
-            trip_id: trip.id,
-            amount: calculateTripFrozenAmount(trip.price_per_seat ?? 0, trip.seats ?? 0),
-            created_at: trip.created_at || new Date().toISOString(),
-            origin: trip.origin?.address || 'Dirección no disponible',
-            destination: trip.destination?.address || 'Dirección no disponible'
-          })) || [];
+        setWalletData({
+          id: wallet?.id || 0,
+          balance: wallet?.balance || 0,
+          frozen_balance: wallet?.frozen_balance || 0,
+        });
 
-          setFrozenFunds(tripFunds);
-        }
+        const { data: walletTransactions, error: transactionsError } = await supabase
+          .from('wallet_transactions')
+          .select('id, amount, detail, transaction_date, transaction_type')
+          .eq('wallet_id', wallet?.id);
 
+        if (transactionsError) throw transactionsError;
+
+        setTransactions(walletTransactions || []);
       } catch (err) {
         console.error('Error fetching wallet data:', err);
         setError('Error al cargar información de la billetera');
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchWalletData();
   }, [navigate]);
 
-  const calculateTripFrozenAmount = (pricePerSeat: number, seats: number): number => {
-    // Calcula el 15% del valor total del viaje
-    const totalTripValue = pricePerSeat * seats;
-    return Math.ceil(totalTripValue * 0.15);
+  const isPositive = (type: string) => {
+    return type === 'recarga' || type === 'devolución';
   };
 
   return (
@@ -131,7 +96,6 @@ const WalletDetailView: React.FC = () => {
               ${walletData.balance.toLocaleString()}
             </Text>
           </div>
-          <Divider orientation="vertical" />
           <div className={styles.balanceSection}>
             <Group gap="xs">
               <Lock size={24} />
@@ -144,33 +108,48 @@ const WalletDetailView: React.FC = () => {
         </Group>
       </Card>
 
-      <div className={styles.frozenSection}>
-        <Title order={4} className={styles.sectionTitle}>
-          Fondos Congelados por Viajes
-        </Title>
-        {frozenFunds.length > 0 ? (
-          frozenFunds.map((fund) => (
-            <Card key={fund.trip_id} className={styles.frozenCard}>
-              <Group gap="apart">
-                <div>
-                  <Text fw={500}>{fund.origin} → {fund.destination}</Text>
-                  <Text size="sm" color="dimmed">
-                    <Clock3 size={14} className={styles.clockIcon} />
-                    {new Date(fund.created_at).toLocaleDateString()}
-                  </Text>
-                </div>
-                <Badge size="lg" variant="filled" color="blue">
-                  ${fund.amount.toLocaleString()}
-                </Badge>
-              </Group>
-            </Card>
-          ))
-        ) : (
-          <Text color="dimmed" className={styles.noFrozenText}>
-            No hay fondos congelados actualmente
-          </Text>
-        )}
-      </div>
+      <Tabs value={activeTab} onChange={(value) => setActiveTab(value || 'transactions')}>
+        <Tabs.List>
+          <Tabs.Tab value="transactions">Transacciones</Tabs.Tab>
+        </Tabs.List>
+
+        <Tabs.Panel value="transactions">
+          <div className={styles.transactionsSection}>
+            <Title order={4} className={styles.sectionTitle}>
+              Transacciones de Wallet
+            </Title>
+            {transactions.length > 0 ? (
+              transactions.map((transaction) => (
+                <Card key={transaction.id} className={styles.transactionCard}>
+                  <Group gap="apart">
+                    <div>
+                      <Text fw={500}>{transaction.detail || 'Sin descripción'}</Text>
+                      <Text size="sm" color="dimmed">
+                        {new Date(transaction.transaction_date || '').toLocaleDateString()}
+                      </Text>
+                    </div>
+                    <Badge
+                      size="lg"
+                      variant="filled"
+                      className={
+                        isPositive(transaction.transaction_type)
+                          ? styles.creditTransaction
+                          : styles.debitTransaction
+                      }
+                    >
+                      {isPositive(transaction.transaction_type) ? '+' : '-'}${transaction.amount.toLocaleString()}
+                    </Badge>
+                  </Group>
+                </Card>
+              ))
+            ) : (
+              <Text color="dimmed" className={styles.noTransactionsText}>
+                No hay transacciones registradas
+              </Text>
+            )}
+          </div>
+        </Tabs.Panel>
+      </Tabs>
 
       {error && <Text color="red" className={styles.errorMessage}>{error}</Text>}
     </Container>

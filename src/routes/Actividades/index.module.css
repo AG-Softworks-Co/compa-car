@@ -428,3 +428,53 @@
       outline: none;
       border-color: #00ff9d; /* Border color on focus */
     }
+
+/* Botones principales de acciones de viaje */
+.tripActions .mantine-Button-root {
+  font-weight: bold;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+/* Botón Iniciar */
+.tripActions .mantine-Button-root:has(svg.lucide-flag) {
+  background-color: #00ff9d;
+  color: #171717;
+}
+.tripActions .mantine-Button-root:has(svg.lucide-flag):hover {
+  background-color: #00e68a;
+}
+
+/* Botón Cancelar */
+.tripActions .mantine-Button-root:has(svg.lucide-trash) {
+  background-color: #ff4d4d;
+  color: white;
+}
+.tripActions .mantine-Button-root:has(svg.lucide-trash):hover {
+  background-color: #e60000;
+}
+
+/* Botón Finalizar */
+.tripActions .mantine-Button-root:has(svg.lucide-flag):disabled {
+  background-color: #444;
+  color: #999;
+  cursor: not-allowed;
+  border: none;
+}
+
+/* Botón de chat */
+.tripActions .mantine-Button-root:has(svg.lucide-message-square) {
+  background-color: transparent;
+  border: 1px solid #555;
+  color: #ccc;
+}
+.tripActions .mantine-Button-root:has(svg.lucide-message-square):hover {
+  border-color: #00ff9d;
+  color: #00ff9d;
+}
+
+/* Estados deshabilitados */
+.tripActions .mantine-Button-root:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}

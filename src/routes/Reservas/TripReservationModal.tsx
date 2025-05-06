@@ -201,6 +201,35 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
                 console.error('No se encontró un pasajero asociado al usuario actual.');
                 return;
               }
+
+              // Buscar el chat relacionado al trip
+            const { data: chatData, error: chatError } = await supabase
+             .from('chats')
+             .select('id')
+             .eq('trip_id', Number(trip.id))
+             .single();
+            
+            if (chatError || !chatData) {
+            console.error('Error al obtener el chat del viaje:', chatError);
+            return;
+            }
+            
+            // Insertar al usuario como participante (rol passenger)
+            const { error: participantInsertError } = await supabase
+             .from('chat_participants')
+             .insert([{
+               chat_id: chatData.id,
+               user_id: userId,
+               role: 'passenger',
+            }]);
+            
+            if (participantInsertError) {
+            console.error('Error al agregar al usuario al chat:', participantInsertError);
+            return;
+            }
+            
+            console.log('Usuario agregado al chat como pasajero');
+            
               
               // Redirigir al ticket con solo los parámetros necesarios
               navigate({

@@ -167,6 +167,25 @@ const Cupos: React.FC<CuposProps> = ({ userId }) => {
                   >
                     Ver Ticket
                   </Button>
+                  <Button
+                    size="xs"
+                    onClick={() =>
+                      navigate({
+                        to: '/Chat',
+                        search: { trip_id: booking.trip_id ? booking.trip_id.toString() : '' }, // Pasamos trip_id al Chat
+                      })
+                    }
+                    style={{
+                      backgroundColor: 'transparent',
+                      color: '#34D399',
+                      borderRadius: '6px',
+                      border: '1px solid #34D399',
+                      padding: '5px 10px',
+                    }}
+                  >
+                    Ir al Chat
+                  </Button>
+
                 </Group>
               </Stack>
             </Card>

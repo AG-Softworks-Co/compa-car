@@ -66,9 +66,10 @@ interface MenuItem {
 }
 
 interface SubMenuItem {
-  id: string
-  title: string
-  path: string
+  id: string;
+  title: string;
+  path?: string; // Hacer que path sea opcional
+  onClick?: () => void; // Agregar onClick como opcional
 }
 
 const ProfileView: React.FC = () => {
@@ -120,7 +121,9 @@ const ProfileView: React.FC = () => {
         {
           id: 'wallet-reload',
           title: 'Recargar billetera',
-          path: '/Gateway',
+          onClick: () => {
+            window.location.href = 'https://www.cupo.dev/login'; // Redirigir a la URL externa
+          },
         },
       ],
     },
@@ -142,7 +145,7 @@ const ProfileView: React.FC = () => {
       id: 'chats',
       icon: MessageCircle,
       title: 'Chats',
-      subtitle: 'Conversaciones con conductores y pasajeros',
+      subtitle: 'Salas de Comunicacion',
       path: '/Chat',
     }
     
@@ -460,7 +463,13 @@ const ProfileView: React.FC = () => {
           <div
             key={subItem.id}
             className={styles.subMenuItem}
-            onClick={() => handleNavigation(subItem.path)}
+            onClick={() => {
+              if (subItem.onClick) {
+                subItem.onClick(); // Ejecutar onClick si está definido
+              } else if (subItem.path) {
+                handleNavigation(subItem.path); // Navegar al path si está definido
+              }
+            }}
           >
             <div className={styles.subMenuItemContent}>
               <div className={styles.subMenuItemDetails}>
@@ -470,8 +479,8 @@ const ProfileView: React.FC = () => {
           </div>
         ))}
       </div>
-    )
-  }
+    );
+  };
   
 
   // Loading state
