@@ -457,3 +457,23 @@ color: #555;
   .statusIconRequired {
     color: red;
   }
+
+  .verificationPendingBox {
+    background-color: #fff3cd; /* amarillo claro */
+    border: 1px solid #ffeeba;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 12px;
+  }
+  
+  .verificationPendingText {
+    color: #856404; /* amarillo oscuro */
+    font-weight: 600;
+    font-size: 16px;
+  }
+  
+  .verificationPendingSubtitle {
+    color: #856404;
+    font-size: 14px;
+  }
+  

@@ -56,7 +56,7 @@ const TicketTemplate = ({ passenger, trip }: { passenger: PassengerData; trip: T
         <div className={styles.ticketTemplate}>
             <div className={styles.ticketHeader}>
                 <div className={styles.ticketLogo}>
-                    <img src="./public/Logo.png" alt="CompaCar" className={styles.logo} />
+                    <img src="https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/Logo.png" alt="CompaCar" className={styles.logo} />
                 </div>
                 <Title order={3} className={styles.ticketTitle}>Cupo </Title>
                 <Text className={styles.ticketSubtitle}>Tiquete de Viaje</Text>

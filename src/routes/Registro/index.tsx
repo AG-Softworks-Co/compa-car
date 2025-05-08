@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Box,
   TextInput,
@@ -9,12 +9,13 @@ import {
   Group,
   UnstyledButton,
   LoadingOverlay,
+  Checkbox,
 } from "@mantine/core";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import styles from "./index.module.css";
 import { useForm } from "@mantine/form";
 import { supabase } from "@/lib/supabaseClient";
+import styles from "./index.module.css";
+import { TermsModal } from "@/components/TermsModal";
 
 interface RegisterFormValues {
   nombre: string;
@@ -24,9 +25,13 @@ interface RegisterFormValues {
 }
 
 const RegisterView: React.FC = () => {
-  const [showPassword, setShowPassword] = React.useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [subscribeEmails, setSubscribeEmails] = useState(true);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+
   const navigate = useNavigate();
 
   const form = useForm<RegisterFormValues>({
@@ -50,7 +55,6 @@ const RegisterView: React.FC = () => {
       setLoading(true);
       setError("");
 
-      // 1. Registrar usuario en Supabase Auth
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -62,44 +66,30 @@ const RegisterView: React.FC = () => {
       });
 
       if (signUpError) throw signUpError;
+      if (!authData.user) throw new Error("No se pudo crear el usuario");
 
-      if (!authData.user) {
-        throw new Error('No se pudo crear el usuario');
-      }
-
-      // 2. Crear perfil inicial en user_profiles
-      console.log({
-          user_id: authData.user.id,
-          first_name: values.nombre.split(' ')[0],
-          last_name: values.nombre.split(' ').slice(1).join(' ') || '',
-          identification_type: 'CC',
-          identification_number: '0000000000', // Temporal
-          status: 'PENDING_COMPLETION'
-        })
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .insert({
-          user_id: authData.user.id,
-          first_name: values.nombre.split(' ')[0],
-          last_name: values.nombre.split(' ').slice(1).join(' ') || '',
-          identification_type: 'CC',
-          identification_number: '0000000000', // Temporal
-          status: 'PENDING_COMPLETION'
-        });
+      const { error: profileError } = await supabase.from("user_profiles").insert({
+        user_id: authData.user.id,
+        first_name: values.nombre.split(" ")[0],
+        last_name: values.nombre.split(" ").slice(1).join(" ") || "",
+        identification_type: "CC",
+        identification_number: null,
+        status: "PASSENGER",
+      });
 
       if (profileError) throw profileError;
 
-      // 3. Éxito - redirigir al login
+      await supabase.from("terms_condictions").insert({
+        user_id: authData.user.id,
+        verification_terms: acceptTerms ? "aceptado" : "rechazado",
+        suscriptions: subscribeEmails ? "aceptado" : "rechazado",
+      });
+
       alert("Usuario creado correctamente. Por favor, verifica tu correo electrónico.");
       navigate({ to: "/Login" });
-
     } catch (error) {
-      console.error('Registration error:', error);
-      setError(
-        error instanceof Error 
-          ? error.message
-          : "Error al crear el usuario"
-      );
+      console.error("Registration error:", error);
+      setError(error instanceof Error ? error.message : "Error al crear el usuario");
     } finally {
       setLoading(false);
     }
@@ -108,7 +98,7 @@ const RegisterView: React.FC = () => {
   return (
     <Container className={styles.container}>
       <LoadingOverlay visible={loading} />
-      
+
       <Group justify="flex-start" mb="xl">
         <UnstyledButton component={Link} to="/" className={styles.backButton}>
           <ArrowLeft size={24} />
@@ -117,18 +107,27 @@ const RegisterView: React.FC = () => {
 
       <Box className={styles.logoSection}>
         <Box className={styles.logo}>
-          <img src="/Logo.png" alt="Cupo Logo" />
+          <img
+            src="https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/Logo.png"
+            alt="Cupo Logo"
+          />
         </Box>
         <Text className={styles.title}>Crear una cuenta</Text>
-        <Text className={styles.subtitle}>
-          Únete a nosotros y empieza a viajar.
-        </Text>
+        <Text className={styles.subtitle}>Únete a nosotros y empieza a viajar.</Text>
       </Box>
 
-      <form onSubmit={form.onSubmit(handleRegister)} className={styles.form}>
-
-      <Box className={styles.inputWrapper}>
-          <Text className={styles.inputLabel}>Nombre completo </Text>
+      <form
+        onSubmit={form.onSubmit((values) => {
+          if (!acceptTerms) {
+            setError("Debes aceptar los Términos y Condiciones para continuar.");
+            return;
+          }
+          handleRegister(values);
+        })}
+        className={styles.form}
+      >
+        <Box className={styles.inputWrapper}>
+          <Text className={styles.inputLabel}>Nombre completo</Text>
           <TextInput
             placeholder="Tu nombre completo"
             className={styles.input}
@@ -137,6 +136,7 @@ const RegisterView: React.FC = () => {
             {...form.getInputProps("nombre")}
           />
         </Box>
+
         <Box className={styles.inputWrapper}>
           <Text className={styles.inputLabel}>Correo electrónico</Text>
           <TextInput
@@ -158,10 +158,7 @@ const RegisterView: React.FC = () => {
             required
             {...form.getInputProps("password")}
             rightSection={
-              <UnstyledButton
-                onClick={() => setShowPassword(!showPassword)}
-                className={styles.eyeButton}
-              >
+              <UnstyledButton onClick={() => setShowPassword(!showPassword)} className={styles.eyeButton}>
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </UnstyledButton>
             }
@@ -178,15 +175,38 @@ const RegisterView: React.FC = () => {
             required
             {...form.getInputProps("confirmPassword")}
             rightSection={
-              <UnstyledButton
-                onClick={() => setShowPassword(!showPassword)}
-                className={styles.eyeButton}
-              >
+              <UnstyledButton onClick={() => setShowPassword(!showPassword)} className={styles.eyeButton}>
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </UnstyledButton>
             }
           />
         </Box>
+
+        <Checkbox
+          checked={acceptTerms}
+          onChange={(e) => setAcceptTerms(e.currentTarget.checked)}
+          label={
+            <>
+              Acepto los{" "}
+              <UnstyledButton
+                type="button"
+                onClick={() => setShowTermsModal(true)}
+                style={{ color: "#00b894", textDecoration: "underline" }}
+              >
+                Términos y Condiciones
+              </UnstyledButton>
+            </>
+          }
+          required
+          mt="md"
+        />
+
+        <Checkbox
+          checked={subscribeEmails}
+          onChange={(e) => setSubscribeEmails(e.currentTarget.checked)}
+          label="Deseo recibir correos con información y promociones"
+          mt="sm"
+        />
 
         {error && (
           <Text color="red" size="sm" className={styles.errorMessage}>
@@ -194,18 +214,13 @@ const RegisterView: React.FC = () => {
           </Text>
         )}
 
-        <Button
-          loading={loading}
-          fullWidth
-          size="lg"
-          className={styles.loginButton}
-          type="submit"
-        >
+        <Button loading={loading} fullWidth size="lg" className={styles.loginButton} type="submit" mt="xl">
           Registrarse
         </Button>
       </form>
 
-
+      {/* Modal profesional y reutilizable */}
+      <TermsModal opened={showTermsModal} onClose={() => setShowTermsModal(false)} />
     </Container>
   );
 };

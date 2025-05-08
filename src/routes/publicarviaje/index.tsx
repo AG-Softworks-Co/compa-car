@@ -35,7 +35,8 @@ import {
   errorMessages
 } from '../../types/PublicarViaje/TripDataManagement';
 import styles from './index.module.css';
-import Reservar from '/Reservar2.webp'
+import { notifications } from '@mantine/notifications';
+import { supabase } from '@/lib/supabaseClient'; 
 
 
 const MARKER_ICONS = {
@@ -109,6 +110,51 @@ function ReservarView({ isLoaded }: ReservarViewProps){
   const [error, setError] = useState<string | null>(null);
   const [originMarker, setOriginMarker] = useState<google.maps.Marker | null>(null);
   const [destinationMarker, setDestinationMarker] = useState<google.maps.Marker | null>(null);
+  
+useEffect(() => {
+  const validateUserAccess = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session?.user?.id) {
+        navigate({ to: '/Login' });
+        return;
+      }
+
+      const { data: profileRaw, error } = await supabase
+        .from('user_profiles')
+        .select(`status, "Verification"`)
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (error || !profileRaw) {
+        console.error('Error cargando perfil:', error);
+        return;
+      }
+
+      const profile = profileRaw as { status: string; Verification: string };
+
+      const isDriver = profile.status === 'DRIVER';
+      const isVerified = profile.Verification === 'VERIFICADO';
+
+      if (!isDriver || !isVerified) {
+        notifications.show({
+          title: 'Acceso restringido',
+          message: 'Debes registrar tu vehículo y estar verificado para publicar un viaje.',
+          color: 'yellow'
+        });
+
+        navigate({ to: '/RegistrarVehiculo' });
+      }
+
+    } catch (error) {
+      console.error('Error validando perfil:', error);
+    }
+  };
+
+  validateUserAccess();
+}, []);
+
 
   // Estados de preferencias
   const [routePreferences, setRoutePreferences] = useState<RoutePreferences>({
@@ -360,7 +406,7 @@ const destinationLng = destinationLocation.coords.lng;
 
       <Container size="sm" className={styles.content}>
          <div className={styles.heroSection}>
-          <Image src={Reservar} alt="Carpooling" className={styles.heroImage} />
+          <Image src='https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/fondo2carro.png' alt="Carpooling" className={styles.heroImage} />
           <Title order={2} className={styles.heroTitle}>
               ¿Listo para compartir tu viaje?
               </Title>

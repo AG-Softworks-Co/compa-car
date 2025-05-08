@@ -3,11 +3,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate, createFileRoute } from '@tanstack/react-router';
 import {
     ArrowLeft,
-    Camera,
     FileText,
     Calendar,
     Users,
-    RotateCw,
     AlertCircle,
     CheckCircle,
     UserRound,
@@ -19,7 +17,6 @@ import { LoadingOverlay, Modal, Button, Text } from '@mantine/core';
  import { supabase } from '@/lib/supabaseClient';
 import { notifications } from '@mantine/notifications';
 
-const BASE_URL = 'https://rest-sorella-production.up.railway.app/api';
 
 const PropertyCard: React.FC = () => {
     const navigate = useNavigate();
@@ -35,11 +32,11 @@ const PropertyCard: React.FC = () => {
         frontPreview: '',
         backPreview: '',
     });
-    const [initialFormData, setInitialFormData] = useState<PropertyCardData | null>(null);
+    const [initialFormData, ] = useState<PropertyCardData | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [error, ] = useState('');
     const [vehicleId, setVehicleId] = useState<number | null>(null);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string>('');
@@ -47,7 +44,6 @@ const PropertyCard: React.FC = () => {
     const [viewMode, setViewMode] = useState(true);
     const [formHasChanged, setFormHasChanged] = useState(false);
     const [propertyCardId, setPropertyCardId] = useState<number | null>(null);
-    const [userId, setUserId] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
@@ -64,7 +60,7 @@ const PropertyCard: React.FC = () => {
                 const userId = session.user.id;
 
                 // Cargar datos de la tarjeta de propiedad existente
-                const { data: existingCard, error: cardError } = await supabase
+                const { data: existingCard } = await supabase
                     .from('property_cards')
                     .select('*')
                     .eq('user_id', userId)
@@ -226,46 +222,6 @@ const PropertyCard: React.FC = () => {
             }
         }
 
-    };
-
-    const handleFileUpload = (side: 'front' | 'back') => async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        const maxSize = 5 * 1024 * 1024; // 5MB
-        if (file.size > maxSize) {
-            setErrors(prev => ({
-                ...prev,
-                [`${side}File`]: 'La imagen no debe exceder 5MB'
-            }));
-            return;
-        }
-
-        const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-        if (!validTypes.includes(file.type)) {
-            setErrors(prev => ({
-                ...prev,
-                [`${side}File`]: 'Formato no válido. Use JPG, PNG o WebP'
-            }));
-            return;
-        }
-        setFormData(prev => ({
-            ...prev,
-            [`${side}File`]: file,
-            [`${side}Preview`]: URL.createObjectURL(file)
-        }));
-
-        if (errors[`${side}File`]) {
-            if (side) {
-                setErrors(prev => {
-                    const newErrors = { ...prev };
-                    delete newErrors[`${side}File`];
-                    return newErrors;
-                });
-            }
-        }
-        if (!viewMode) {
-            setFormHasChanged(true);
-        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -621,93 +577,6 @@ const PropertyCard: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Fotos del Documento */}
-                    <div className={styles.section}>
-                        <div className={styles.sectionHeader}>
-                            <Camera className={styles.sectionIcon} size={24} />
-                            <h2 className={styles.sectionTitle}>Fotos del Documento</h2>
-                            <Text size="sm" color="dimmed" className={styles.optionalText}>
-                                (Opcional)
-                            </Text>
-                        </div>
-                        <div className={styles.photosGrid}>
-                            {/* Foto Frontal */}
-                            <div className={styles.photoUpload}>
-                                <div className={styles.photoPreview}>
-                                    {formData.frontPreview ? (
-                                        <img
-                                            src={formData.frontPreview}
-                                            alt="Cara frontal"
-                                            className={styles.previewImage}
-                                        />
-                                    ) : (
-                                        <div className={styles.photoPlaceholder}>
-                                            <Camera size={40} className={styles.placeholderIcon} />
-                                            <span className={styles.placeholderText}>
-                                                Cara frontal
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                                <input
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp"
-                                    onChange={handleFileUpload('front')}
-                                    className={styles.photoInput}
-                                    id="front-photo"
-                                    disabled={isSubmitting}
-                                />
-                                <label htmlFor="front-photo" className={styles.photoLabel}>
-                                    <Camera size={16} />
-                                    {formData.frontPreview ? 'Cambiar foto frontal' : 'Agregar foto frontal'}
-                                </label>
-                                {errors.frontFile && (
-                                    <span className={styles.errorText}>
-                                        <AlertCircle size={14} />
-                                        {errors.frontFile}
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Foto Posterior */}
-                            <div className={styles.photoUpload}>
-                                <div className={styles.photoPreview}>
-                                    {formData.backPreview ? (
-                                        <img
-                                            src={formData.backPreview}
-                                            alt="Cara posterior"
-                                            className={styles.previewImage}
-                                        />
-                                    ) : (
-                                        <div className={styles.photoPlaceholder}>
-                                            <RotateCw size={40} className={styles.placeholderIcon} />
-                                            <span className={styles.placeholderText}>
-                                                Cara posterior
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                                <input
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp"
-                                    onChange={handleFileUpload('back')}
-                                    className={styles.photoInput}
-                                    id="back-photo"
-                                    disabled={isSubmitting}
-                                />
-                                <label htmlFor="back-photo" className={styles.photoLabel}>
-                                    <RotateCw size={16} />
-                                    {formData.backPreview ? 'Cambiar foto posterior' : 'Agregar foto posterior'}
-                                </label>
-                                {errors.backFile && (
-                                    <span className={styles.errorText}>
-                                        <AlertCircle size={14} />
-                                        {errors.backFile}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    </div>
 
                     {/* Mensaje de Error General */}
                     {error && (

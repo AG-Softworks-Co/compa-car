@@ -263,3 +263,86 @@
       font-size: 14px !important;
     }
   }
+
+/* Estilo adicional para el modal de términos */
+.mantine-Modal-root {
+  backdrop-filter: blur(5px);
+}
+
+.mantine-Modal-content {
+  background: #0f0f0f !important;
+  border: 1px solid rgba(0, 255, 157, 0.1) !important;
+  border-radius: 16px !important;
+  color: white !important;
+  padding: 24px !important;
+  box-shadow: 0 0 20px rgba(0, 255, 157, 0.1);
+}
+
+.mantine-Modal-title {
+  color: #00ff9d !important;
+  font-weight: 700 !important;
+  text-align: center;
+  font-size: 20px !important;
+  margin-bottom: 12px;
+}
+
+.mantine-Modal-close {
+  color: rgba(255, 255, 255, 0.6) !important;
+  transition: all 0.3s ease;
+}
+
+.mantine-Modal-close:hover {
+  color: #00ff9d !important;
+}
+
+/* Texto dentro del modal */
+.mantine-Text-root {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Checkbox ajustado */
+.checkbox {
+  margin-top: 20px;
+}
+
+.checkbox label {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox input[type="checkbox"] {
+  accent-color: #00ff9d !important;
+  background: transparent !important;
+  border: 1px solid rgba(0, 255, 157, 0.3) !important;
+  width: 18px;
+  height: 18px;
+  transition: all 0.3s ease;
+}
+
+.checkbox input[type="checkbox"]:checked {
+  background-color: #00ff9d !important;
+  border-color: #00ff9d !important;
+  animation: checkboxPop 0.3s ease-out;
+}
+
+/* Botón leer términos */
+.checkbox button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: #00ff9d !important;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.checkbox button:hover {
+  color: #00cc7a !important;
+}

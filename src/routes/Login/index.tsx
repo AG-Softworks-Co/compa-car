@@ -117,7 +117,7 @@ const LoginView: React.FC = () => {
 
       <Box className={styles.logoSection}>
         <Box className={styles.logo}>
-          <img src="/Logo.png" alt="Cupo Logo" />
+          <img src="https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/Logo.png" alt="Cupo Logo" /> 
         </Box>
         <Text className={styles.title}>
           Hola de nuevo, <span className={styles.userName}>Usuario</span>
@@ -177,7 +177,7 @@ const LoginView: React.FC = () => {
 
         <UnstyledButton
           className={styles.forgotPassword}
-          onClick={() => navigate({ to: "/RecuperarPasword" })}
+          onClick={() => navigate({ to: "/RecuperarPasword/ForgotPassword" })}
         >
           Olvidé mi contraseña
         </UnstyledButton>

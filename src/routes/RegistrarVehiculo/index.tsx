@@ -7,8 +7,6 @@ import {
     Camera,
     AlertCircle,
     FileText,
-    Calendar,
-    Shield,
     CheckCircle,
 } from 'lucide-react';
 import {
@@ -266,46 +264,59 @@ const VehicleRegistration: React.FC = () => {
 
     const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (viewMode) return;
-
+      
         const file = e.target.files?.[0];
         if (!file) return;
-
+      
+        const allowedTypes = ['image/jpeg', 'image/png'];
+        const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+      
+        if (!allowedTypes.includes(file.type)) {
+          setError('Formato no soportado. Usa JPG o PNG.');
+          return;
+        }
+      
+        if (file.size > maxSizeInBytes) {
+          setError('La imagen no puede superar los 5MB.');
+          return;
+        }
+      
         const reader = new FileReader();
         reader.onloadend = () => {
-            setFormData(prev => ({
-                ...prev,
-                photo: file,
-                photoUrl: reader.result as string
-            }));
+          setFormData(prev => ({
+            ...prev,
+            photo: file,
+            photoUrl: reader.result as string,
+          }));
+          setError(''); // Limpiar errores si todo sale bien
         };
+      
         reader.readAsDataURL(file);
     };
-
+      
     const uploadVehiclePhoto = async (file: File): Promise<string | null> => {
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
-            const filePath = `vehicle-photos/${fileName}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('vehicles')
-                .upload(filePath, file, { upsert: true });
-
-            if (uploadError) {
-                throw uploadError;
-            }
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('vehicles')
-                .getPublicUrl(filePath);
-
-            return publicUrl;
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}.${fileExt}`;
+          const userId = formData.user_id;
+          const filePath = `VehiclesDocuments/${userId}/${fileName}`;
+      
+          const { error: uploadError } = await supabase.storage
+            .from('Resources')
+            .upload(filePath, file, { upsert: true });
+      
+          if (uploadError) {
+            throw uploadError;
+          }
+      
+          const { data } = supabase.storage.from('Resources').getPublicUrl(filePath);
+          return data.publicUrl;
         } catch (error) {
-            console.error('Error uploading photo:', error);
-            setError(`Error uploading photo: ${error}`);
-            return null;
+          console.error('Error uploading photo:', error);
+          setError(`Error al subir la foto: ${error}`);
+          return null;
         }
-    };
+    };      
 
     const showSuccessNotification = (message: string) => {
         notifications.show({
@@ -328,14 +339,18 @@ const VehicleRegistration: React.FC = () => {
             setLoading(true);
             setError("");
 
-            let photoUrl = formData.photoUrl;
+            let photoUrl: string | null = null;
 
             if (formData.photo) {
                 const uploadedUrl = await uploadVehiclePhoto(formData.photo);
                 if (uploadedUrl) {
-                    photoUrl = uploadedUrl;
+                    photoUrl = uploadedUrl; // solo URL pública real del Storage
                 }
+            } else if (formData.photoUrl && formData.photoUrl.startsWith('http')) {
+                // Si ya existía una URL previa válida
+                photoUrl = formData.photoUrl;
             }
+            
 
             const vehicleData = {
                 user_id: formData.user_id,

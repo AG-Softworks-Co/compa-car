@@ -75,7 +75,7 @@ const WalletDetailView: React.FC = () => {
   }, [navigate]);
 
   const isPositive = (type: string) => {
-    return type === 'recarga' || type === 'devolución';
+    return type === 'recarga' || type === 'devolución' || type === 'cupon';
   };
 
   return (

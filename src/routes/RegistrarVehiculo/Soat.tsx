@@ -46,7 +46,7 @@ const Soat: React.FC = () => {
         frontPreview: undefined,
         backPreview: undefined,
     })
-    const [initialFormData, setInitialFormData] = useState<SoatFormData | null>(null);
+    const [initialFormData, ] = useState<SoatFormData | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -54,10 +54,9 @@ const Soat: React.FC = () => {
     const [viewMode, setViewMode] = useState(true);
     const [vehicleId, setVehicleId] = useState<number | null>(null);
     const [soatId, setSoatId] = useState<number | null>(null);
-    const [, setError] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formHasChanged, setFormHasChanged] = useState(false);
-    const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+    const [submitMessage, ] = useState<string | null>(null);
      const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
      const [successMessage, setSuccessMessage] = useState<string>('');
 
@@ -84,7 +83,7 @@ const Soat: React.FC = () => {
                 const userId = session.user.id;
 
                 // Cargar datos del SOAT existente
-                const { data: existingSoat, error: soatError } = await supabase
+                const { data: existingSoat } = await supabase
                     .from('soat_details')
                     .select('*')
                     .eq('user_id', userId)
@@ -345,29 +344,37 @@ const handleSubmit = async (e: React.FormEvent) => {
     }
   };
 
-  // Agregar función para subir fotos
-  const uploadPhoto = async (file: File, type: 'front' | 'back'): Promise<string | null> => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${type}_${Math.random()}.${fileExt}`;
-      const filePath = `soat/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('soat')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('soat')
-        .getPublicUrl(filePath);
-
-      return publicUrl;
-    } catch (error) {
-      console.error(`Error uploading ${type} photo:`, error);
-      return null;
-    }
-  };
+    //  función para subir fotos
+   const uploadPhoto = async (file: File, type: 'front' | 'back'): Promise<string | null> => {
+     try {
+       const { data: { session } } = await supabase.auth.getSession();
+       const userId = session?.user?.id;
+       if (!userId) throw new Error('Usuario no autenticado');
+   
+       const fileExt = file.name.split('.').pop();
+       const fileName = `${type}_${Date.now()}.${fileExt}`;
+       const filePath = `VehiclesDocuments/${userId}/soat/${fileName}`;
+   
+       const { error: uploadError } = await supabase.storage
+         .from('Resources')
+         .upload(filePath, file, {
+           upsert: true,
+           cacheControl: '3600'
+         });
+   
+       if (uploadError) throw uploadError;
+   
+       const { data: { publicUrl } } = supabase.storage
+         .from('Resources')
+         .getPublicUrl(filePath);
+   
+       return publicUrl;
+     } catch (error) {
+       console.error(`Error uploading ${type} photo:`, error);
+       return null;
+     }
+   };
+  
 
     const handleBack = () => {
         if (formHasChanged) {
@@ -601,9 +608,9 @@ const handleSubmit = async (e: React.FormEvent) => {
                             {/* Foto Frontal */}
                             <div className={styles.photoUpload}>
                                 <div className={styles.photoPreview}>
-                                    {formData.frontPreview || formData.frontPreview ? (
-                                        <img
-                                            src={formData.frontPreview || formData.frontPreview || ""}
+                                    {formData.frontPreview || formData.photo_front_url ? (
+                                          <img
+                                            src={formData.frontPreview || formData.photo_front_url || ""}
                                             alt="Cara frontal"
                                             className={styles.previewImage}
                                         />
@@ -639,12 +646,13 @@ const handleSubmit = async (e: React.FormEvent) => {
                             {/* Foto Posterior */}
                             <div className={styles.photoUpload}>
                                 <div className={styles.photoPreview}>
-                                    {formData.backPreview || formData.backPreview ? (
+                                   {formData.backPreview || formData.photo_back_url ? (
                                         <img
-                                            src={formData.backPreview || formData.backPreview || ""}
-                                            alt="Cara posterior"
-                                            className={styles.previewImage}
+                                          src={formData.backPreview || formData.photo_back_url || ""}
+                                          alt="Cara posterior"
+                                          className={styles.previewImage}
                                         />
+                                        
                                     ) : (
                                         <div className={styles.photoPlaceholder}>
                                             <RotateCw size={40} className={styles.placeholderIcon} />

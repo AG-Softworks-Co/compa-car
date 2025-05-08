@@ -1,22 +1,22 @@
-import type React from "react";
-import { useState, useEffect } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import React, { useEffect, useState } from 'react';
 import {
-  Box,
+  Container,
   TextInput,
   Select,
   Button,
-  Container,
-  Text,
-  Group,
-  UnstyledButton,
   Paper,
+  UnstyledButton,
+  Box,
+  Text,
   LoadingOverlay,
-} from "@mantine/core";
-import { ArrowLeft, AlertCircle } from "lucide-react";
-import styles from "./index.module.css";
-import { useForm } from "@mantine/form";
-import { supabase } from "@/lib/supabaseClient";
+  Image,
+} from '@mantine/core';
+import { ArrowLeft, Camera } from 'lucide-react';
+import { useForm } from '@mantine/form';
+import { useNavigate, createFileRoute } from '@tanstack/react-router';
+import { notifications } from '@mantine/notifications';
+import { supabase } from '@/lib/supabaseClient';
+import styles from './index.module.css';
 
 interface ProfileFormData {
   id: number;
@@ -27,282 +27,232 @@ interface ProfileFormData {
   identification_type: string;
   identification_number: string;
   user_type: string;
-
+  photo_user?: string | null;
+  file?: File;
 }
-
 
 const CompleteProfileView: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const form = useForm<ProfileFormData>({
     initialValues: {
       id: 0,
-      email: "",
-      phone_number: "",
-      first_name: "",
-      last_name: "",
-      identification_type: "CC",
-      identification_number: "",
-      user_type: "PASSENGER",
+      email: '',
+      phone_number: '',
+      first_name: '',
+      last_name: '',
+      identification_type: 'CC',
+      identification_number: '',
+      user_type: 'PASSENGER',
+      photo_user: null,
+      file: undefined,
     },
     validate: {
-      phone_number: (value) => {
-        if (!value) return "El número de teléfono es requerido";
-        if (!/^\d{10}$/.test(value)) return "El número debe tener 10 dígitos";
-        return null;
-      },
-      first_name: (value) => {
-        if (!value) return "El nombre es requerido";
-        if (value.length < 3) return "El nombre debe tener al menos 3 caracteres";
-        if (value.length > 3) return "no se peuydes";
-        return null;
-      },
-      last_name: (value) => {
-        if (!value) return "El apellido es requerido";
-        if (value.length < 3) return "El apellido debe tener al menos 3 caracteres";
-        return null;
-      },
-      identification_number: (value) => {
-        if (!value) return "El número de identificación es requerido";
-        if (value.length < 6) return "El número debe tener al menos 6 caracteres";
-        return null;
-      }
-    }
+      phone_number: (v) => (!v ? 'Requerido' : /^\d{10}$/.test(v) ? null : 'Debe tener 10 dígitos'),
+      first_name: (v) => (!v ? 'Requerido' : v.length < 3 ? 'Muy corto' : null),
+      last_name: (v) => (!v ? 'Requerido' : v.length < 3 ? 'Muy corto' : null),
+      identification_number: (v) => (!v ? 'Requerido' : v.length < 6 ? 'Muy corto' : null),
+    },
   });
 
   useEffect(() => {
-    const loadUserProfile = async () => {
+    const loadProfile = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return navigate({ to: '/Login' });
 
-        if (!user) {
-          console.log('No se encontraron datos de sesión');
-          navigate({ to: "/Login" });
-          return;
-        }
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
 
-        // Intentar cargar el perfil existente
-        try {
-          console.log('Verificando perfil existente...');
-          const { data: profile, error } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('user_id', user.id)
-            .single();
-
-          if (error) throw error;
-
-          if (profile) {
-            console.log('Perfil encontrado, cargando datos...');
-            setIsEditing(true);
-            form.setValues({
-              id: profile.id,
-              email: user.email || '',
-              phone_number: user.phone || '',
-              first_name: profile.first_name,
-              last_name: profile.last_name,
-              identification_type: profile.identification_type,
-              identification_number: profile.identification_number,
-              user_type: profile.status || 'PASSENGER'
-            });
-          } else {
-            console.log('Perfil no encontrado, iniciando nuevo registro');
-            form.setValues({
-              ...form.values,
-              email: user.email || '',
-              phone_number: user.phone || ''
-            });
-          }
-        } catch (error) {
-          console.error('Error cargando perfil:', error);
+        if (profile) {
+          setIsEditing(true);
+          setPreviewUrl(profile.photo_user || null);
+          form.setValues({
+            id: profile.id,
+            email: user.email || '',
+            phone_number: profile.phone_number || '',
+            first_name: profile.first_name || '',
+            last_name: profile.last_name || '',
+            identification_type: profile.identification_type || 'CC',
+            identification_number: profile.identification_number || '',
+            user_type: profile.status || 'PASSENGER',
+            photo_user: profile.photo_user || null,
+          });
+        } else {
           form.setValues({
             ...form.values,
             email: user.email || '',
-            phone_number: user.phone || ''
           });
         }
-
-      } catch (error) {
-        console.error('Error en inicialización:', error);
-        setError("Error al cargar los datos del perfil");
+      } catch (err) {
+        console.error('Error loading profile:', err);
       } finally {
         setInitialLoading(false);
       }
     };
 
-    loadUserProfile();
+    loadProfile();
   }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setPreviewUrl(URL.createObjectURL(file));
+    form.setFieldValue('file', file);
+  };
+
+  const uploadPhoto = async (file: File, userId: string): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `photo_${Date.now()}.${fileExt}`;
+      const path = `UsersPhotos/${userId}/${fileName}`;
+
+      const { error } = await supabase.storage
+        .from('Resources')
+        .upload(path, file, {
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage.from('Resources').getPublicUrl(path);
+      return publicUrl;
+    } catch (err) {
+      console.error('Upload failed:', err);
+      return null;
+    }
+  };
 
   const handleSubmit = async (values: ProfileFormData) => {
     try {
       setLoading(true);
-      setError("");
-
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuario no autenticado');
 
-      if (!user) {
-        throw new Error("No se encontró la sesión del usuario");
+      let photoUrl = values.photo_user || null;
+
+      if (values.file) {
+        const uploadedUrl = await uploadPhoto(values.file, user.id);
+        if (uploadedUrl) photoUrl = uploadedUrl;
       }
 
-      const profileData = {
+      const dataToSave = {
         user_id: user.id,
         first_name: values.first_name.trim(),
         last_name: values.last_name.trim(),
+        phone_number: values.phone_number.trim(),
         identification_type: values.identification_type,
         identification_number: values.identification_number.trim(),
-        status: values.user_type
+        status: values.user_type,
+        "Verification": 'SIN VERIFICAR',
+        photo_user: photoUrl,
       };
 
-      let result;
-      if (isEditing) {
-        result = await supabase
-          .from('user_profiles')
-          .update(profileData)
-          .eq('user_id', user.id);
-      } else {
-        result = await supabase
-          .from('user_profiles')
-          .insert([profileData]);
-      }
+      const result = isEditing
+        ? await supabase.from('user_profiles').update(dataToSave).eq('user_id', user.id)
+        : await supabase.from('user_profiles').insert([dataToSave]);
 
-      if (result.error) {
-        throw new Error(result.error.message);
-      }
+      if (result.error) throw result.error;
 
-      console.log('Perfil guardado exitosamente');
-      if (values.user_type === "PASSENGER") {
-        navigate({ to: "/" });
-      } else if (values.user_type === "DRIVER") {
-        navigate({ to: "/RegistrarVehiculo" });
-      }
+      notifications.show({
+        title: 'Perfil guardado',
+        message: 'Tu perfil ha sido actualizado exitosamente',
+        color: 'green',
+      });
 
-    } catch (error: any) {
-      console.error('Error guardando perfil:', error);
-      setError(error.message || "Error al guardar los datos");
+      navigate({ to: values.user_type === 'DRIVER' ? '/RegistrarVehiculo' : '/' });
+    } catch (err: any) {
+      console.error('Save error:', err);
+      notifications.show({
+        title: 'Error',
+        message: err.message || 'Error al guardar',
+        color: 'red',
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleBack = () => {
-    navigate({ to: "/Login" });
-  };
-
-  if (initialLoading) {
-    return (
-      <Container className={styles.container}>
-        <LoadingOverlay visible={true} />
-      </Container>
-    );
-  }
-
   return (
     <Container className={styles.container}>
-      <LoadingOverlay visible={loading} />
-
-      <Group justify="flex-start" mb="xl">
-        <UnstyledButton onClick={handleBack} className={styles.backButton}>
-          <ArrowLeft size={24} />
-        </UnstyledButton>
-      </Group>
+      <LoadingOverlay visible={initialLoading || loading} />
 
       <Paper className={styles.formWrapper}>
-        <Box className={styles.header}>
-          <Text className={styles.title}>
-            {isEditing ? 'Actualizar perfil' : 'Completa tu perfil'}
-          </Text>
-          <Text className={styles.subtitle}>
-            {isEditing 
-              ? 'Actualiza tu información personal'
-              : 'Necesitamos algunos datos adicionales para completar tu registro'
+        <UnstyledButton
+          onClick={() => {
+            if (isEditing) {
+              navigate({ to: '/Perfil' });
+            } else {
+              window.history.back(); // volver atrás sin importar la ruta actual
             }
+          }}
+          className={styles.backButton}
+          aria-label="Volver"
+        >
+          <ArrowLeft size={24} />
+        </UnstyledButton>
+
+        <Box className={styles.header}>
+          <div className={styles.avatarContainer}>
+            <Image
+              src={previewUrl || 'https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/SinFotoPerfil.png'}
+              alt=""
+              className={styles.previewImage}
+            />
+            <label className={styles.uploadOverlay} htmlFor="photo-upload">
+              <Camera size={18} color="#000" />
+            </label>
+            <input
+              id="photo-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className={styles.photoInput}
+            />
+          </div>
+
+          <Text className={styles.title}>{isEditing ? 'Actualizar perfil' : 'Completa tu perfil'}</Text>
+          <Text className={styles.subtitle}>
+            {isEditing ? 'Edita tu información' : 'Registra tu información personal'}
           </Text>
         </Box>
 
         <form onSubmit={form.onSubmit(handleSubmit)} className={styles.form}>
-          <TextInput
-            label="Correo electrónico"
-            placeholder="tu@email.com"
-            {...form.getInputProps("email")}
-            disabled
-            className={styles.input}
-          />
-
-          <TextInput
-            label="Nombre"
-            placeholder="Ingresa tu nombre"
-            required
-            {...form.getInputProps("first_name")}
-            className={styles.input}
-          />
-
-          <TextInput
-            label="Apellidos"
-            placeholder="Ingresa tus apellidos"
-            required
-            {...form.getInputProps("last_name")}
-            className={styles.input}
-          />
-
+          <TextInput label="Correo electrónico" disabled {...form.getInputProps('email')} />
+          <TextInput label="Nombre" required {...form.getInputProps('first_name')} />
+          <TextInput label="Apellidos" required {...form.getInputProps('last_name')} />
           <Select
             label="Tipo de identificación"
-            placeholder="Selecciona el tipo"
             data={[
-              { value: "CC", label: "Cédula de Ciudadanía" },
-              { value: "CE", label: "Cédula de Extranjería" },
-              { value: "PAS", label: "Pasaporte" },
+              { value: 'CC', label: 'Cédula de Ciudadanía' },
+              { value: 'CE', label: 'Cédula de Extranjería' },
+              { value: 'PAS', label: 'Pasaporte' },
             ]}
             required
-            {...form.getInputProps("identification_type")}
-            className={styles.input}
+            {...form.getInputProps('identification_type')}
           />
-
-          <TextInput
-            label="Número de identificación"
-            placeholder="Ingresa tu número de identificación"
-            required
-            {...form.getInputProps("identification_number")}
-            className={styles.input}
-          />
-
-          <TextInput
-            label="Teléfono"
-            placeholder="Ingresa tu número de teléfono"
-            required
-            {...form.getInputProps("phone_number")}
-            className={styles.input}
-          />
-
+          <TextInput label="Número de identificación" required {...form.getInputProps('identification_number')} />
+          <TextInput label="Teléfono" required {...form.getInputProps('phone_number')} />
           <Select
             label="Tipo de usuario"
-            placeholder="Selecciona el tipo de usuario"
             data={[
-              { value: "PASSENGER", label: "Pasajero" },
-              { value: "DRIVER", label: "Conductor" },
+              { value: 'PASSENGER', label: 'Pasajero' },
+              { value: 'DRIVER', label: 'Conductor' },
             ]}
             required
-            {...form.getInputProps("user_type")}
-            className={styles.input}
+            {...form.getInputProps('user_type')}
           />
 
-          {error && (
-            <Text color="red" size="sm" className={styles.errorMessage}>
-              <AlertCircle size={16} style={{ marginRight: 8 }} />
-              {error}
-            </Text>
-          )}
-
-          <Button
-            type="submit"
-            fullWidth
-            size="lg"
-            loading={loading}
-            className={styles.submitButton}
-          >
+          <Button type="submit" fullWidth mt="md" className={styles.submitButton}>
             {isEditing ? 'Actualizar información' : 'Guardar información'}
           </Button>
         </form>
@@ -311,6 +261,6 @@ const CompleteProfileView: React.FC = () => {
   );
 };
 
-export const Route = createFileRoute("/CompletarRegistro/")({
+export const Route = createFileRoute('/CompletarRegistro/')({
   component: CompleteProfileView,
 });

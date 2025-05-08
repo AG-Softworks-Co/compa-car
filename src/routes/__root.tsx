@@ -86,7 +86,11 @@ const RootComponent = () => {
         {showNavigation && (
           <AppShell.Header className={styles.header}>
             <Group justify="space-between" className={styles.headerContent}>
-              <Text className={styles.logo}>Cupo</Text>
+              <Image
+                src="https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/Logo.png" 
+                alt="Logo"
+                className={styles.logoImage}
+              />
               <Button
                 className={styles.registerButton}
                 component="a" // Cambiar a un enlace HTML
@@ -117,7 +121,7 @@ const RootComponent = () => {
                   {index === 2 ? (
                     <Box className={styles.logoWrapper}>
                       <Image
-                        src="/Logo.png"
+                        src="https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/Logo.png" 
                         alt="Logo"
                         className={styles.logoImage}
                       />

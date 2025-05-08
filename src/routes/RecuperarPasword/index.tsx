@@ -1,115 +1,118 @@
-import React from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import {
-  Box,
-  Container,
-  Text,
-  Group,
-  UnstyledButton,
+  PasswordInput,
   Button,
-  Center,
+  Stack,
+  Paper,
+  Text,
+  LoadingOverlay
 } from '@mantine/core';
-import { ArrowLeft, Mail } from 'lucide-react';
-import { Link } from '@tanstack/react-router';
-import styles from './index.module.css';
+import { supabase } from '@/lib/supabaseClient';
+import styles from './RecuperarPassword.module.css';
 
-const RecoverPasswordView: React.FC = () => {
-  const [code, setCode] = React.useState(['', '', '', '', '', '']);
-  const inputRefs = Array(6).fill(0).map(() => React.createRef<HTMLInputElement>());
+const RecoverPasswordView = () => {
+  const navigate = useNavigate();
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [tokenChecked, setTokenChecked] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
-  const handleCodeChange = (index: number, value: string) => {
-    if (value.length <= 1 && /^\d*$/.test(value)) {
-      const newCode = [...code];
-      newCode[index] = value;
-      setCode(newCode);
+  useEffect(() => {
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.replace('#', '?'));
+    const access_token = params.get('access_token');
+    const refresh_token = params.get('refresh_token');
 
-      // Mover al siguiente input si hay un valor
-      if (value && index < 5) {
-        inputRefs[index + 1].current?.focus();
+    if (!access_token || !refresh_token) {
+      setError('El enlace no es válido o ha expirado.');
+      return;
+    }
+
+    supabase.auth.setSession({ access_token, refresh_token }).then(({ error }) => {
+      if (error) {
+        setError('Error al establecer sesión. Intenta de nuevo.');
+      } else {
+        setTokenChecked(true);
       }
+    });
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (password !== confirmPassword) {
+      setError('Las contraseñas no coinciden.');
+      return;
     }
+
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password });
+
+    if (error) {
+      setError('No se pudo actualizar la contraseña.');
+    } else {
+      setSuccess(true);
+      setTimeout(() => {
+        navigate({ to: '/Login' });
+      }, 2000);
+    }
+
+    setLoading(false);
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !code[index] && index > 0) {
-      inputRefs[index - 1].current?.focus();
-    }
-  };
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <Paper className={styles.paper}>
+          <Text className={styles.error}>{error}</Text>
+          <Button fullWidth mt="md" onClick={() => navigate({ to: '/Login' })}>
+            Volver al login
+          </Button>
+        </Paper>
+      </div>
+    );
+  }
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    console.log('Código ingresado:', code.join(''));
-  };
+  if (!tokenChecked) {
+    return (
+      <div className={styles.container}>
+        <LoadingOverlay visible />
+      </div>
+    );
+  }
 
   return (
-    <Container className={styles.container}>
-      <Group justify="space-between" className={styles.header}>
-        <UnstyledButton component={Link} to="/login" className={styles.backButton}>
-          <ArrowLeft size={24} />
-        </UnstyledButton>
-        <Text className={styles.headerTitle}>Recuperar contraseña</Text>
-        <Box style={{ width: 24 }} /> {/* Espaciador para centrar el título */}
-      </Group>
-
-      <Box className={styles.content}>
-        <Center className={styles.iconWrapper}>
-          <Mail className={styles.icon} size={40} color="#FFD700" />
-        </Center>
-
-        <Text className={styles.title}>
-          Ingresa el código enviado a tu correo:
-        </Text>
-        
-        <Text className={styles.email}>
-          jhojanolivares.jo@gmail.com
-        </Text>
-
-        <Text className={styles.subtitle}>
-          (Podría llegar a tu correo no deseado)
-        </Text>
-
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.codeInputs}>
-            {code.map((digit, index) => (
-              <input
-                key={index}
-                ref={inputRefs[index]}
-                type="text"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleCodeChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(index, e)}
-                className={styles.codeInput}
-                inputMode="numeric"
-                pattern="\d*"
-                autoComplete="off"
-              />
-            ))}
-          </div>
-
-          <Button 
-            fullWidth
-            size="lg"
-            className={styles.confirmButton}
-            type="submit"
-          >
-            Confirmar
-          </Button>
-
-          <Button 
-            fullWidth
-            variant="outline"
-            size="lg"
-            className={styles.resendButton}
-          >
-            Reenviar código
-          </Button>
+    <div className={styles.container}>
+      <Paper className={styles.paper} withBorder>
+        <form onSubmit={handleSubmit}>
+          <Stack>
+            <Text className={styles.title}>Nueva contraseña</Text>
+            <PasswordInput
+              label="Nueva contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.currentTarget.value)}
+              required
+            />
+            <PasswordInput
+              label="Confirmar contraseña"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.currentTarget.value)}
+              required
+            />
+            <Button type="submit" fullWidth loading={loading}>
+              Establecer contraseña
+            </Button>
+            {success && <Text className={styles.success}>Contraseña actualizada correctamente.</Text>}
+          </Stack>
         </form>
-      </Box>
-    </Container>
+      </Paper>
+    </div>
   );
 };
 
 export const Route = createFileRoute('/RecuperarPasword/')({
-  component: RecoverPasswordView
+  component: RecoverPasswordView,
 });

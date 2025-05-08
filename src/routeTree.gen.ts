@@ -16,6 +16,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as ReservarIndexImport } from './routes/reservar/index'
 import { Route as PublicarviajeIndexImport } from './routes/publicarviaje/index'
 import { Route as HomeIndexImport } from './routes/home/index'
+import { Route as AyudaIndexImport } from './routes/ayuda/index'
 import { Route as AccountIndexImport } from './routes/account/index'
 import { Route as WalletIndexImport } from './routes/Wallet/index'
 import { Route as ReservasIndexImport } from './routes/Reservas/index'
@@ -25,7 +26,6 @@ import { Route as RegistrarDatosIndexImport } from './routes/RegistrarDatos/inde
 import { Route as RecuperarPaswordIndexImport } from './routes/RecuperarPasword/index'
 import { Route as PerfilIndexImport } from './routes/Perfil/index'
 import { Route as ParadasIndexImport } from './routes/Paradas/index'
-import { Route as PagarCupoIndexImport } from './routes/PagarCupo/index'
 import { Route as OrigenIndexImport } from './routes/Origen/index'
 import { Route as LoginIndexImport } from './routes/Login/index'
 import { Route as DetallesViajeIndexImport } from './routes/DetallesViaje/index'
@@ -44,7 +44,7 @@ import { Route as RegistrarVehiculoPropertyCardImport } from './routes/Registrar
 import { Route as RegistrarVehiculoLicenseImport } from './routes/RegistrarVehiculo/License'
 import { Route as RegistrarVehiculoDocumentsRequiredImport } from './routes/RegistrarVehiculo/DocumentsRequired'
 import { Route as RegistrarVehiculoDocumentFormImport } from './routes/RegistrarVehiculo/DocumentForm'
-import { Route as PagarCupoUpdateTripSeatsImport } from './routes/PagarCupo/updateTripSeats'
+import { Route as RecuperarPaswordForgotPasswordImport } from './routes/RecuperarPasword/ForgotPassword'
 import { Route as CuposViewTicketImport } from './routes/Cupos/ViewTicket'
 import { Route as CuposViewPassengersImport } from './routes/Cupos/ViewPassengers'
 import { Route as CuposViewBookingDetailsImport } from './routes/Cupos/ViewBookingDetails'
@@ -78,6 +78,12 @@ const PublicarviajeIndexRoute = PublicarviajeIndexImport.update({
 const HomeIndexRoute = HomeIndexImport.update({
   id: '/home/',
   path: '/home/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AyudaIndexRoute = AyudaIndexImport.update({
+  id: '/ayuda/',
+  path: '/ayuda/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -132,12 +138,6 @@ const PerfilIndexRoute = PerfilIndexImport.update({
 const ParadasIndexRoute = ParadasIndexImport.update({
   id: '/Paradas/',
   path: '/Paradas/',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const PagarCupoIndexRoute = PagarCupoIndexImport.update({
-  id: '/PagarCupo/',
-  path: '/PagarCupo/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -253,11 +253,12 @@ const RegistrarVehiculoDocumentFormRoute =
     getParentRoute: () => rootRoute,
   } as any)
 
-const PagarCupoUpdateTripSeatsRoute = PagarCupoUpdateTripSeatsImport.update({
-  id: '/PagarCupo/updateTripSeats',
-  path: '/PagarCupo/updateTripSeats',
-  getParentRoute: () => rootRoute,
-} as any)
+const RecuperarPaswordForgotPasswordRoute =
+  RecuperarPaswordForgotPasswordImport.update({
+    id: '/RecuperarPasword/ForgotPassword',
+    path: '/RecuperarPasword/ForgotPassword',
+    getParentRoute: () => rootRoute,
+  } as any)
 
 const CuposViewTicketRoute = CuposViewTicketImport.update({
   id: '/Cupos/ViewTicket',
@@ -331,11 +332,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CuposViewTicketImport
       parentRoute: typeof rootRoute
     }
-    '/PagarCupo/updateTripSeats': {
-      id: '/PagarCupo/updateTripSeats'
-      path: '/PagarCupo/updateTripSeats'
-      fullPath: '/PagarCupo/updateTripSeats'
-      preLoaderRoute: typeof PagarCupoUpdateTripSeatsImport
+    '/RecuperarPasword/ForgotPassword': {
+      id: '/RecuperarPasword/ForgotPassword'
+      path: '/RecuperarPasword/ForgotPassword'
+      fullPath: '/RecuperarPasword/ForgotPassword'
+      preLoaderRoute: typeof RecuperarPaswordForgotPasswordImport
       parentRoute: typeof rootRoute
     }
     '/RegistrarVehiculo/DocumentForm': {
@@ -464,13 +465,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrigenIndexImport
       parentRoute: typeof rootRoute
     }
-    '/PagarCupo/': {
-      id: '/PagarCupo/'
-      path: '/PagarCupo'
-      fullPath: '/PagarCupo'
-      preLoaderRoute: typeof PagarCupoIndexImport
-      parentRoute: typeof rootRoute
-    }
     '/Paradas/': {
       id: '/Paradas/'
       path: '/Paradas'
@@ -534,6 +528,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountIndexImport
       parentRoute: typeof rootRoute
     }
+    '/ayuda/': {
+      id: '/ayuda/'
+      path: '/ayuda'
+      fullPath: '/ayuda'
+      preLoaderRoute: typeof AyudaIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/home/': {
       id: '/home/'
       path: '/home'
@@ -573,7 +574,7 @@ export interface FileRoutesByFullPath {
   '/Cupos/ViewBookingDetails': typeof CuposViewBookingDetailsRoute
   '/Cupos/ViewPassengers': typeof CuposViewPassengersRoute
   '/Cupos/ViewTicket': typeof CuposViewTicketRoute
-  '/PagarCupo/updateTripSeats': typeof PagarCupoUpdateTripSeatsRoute
+  '/RecuperarPasword/ForgotPassword': typeof RecuperarPaswordForgotPasswordRoute
   '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
   '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
   '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
@@ -592,7 +593,6 @@ export interface FileRoutesByFullPath {
   '/DetallesViaje': typeof DetallesViajeIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
-  '/PagarCupo': typeof PagarCupoIndexRoute
   '/Paradas': typeof ParadasIndexRoute
   '/Perfil': typeof PerfilIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
@@ -602,6 +602,7 @@ export interface FileRoutesByFullPath {
   '/Reservas': typeof ReservasIndexRoute
   '/Wallet': typeof WalletIndexRoute
   '/account': typeof AccountIndexRoute
+  '/ayuda': typeof AyudaIndexRoute
   '/home': typeof HomeIndexRoute
   '/publicarviaje': typeof PublicarviajeIndexRoute
   '/reservar': typeof ReservarIndexRoute
@@ -614,7 +615,7 @@ export interface FileRoutesByTo {
   '/Cupos/ViewBookingDetails': typeof CuposViewBookingDetailsRoute
   '/Cupos/ViewPassengers': typeof CuposViewPassengersRoute
   '/Cupos/ViewTicket': typeof CuposViewTicketRoute
-  '/PagarCupo/updateTripSeats': typeof PagarCupoUpdateTripSeatsRoute
+  '/RecuperarPasword/ForgotPassword': typeof RecuperarPaswordForgotPasswordRoute
   '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
   '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
   '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
@@ -633,7 +634,6 @@ export interface FileRoutesByTo {
   '/DetallesViaje': typeof DetallesViajeIndexRoute
   '/Login': typeof LoginIndexRoute
   '/Origen': typeof OrigenIndexRoute
-  '/PagarCupo': typeof PagarCupoIndexRoute
   '/Paradas': typeof ParadasIndexRoute
   '/Perfil': typeof PerfilIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
@@ -643,6 +643,7 @@ export interface FileRoutesByTo {
   '/Reservas': typeof ReservasIndexRoute
   '/Wallet': typeof WalletIndexRoute
   '/account': typeof AccountIndexRoute
+  '/ayuda': typeof AyudaIndexRoute
   '/home': typeof HomeIndexRoute
   '/publicarviaje': typeof PublicarviajeIndexRoute
   '/reservar': typeof ReservarIndexRoute
@@ -656,7 +657,7 @@ export interface FileRoutesById {
   '/Cupos/ViewBookingDetails': typeof CuposViewBookingDetailsRoute
   '/Cupos/ViewPassengers': typeof CuposViewPassengersRoute
   '/Cupos/ViewTicket': typeof CuposViewTicketRoute
-  '/PagarCupo/updateTripSeats': typeof PagarCupoUpdateTripSeatsRoute
+  '/RecuperarPasword/ForgotPassword': typeof RecuperarPaswordForgotPasswordRoute
   '/RegistrarVehiculo/DocumentForm': typeof RegistrarVehiculoDocumentFormRoute
   '/RegistrarVehiculo/DocumentsRequired': typeof RegistrarVehiculoDocumentsRequiredRoute
   '/RegistrarVehiculo/License': typeof RegistrarVehiculoLicenseRoute
@@ -675,7 +676,6 @@ export interface FileRoutesById {
   '/DetallesViaje/': typeof DetallesViajeIndexRoute
   '/Login/': typeof LoginIndexRoute
   '/Origen/': typeof OrigenIndexRoute
-  '/PagarCupo/': typeof PagarCupoIndexRoute
   '/Paradas/': typeof ParadasIndexRoute
   '/Perfil/': typeof PerfilIndexRoute
   '/RecuperarPasword/': typeof RecuperarPaswordIndexRoute
@@ -685,6 +685,7 @@ export interface FileRoutesById {
   '/Reservas/': typeof ReservasIndexRoute
   '/Wallet/': typeof WalletIndexRoute
   '/account/': typeof AccountIndexRoute
+  '/ayuda/': typeof AyudaIndexRoute
   '/home/': typeof HomeIndexRoute
   '/publicarviaje/': typeof PublicarviajeIndexRoute
   '/reservar/': typeof ReservarIndexRoute
@@ -699,7 +700,7 @@ export interface FileRouteTypes {
     | '/Cupos/ViewBookingDetails'
     | '/Cupos/ViewPassengers'
     | '/Cupos/ViewTicket'
-    | '/PagarCupo/updateTripSeats'
+    | '/RecuperarPasword/ForgotPassword'
     | '/RegistrarVehiculo/DocumentForm'
     | '/RegistrarVehiculo/DocumentsRequired'
     | '/RegistrarVehiculo/License'
@@ -718,7 +719,6 @@ export interface FileRouteTypes {
     | '/DetallesViaje'
     | '/Login'
     | '/Origen'
-    | '/PagarCupo'
     | '/Paradas'
     | '/Perfil'
     | '/RecuperarPasword'
@@ -728,6 +728,7 @@ export interface FileRouteTypes {
     | '/Reservas'
     | '/Wallet'
     | '/account'
+    | '/ayuda'
     | '/home'
     | '/publicarviaje'
     | '/reservar'
@@ -739,7 +740,7 @@ export interface FileRouteTypes {
     | '/Cupos/ViewBookingDetails'
     | '/Cupos/ViewPassengers'
     | '/Cupos/ViewTicket'
-    | '/PagarCupo/updateTripSeats'
+    | '/RecuperarPasword/ForgotPassword'
     | '/RegistrarVehiculo/DocumentForm'
     | '/RegistrarVehiculo/DocumentsRequired'
     | '/RegistrarVehiculo/License'
@@ -758,7 +759,6 @@ export interface FileRouteTypes {
     | '/DetallesViaje'
     | '/Login'
     | '/Origen'
-    | '/PagarCupo'
     | '/Paradas'
     | '/Perfil'
     | '/RecuperarPasword'
@@ -768,6 +768,7 @@ export interface FileRouteTypes {
     | '/Reservas'
     | '/Wallet'
     | '/account'
+    | '/ayuda'
     | '/home'
     | '/publicarviaje'
     | '/reservar'
@@ -779,7 +780,7 @@ export interface FileRouteTypes {
     | '/Cupos/ViewBookingDetails'
     | '/Cupos/ViewPassengers'
     | '/Cupos/ViewTicket'
-    | '/PagarCupo/updateTripSeats'
+    | '/RecuperarPasword/ForgotPassword'
     | '/RegistrarVehiculo/DocumentForm'
     | '/RegistrarVehiculo/DocumentsRequired'
     | '/RegistrarVehiculo/License'
@@ -798,7 +799,6 @@ export interface FileRouteTypes {
     | '/DetallesViaje/'
     | '/Login/'
     | '/Origen/'
-    | '/PagarCupo/'
     | '/Paradas/'
     | '/Perfil/'
     | '/RecuperarPasword/'
@@ -808,6 +808,7 @@ export interface FileRouteTypes {
     | '/Reservas/'
     | '/Wallet/'
     | '/account/'
+    | '/ayuda/'
     | '/home/'
     | '/publicarviaje/'
     | '/reservar/'
@@ -821,7 +822,7 @@ export interface RootRouteChildren {
   CuposViewBookingDetailsRoute: typeof CuposViewBookingDetailsRoute
   CuposViewPassengersRoute: typeof CuposViewPassengersRoute
   CuposViewTicketRoute: typeof CuposViewTicketRoute
-  PagarCupoUpdateTripSeatsRoute: typeof PagarCupoUpdateTripSeatsRoute
+  RecuperarPaswordForgotPasswordRoute: typeof RecuperarPaswordForgotPasswordRoute
   RegistrarVehiculoDocumentFormRoute: typeof RegistrarVehiculoDocumentFormRoute
   RegistrarVehiculoDocumentsRequiredRoute: typeof RegistrarVehiculoDocumentsRequiredRoute
   RegistrarVehiculoLicenseRoute: typeof RegistrarVehiculoLicenseRoute
@@ -840,7 +841,6 @@ export interface RootRouteChildren {
   DetallesViajeIndexRoute: typeof DetallesViajeIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   OrigenIndexRoute: typeof OrigenIndexRoute
-  PagarCupoIndexRoute: typeof PagarCupoIndexRoute
   ParadasIndexRoute: typeof ParadasIndexRoute
   PerfilIndexRoute: typeof PerfilIndexRoute
   RecuperarPaswordIndexRoute: typeof RecuperarPaswordIndexRoute
@@ -850,6 +850,7 @@ export interface RootRouteChildren {
   ReservasIndexRoute: typeof ReservasIndexRoute
   WalletIndexRoute: typeof WalletIndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
+  AyudaIndexRoute: typeof AyudaIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
   PublicarviajeIndexRoute: typeof PublicarviajeIndexRoute
   ReservarIndexRoute: typeof ReservarIndexRoute
@@ -862,7 +863,7 @@ const rootRouteChildren: RootRouteChildren = {
   CuposViewBookingDetailsRoute: CuposViewBookingDetailsRoute,
   CuposViewPassengersRoute: CuposViewPassengersRoute,
   CuposViewTicketRoute: CuposViewTicketRoute,
-  PagarCupoUpdateTripSeatsRoute: PagarCupoUpdateTripSeatsRoute,
+  RecuperarPaswordForgotPasswordRoute: RecuperarPaswordForgotPasswordRoute,
   RegistrarVehiculoDocumentFormRoute: RegistrarVehiculoDocumentFormRoute,
   RegistrarVehiculoDocumentsRequiredRoute:
     RegistrarVehiculoDocumentsRequiredRoute,
@@ -882,7 +883,6 @@ const rootRouteChildren: RootRouteChildren = {
   DetallesViajeIndexRoute: DetallesViajeIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   OrigenIndexRoute: OrigenIndexRoute,
-  PagarCupoIndexRoute: PagarCupoIndexRoute,
   ParadasIndexRoute: ParadasIndexRoute,
   PerfilIndexRoute: PerfilIndexRoute,
   RecuperarPaswordIndexRoute: RecuperarPaswordIndexRoute,
@@ -892,6 +892,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReservasIndexRoute: ReservasIndexRoute,
   WalletIndexRoute: WalletIndexRoute,
   AccountIndexRoute: AccountIndexRoute,
+  AyudaIndexRoute: AyudaIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
   PublicarviajeIndexRoute: PublicarviajeIndexRoute,
   ReservarIndexRoute: ReservarIndexRoute,
@@ -914,7 +915,7 @@ export const routeTree = rootRoute
         "/Cupos/ViewBookingDetails",
         "/Cupos/ViewPassengers",
         "/Cupos/ViewTicket",
-        "/PagarCupo/updateTripSeats",
+        "/RecuperarPasword/ForgotPassword",
         "/RegistrarVehiculo/DocumentForm",
         "/RegistrarVehiculo/DocumentsRequired",
         "/RegistrarVehiculo/License",
@@ -933,7 +934,6 @@ export const routeTree = rootRoute
         "/DetallesViaje/",
         "/Login/",
         "/Origen/",
-        "/PagarCupo/",
         "/Paradas/",
         "/Perfil/",
         "/RecuperarPasword/",
@@ -943,6 +943,7 @@ export const routeTree = rootRoute
         "/Reservas/",
         "/Wallet/",
         "/account/",
+        "/ayuda/",
         "/home/",
         "/publicarviaje/",
         "/reservar/",
@@ -964,8 +965,8 @@ export const routeTree = rootRoute
     "/Cupos/ViewTicket": {
       "filePath": "Cupos/ViewTicket.tsx"
     },
-    "/PagarCupo/updateTripSeats": {
-      "filePath": "PagarCupo/updateTripSeats.tsx"
+    "/RecuperarPasword/ForgotPassword": {
+      "filePath": "RecuperarPasword/ForgotPassword.tsx"
     },
     "/RegistrarVehiculo/DocumentForm": {
       "filePath": "RegistrarVehiculo/DocumentForm.tsx"
@@ -1021,9 +1022,6 @@ export const routeTree = rootRoute
     "/Origen/": {
       "filePath": "Origen/index.tsx"
     },
-    "/PagarCupo/": {
-      "filePath": "PagarCupo/index.tsx"
-    },
     "/Paradas/": {
       "filePath": "Paradas/index.tsx"
     },
@@ -1050,6 +1048,9 @@ export const routeTree = rootRoute
     },
     "/account/": {
       "filePath": "account/index.tsx"
+    },
+    "/ayuda/": {
+      "filePath": "ayuda/index.tsx"
     },
     "/home/": {
       "filePath": "home/index.tsx"

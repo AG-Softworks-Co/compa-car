@@ -109,7 +109,7 @@ const License: React.FC = () => {
                 setLoading(true);
 
                 // Obtener sesión y validar
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                const { data: { session } } = await supabase.auth.getSession();
                 if (!session?.user?.id) {
                     navigate({ to: '/Login' });
                     return;
@@ -119,7 +119,7 @@ const License: React.FC = () => {
                 console.log('Loading license data for user:', userId);
 
                 // Cargar datos de la licencia existente primero
-                const { data: existingLicense, error: existingLicenseError } = await supabase
+                const { data: existingLicense } = await supabase
                     .from('driver_licenses')
                     .select('*')
                     .eq('user_id', userId)
@@ -283,31 +283,29 @@ const License: React.FC = () => {
             }
         };
 
-    const uploadPhoto = async (file: File, type: 'front' | 'back'): Promise<string | null> => {
+    const uploadPhoto = async (file: File, type: 'front' | 'back', userId: string): Promise<string | null> => {
         try {
             const fileExt = file.name.split('.').pop();
-            const fileName = `${type}_${Math.random()}.${fileExt}`;
-            const filePath = `licenses/${fileName}`;
-
+            const fileName = `${type}_${Date.now()}.${fileExt}`;
+            const filePath = `VehiclesDocuments/${userId}/${fileName}`;
+    
             const { error: uploadError } = await supabase.storage
-                .from('licenses')
+                .from('Resources')
                 .upload(filePath, file, {
                     upsert: true,
                     cacheControl: '3600'
                 });
-
+    
             if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('licenses')
-                .getPublicUrl(filePath);
-
-            return publicUrl;
+    
+            const { data } = supabase.storage.from('Resources').getPublicUrl(filePath);
+            return data.publicUrl;
         } catch (error) {
             console.error(`Error uploading ${type} photo:`, error);
             return null;
         }
     };
+    
 
     const showSuccessModal = () => {
         modals.open({
@@ -378,12 +376,12 @@ const License: React.FC = () => {
 
             // Procesar fotos solo si se subieron nuevas
             if (formData.frontFile) {
-                const frontUrl = await uploadPhoto(formData.frontFile, 'front');
+                const frontUrl = await uploadPhoto(formData.frontFile, 'front', userId);
                 if (frontUrl) licenseData.photo_front_url = frontUrl;
             }
 
             if (formData.backFile) {
-                const backUrl = await uploadPhoto(formData.backFile, 'back');
+                const backUrl = await uploadPhoto(formData.backFile, 'back', userId);
                 if (backUrl) licenseData.photo_back_url = backUrl;
             }
 
@@ -457,7 +455,7 @@ const License: React.FC = () => {
             setLoading(true);
 
             // Obtener sesión y validar
-            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            const { data: { session } } = await supabase.auth.getSession();
             if (!session?.user?.id) {
                 navigate({ to: '/Login' });
                 return;
@@ -467,7 +465,7 @@ const License: React.FC = () => {
             console.log('Loading license data for user:', userId);
 
             // Cargar datos de la licencia existente primero
-            const { data: existingLicense, error: existingLicenseError } = await supabase
+            const { data: existingLicense } = await supabase
                 .from('driver_licenses')
                 .select('*')
                 .eq('user_id', userId)

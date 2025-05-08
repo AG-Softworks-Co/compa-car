@@ -207,34 +207,161 @@ export type Database = {
       }
       driver_giftcards: {
         Row: {
-          balance: number
-          code: string
-          created_at: string | null
-          expiry_date: string
           id: number
-          status: string | null
-          user_id: string | null
+          user_id: string
+          code: string
+          balance: number
+          created_at: string
         }
         Insert: {
-          balance: number
-          code: string
-          created_at?: string | null
-          expiry_date: string
           id?: number
-          status?: string | null
-          user_id?: string | null
+          user_id: string
+          code: string
+          balance: number
+          created_at?: string
         }
         Update: {
-          balance?: number
-          code?: string
-          created_at?: string | null
-          expiry_date?: string
           id?: number
-          status?: string | null
-          user_id?: string | null
+          user_id?: string
+          code?: string
+          balance?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_giftcards_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }      
+      code_giftcards: {
+        Row: {
+          id: number
+          code: string
+          value: number
+          expired_at: string
+          created_at: string | null
+          description: string | null
+        }
+        Insert: {
+          id?: number
+          code: string
+          value: number
+          expired_at: string
+          created_at?: string | null
+          description?: string | null
+        }
+        Update: {
+          id?: number
+          code?: string
+          value?: number
+          expired_at?: string
+          created_at?: string | null
+          description?: string | null
         }
         Relationships: []
+      },
+      assistent: {
+        Row: {
+          id: number
+          user_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          user_id?: string
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assistent_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true // Cada usuario solo puede tener un asistente
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      },
+      assistent_chat: {
+        Row: {
+          id: number
+          user_id: string
+          assistent_id: number
+          mensaje: string
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          user_id?: string
+          assistent_id: number
+          mensaje: string
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          assistent_id?: number
+          mensaje?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assistent_chat_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assistent_chat_assistent_id_fkey"
+            columns: ["assistent_id"]
+            isOneToOne: false
+            referencedRelation: "assistent"
+            referencedColumns: ["id"]
+          }
+        ]
       }
+      terms_condictions: {
+        Row: {
+          id: number
+          user_id: string
+          created_at: string
+          verification_terms: string
+          suscriptions: string | null
+        }
+        Insert: {
+          id?: number
+          user_id?: string
+          created_at?: string
+          verification_terms?: string
+          suscriptions?: string | null
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          created_at?: string
+          verification_terms?: string
+          suscriptions?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terms_condictions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+
       driver_licenses: {
         Row: {
           blood_type: string | null
@@ -686,7 +813,7 @@ export type Database = {
           created_at: string | null
           first_name: string
           id: number
-          identification_number: string
+          identification_number: string | null
           identification_type: string
           last_name: string
           phone_number: string | null
@@ -694,12 +821,13 @@ export type Database = {
           updated_at: string | null
           photo_user: string | null
           user_id: string
+          Verification: string | null
         }
         Insert: {
           created_at?: string | null
           first_name: string
           id?: number
-          identification_number: string
+          identification_number: string | null
           identification_type: string
           last_name: string
           phone_number?: string | null
@@ -712,7 +840,7 @@ export type Database = {
           created_at?: string | null
           first_name?: string
           id?: number
-          identification_number?: string
+          identification_number?: string | null
           identification_type?: string
           last_name?: string
           phone_number?: string | null

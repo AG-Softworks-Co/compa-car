@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { ChatBox } from '@/components/Actividades/ChatBox';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import styles from './index.module.css';
 
 interface Chat {
   id: number;
@@ -19,6 +20,8 @@ export default function ChatPage() {
   const { trip_id } = Route.useSearch();
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     const fetchUserAndChats = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
@@ -97,29 +100,25 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col md:flex-row bg-[#0d0d0d] text-white overflow-hidden">
+    <div className={styles.chatContainer}>
       {/* Lista de chats */}
       <aside
-        className={`flex flex-col md:w-1/3 lg:w-1/4 border-r border-gray-800 bg-[#121212] md:block ${
-          isMobileChatOpen ? 'hidden' : 'block'
-        }`}
+        className={`${styles.chatSidebar} ${isMobileChatOpen ? styles.hideMobile : ''}`}
       >
-        <div className="p-4 border-b bg-[#1c1c1c] shadow-sm flex items-center gap-2">
+        <div className={styles.chatHeader}>
           <span className="text-xl">👥</span>
           <div>
             <h2 className="text-lg font-bold tracking-tight">Mis Chats</h2>
             <p className="text-xs text-gray-400">Salas comunitarias activas</p>
           </div>
         </div>
-        <ul className="flex-1 overflow-y-auto divide-y divide-[#222]">
+        <ul className={styles.chatList}>
           {chats.map((chat) => (
             <li
               key={chat.id}
               onClick={() => handleSelectChat(chat)}
-              className={`px-5 py-4 cursor-pointer hover:bg-[#1f1f1f] transition-colors duration-200 ${
-                selectedChat?.id === chat.id
-                  ? 'bg-[#2b2b2b] border-l-4 border-indigo-500'
-                  : ''
+              className={`${styles.chatItem} ${
+                selectedChat?.id === chat.id ? styles.activeChatItem : ''
               }`}
             >
               <div className="flex items-center justify-between">
@@ -138,13 +137,13 @@ export default function ChatPage() {
 
       {/* Panel de chat */}
       <main
-        className={`flex-1 flex flex-col h-full max-h-screen bg-[#0d0d0d] ${
+        className={`${styles.chatPanel} ${
           isMobileChatOpen || window.innerWidth >= 768 ? 'block' : 'hidden'
         }`}
       >
         {selectedChat && userId ? (
           <div className="flex flex-col h-full">
-            <div className="p-4 border-b border-gray-800 bg-[#1c1c1c] sticky top-0 z-10 flex items-center">
+            <div className={styles.chatTopBar}>
               <button
                 className="md:hidden text-indigo-400 mr-4 text-sm"
                 onClick={handleBackToChats}

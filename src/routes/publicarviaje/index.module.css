@@ -19,6 +19,17 @@
   transition: background 0.3s ease;
 }
 
+.accessModalContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+
 /* Header */
 .header {
   padding: 20px;

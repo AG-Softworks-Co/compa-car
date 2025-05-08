@@ -37,6 +37,7 @@ interface UserProfile {
   identification_type: string
   identification_number: string
   user_type: string
+  Verification: string | null
 }
 
 interface VehicleStatus {
@@ -227,7 +228,8 @@ const ProfileView: React.FC = () => {
             last_name: profile.last_name,
             identification_type: profile.identification_type,
             identification_number: profile.identification_number,
-            user_type: profile.status
+            user_type: profile.status,
+            Verification: profile.Verification
           });
         }
         setVehicleStatus({
@@ -267,7 +269,7 @@ const ProfileView: React.FC = () => {
           {userProfile?.user_type === 'DRIVER' ? (
             <>
               <CheckCircle size={16} className={styles.verifiedIcon} />
-              Conductor Verificado
+              Conductor
             </>
           ) : (
             'Pasajero'
@@ -445,12 +447,25 @@ const ProfileView: React.FC = () => {
       )}
       {userProfile?.user_type === 'DRIVER' && (
         <div className={styles.vehicleRegistrationComplete}>
-          <Text className={styles.vehicleRegistrationText}>
-            ¡Eres conductor verificado!
-          </Text>
-          <Text className={styles.vehicleRegistrationSubtitle}>
-            Puedes publicar y gestionar viajes
-          </Text>
+          {userProfile.Verification === 'VERIFICADO' ? (
+            <>
+              <Text className={styles.vehicleRegistrationText}>
+                ¡Eres conductor verificado!
+              </Text>
+              <Text className={styles.vehicleRegistrationSubtitle}>
+                Puedes publicar y gestionar viajes
+              </Text>
+            </>
+          ) : (
+            <div className={styles.verificationPendingBox}>
+              <Text className={styles.verificationPendingText}>
+                En proceso de verificación
+              </Text>
+              <Text className={styles.verificationPendingSubtitle}>
+                Aún no puedes publicar viajes
+              </Text>
+            </div>
+          )}
         </div>
       )}
     </div>

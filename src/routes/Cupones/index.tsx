@@ -1,311 +1,231 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import styles from './index.module.css'
-import type React from 'react';
-import { useState } from 'react';
-import { Container, Title, Text, Button, Badge, Tabs, Modal } from '@mantine/core';
-import { Gift, Clock, Search, Copy, Check, ArrowLeft } from 'lucide-react';
-import { notifications } from '@mantine/notifications';
-import type { LucideIcon } from 'lucide-react';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import styles from './index.module.css';
+import { useEffect, useState } from 'react';
+import {
+  Container,
+  Title,
+  Text,
+  Button,
+  TextInput,
+  Group,
+  Modal,
+  Card,
+  Divider,
+  ScrollArea,
+} from '@mantine/core';
+import { CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
-interface Coupon {
-  id: number;
-  category: string;
-  discount: string;
-  title: string;
-  description: string;
-  code: string;
-  validUntil: string;
-  validFrom?: string;
-  maxDiscount: string;
-  minAmount?: string;
-  usageLimit: string;
-  icon: LucideIcon;
-  conditions: string[];
-  isComingSoon?: boolean;
-}
-
-const CuponesView: React.FC = () => {
+const CuponesView = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('all');
-  const [searchVisible, setSearchVisible] = useState(false);
-  const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
-  const [copiedCode, setCopiedCode] = useState('');
-  const [searchValue, setSearchValue] = useState('');
+  const [userId, setUserId] = useState<string | null>(null);
+  const [codeInput, setCodeInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [modal, setModal] = useState<{
+    opened: boolean;
+    success: boolean;
+    message: string;
+    title: string;
+  }>({ opened: false, success: false, message: '', title: '' });
+  const [redeemedCoupons, setRedeemedCoupons] = useState<
+    { code: string; balance: number; created_at: string }[]
+  >([]);
 
-  const categories = [
-    { value: 'all', label: 'Todos' },
-    { value: 'available', label: 'Disponibles' },
-    { value: 'soon', label: 'Próximamente' },
-    { value: 'used', label: 'Utilizados' }
-  ];
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Ajuste para evitar carga desde arriba
 
-  const coupons: Coupon[] = [
-    {
-      id: 1,
-      category: 'available',
-      discount: '50%',
-      title: '¡50% en tu próximo viaje!',
-      description: 'Aprovecha este descuento especial',
-      code: 'RIDE50DIC',
-      validUntil: '2024-12-31',
-      maxDiscount: '$100',
-      minAmount: '$200',
-      usageLimit: '1 vez por usuario',
-      icon: Gift,
-      conditions: [
-        'Válido solo para viajes de más de $200',
-        'No acumulable con otras promociones',
-        'Válido hasta el 31 de diciembre de 2024'
-      ]
-    },
-    {
-      id: 2,
-      category: 'soon',
-      discount: '$200',
-      title: 'Descuento Navideño',
-      description: 'Celebra la navidad con este regalo',
-      code: 'XMAS200',
-      validFrom: '2024-12-20',
-      validUntil: '2024-12-25',
-      maxDiscount: '$200',
-      usageLimit: '1 vez por usuario',
-      icon: Gift,
-      isComingSoon: true,
-      conditions: [
-        'Válido del 20 al 25 de diciembre',
-        'Para viajes superiores a $400',
-        'Solo usuarios Premium'
-      ]
-    }
-  ];
+    supabase.auth.getUser().then(({ data }) => {
+      const uid = data.user?.id ?? null;
+      setUserId(uid);
+      if (uid) fetchRedeemed(uid);
+    });
+  }, []);
 
-  const filteredCoupons = coupons.filter(coupon => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'available') return !coupon.isComingSoon;
-    if (activeTab === 'soon') return coupon.isComingSoon;
-    return false;
-  }).filter(coupon => {
-    if (!searchValue) return true;
-    return coupon.code.toLowerCase().includes(searchValue.toLowerCase()) ||
-           coupon.title.toLowerCase().includes(searchValue.toLowerCase());
-  });
-
-  const handleCopyCode = async (code: string, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopiedCode(code);
-      notifications.show({
-        title: '¡Código copiado!',
-        message: 'Úsalo en tu próximo viaje',
-        color: 'green'
-      });
-      setTimeout(() => setCopiedCode(''), 3000);
-    } catch (err) {
-      notifications.show({
-        title: 'Error al copiar',
-        message: 'No se pudo copiar el código',
-        color: 'red'
-      });
-    }
+  const fetchRedeemed = async (uid: string) => {
+    const { data } = await supabase
+      .from('driver_giftcards')
+      .select('code, balance, created_at')
+      .eq('user_id', uid)
+      .order('created_at', { ascending: false });
+    if (data) setRedeemedCoupons(data);
   };
 
-  const handleBack = () => {
-    navigate({ to: '/Perfil' });
-  };
+  const handleRedeem = async () => {
+    const code = codeInput.trim().toUpperCase();
+    if (!userId || !code) return;
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Search logic is already handled by filteredCoupons
-    setSearchVisible(false);
+    setLoading(true);
+
+    const { data: giftcard, error: lookupError } = await supabase
+      .from('code_giftcards')
+      .select('*')
+      .eq('code', code)
+      .gt('expired_at', new Date().toISOString())
+      .maybeSingle();
+
+    if (!giftcard || lookupError) {
+      setModal({
+        opened: true,
+        success: false,
+        title: 'Código inválido o expirado',
+        message: 'Este cupón no existe o ya expiró. Intenta con otro.',
+      });
+      setLoading(false);
+      return;
+    }
+
+    const { data: alreadyUsed } = await supabase
+      .from('driver_giftcards')
+      .select('id')
+      .eq('code', code)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (alreadyUsed) {
+      setModal({
+        opened: true,
+        success: false,
+        title: 'Cupón ya usado',
+        message: 'Este código ya fue redimido en tu cuenta.',
+      });
+      setLoading(false);
+      return;
+    }
+
+    await supabase.from('driver_giftcards').insert({
+      user_id: userId,
+      code,
+      balance: giftcard.value,
+    });
+
+    const { data: wallet } = await supabase
+      .from('wallets')
+      .select('id, balance')
+      .eq('user_id', userId)
+      .single();
+
+    if (!wallet) {
+      setModal({
+        opened: true,
+        success: false,
+        title: 'Sin wallet activa',
+        message: 'Tu cuenta no tiene una billetera activa. Contáctanos.',
+      });
+      setLoading(false);
+      return;
+    }
+
+    const newBalance = Number(wallet.balance ?? 0) + Number(giftcard.value);
+
+    await supabase
+      .from('wallets')
+      .update({
+        balance: newBalance,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', wallet.id);
+
+    await supabase.from('wallet_transactions').insert({
+      wallet_id: wallet.id,
+      transaction_type: 'cupon',
+      amount: giftcard.value,
+      detail: `Cupón redimido (${code})`,
+      status: 'completado',
+    });
+
+    setModal({
+      opened: true,
+      success: true,
+      title: '¡Cupón redimido!',
+      message: `Se acreditaron $${giftcard.value} a tu billetera.`,
+    });
+
+    setCodeInput('');
+    fetchRedeemed(userId);
+    setLoading(false);
   };
 
   return (
-    <Container fluid className={styles.paymentContainer}>
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <Button 
-            variant="subtle" 
-            className={styles.backButton}
-            onClick={handleBack}
-          >
-            <ArrowLeft size={20} />
-          </Button>
-          <Title order={2} className={styles.title}>Cupones</Title>
-        </div>
-        <Button 
-          variant="subtle" 
-          className={styles.searchButton}
-          onClick={() => setSearchVisible(!searchVisible)}
-        >
-          <Search size={20} />
+    <Container className={styles.container}>
+      <Group className={styles.header} gap="xs">
+        <Button variant="subtle" onClick={() => navigate({ to: '/Perfil' })}>
+          <ArrowLeft size={20} />
         </Button>
-      </div>
+        <Title order={3}>Redimir Cupón</Title>
+      </Group>
 
-      {searchVisible && (
-        <form onSubmit={handleSearch} className={styles.searchContainer}>
-          <input
-            type="text"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            placeholder="Ingresa el código del cupón"
-            className={styles.searchInput}
-          />
-          <Button type="submit" className={styles.applyButton}>
-            Aplicar
-          </Button>
-        </form>
-      )}
+      <TextInput
+        placeholder="Ingresa tu código"
+        value={codeInput}
+        onChange={(e) => setCodeInput(e.currentTarget.value.toUpperCase())}
+        radius="md"
+        size="md"
+        className={styles.input}
+      />
 
-      <Tabs 
-        value={activeTab} 
-        onChange={(value) => setActiveTab(value || 'all')} 
-        className={styles.tabs}
+      <Button
+        className={styles.redeemButton}
+        loading={loading}
+        onClick={handleRedeem}
+        fullWidth
+        mt="md"
       >
-        <Tabs.List>
-          {categories.map(cat => (
-            <Tabs.Tab 
-              key={cat.value} 
-              value={cat.value}
-              className={styles.tab}
-            >
-              {cat.label}
-            </Tabs.Tab>
-          ))}
-        </Tabs.List>
+        Aplicar Cupón
+      </Button>
 
-        <Tabs.Panel value={activeTab} className={styles.tabPanel}>
-          {filteredCoupons.length > 0 ? (
-            filteredCoupons.map((coupon) => (
-              <div 
-                key={coupon.id} 
-                className={`${styles.couponCard} ${coupon.isComingSoon ? styles.comingSoon : ''}`}
-                onClick={() => setSelectedCoupon(coupon)}
-              >
-                <div className={styles.couponHeader}>
-                  <coupon.icon size={24} className={styles.couponIcon} />
-                  <Badge className={styles.discountBadge}>
-                    {coupon.discount}
-                  </Badge>
-                </div>
+      <Divider my="xl" label="Cupones redimidos" labelPosition="center" />
 
-                <Text className={styles.couponTitle}>{coupon.title}</Text>
-                <Text className={styles.couponDescription}>{coupon.description}</Text>
-
-                {coupon.isComingSoon ? (
-                  <div className={styles.comingSoonLabel}>
-                    <Clock size={16} />
-                    <Text>Disponible {new Date(coupon.validFrom!).toLocaleDateString()}</Text>
-                  </div>
-                ) : (
-                  <button 
-                    className={styles.copyButton}
-                    onClick={(e) => handleCopyCode(coupon.code, e)}
-                  >
-                    {copiedCode === coupon.code ? (
-                      <>
-                        <Check size={16} />
-                        <Text>¡Copiado!</Text>
-                      </>
-                    ) : (
-                      <>
-                        <Copy size={16} />
-                        <Text>{coupon.code}</Text>
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
-            ))
-          ) : (
-            <Text className={styles.noResults}>
-              No se encontraron cupones
-            </Text>
-          )}
-        </Tabs.Panel>
-      </Tabs>
+      <ScrollArea style={{ maxHeight: '40vh' }}>
+        {redeemedCoupons.length > 0 ? (
+          redeemedCoupons.map((item, index) => (
+            <Card key={index} shadow="xs" radius="md" withBorder mb="sm" className={styles.card}>
+              <Group align="center" justify="space-between">
+                <Group>
+                  <CheckCircle size={20} color="#00d084" />
+                  <Text>{item.code}</Text>
+                </Group>
+                <Text fw={700}>+${item.balance.toLocaleString()}</Text>
+              </Group>
+              <Text size="xs" color="dimmed">
+                {new Date(item.created_at).toLocaleDateString()}
+              </Text>
+            </Card>
+          ))
+        ) : (
+          <Text color="dimmed" size="sm">
+            Aún no has redimido ningún cupón.
+          </Text>
+        )}
+      </ScrollArea>
 
       <Modal
-        opened={!!selectedCoupon}
-        onClose={() => setSelectedCoupon(null)}
-        title={null}
-        className={styles.couponModal}
-        size="lg"
+        opened={modal.opened}
+        onClose={() => setModal({ ...modal, opened: false })}
+        centered
+        size="sm"
+        withCloseButton={false}
       >
-        {selectedCoupon && (
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <selectedCoupon.icon size={40} className={styles.modalIcon} />
-              <Badge size="lg" className={styles.modalBadge}>
-                {selectedCoupon.discount}
-              </Badge>
-            </div>
-            
-            <Title order={3} className={styles.modalTitle}>
-              {selectedCoupon.title}
-            </Title>
-            
-            <div className={styles.modalDetails}>
-              <div className={styles.detailItem}>
-                <Text fw={500}>Código:</Text>
-                <div className={styles.codeContainer}>
-                  <Text className={styles.code}>{selectedCoupon.code}</Text>
-                  <Button
-                    variant="subtle"
-                    onClick={() => handleCopyCode(selectedCoupon.code)}
-                    className={styles.copyCodeButton}
-                  >
-                    {copiedCode === selectedCoupon.code ? <Check /> : <Copy />}
-                  </Button>
-                </div>
-              </div>
-              
-              <div className={styles.detailItem}>
-                <Text fw={500}>Válido hasta:</Text>
-                <Text>{new Date(selectedCoupon.validUntil).toLocaleDateString()}</Text>
-              </div>
-              
-              {selectedCoupon.minAmount && (
-                <div className={styles.detailItem}>
-                  <Text fw={500}>Monto mínimo:</Text>
-                  <Text>{selectedCoupon.minAmount}</Text>
-                </div>
-              )}
-              
-              <div className={styles.detailItem}>
-                <Text fw={500}>Descuento máximo:</Text>
-                <Text>{selectedCoupon.maxDiscount}</Text>
-              </div>
-              
-              <div className={styles.detailItem}>
-                <Text fw={500}>Límite de uso:</Text>
-                <Text>{selectedCoupon.usageLimit}</Text>
-              </div>
-            </div>
-
-            <div className={styles.conditions}>
-              <Text fw={500} mb="sm">Términos y condiciones:</Text>
-              {selectedCoupon.conditions.map((condition, index) => (
-                <Text key={index} size="sm" className={styles.condition}>
-                  • {condition}
-                </Text>
-              ))}
-            </div>
-
-            <Button 
-              fullWidth 
-              className={styles.useButton}
-              onClick={() => setSelectedCoupon(null)}
-            >
-              Usar ahora
-            </Button>
-          </div>
-        )}
+        <Group align="center" justify="center" mb="md">
+          {modal.success ? (
+            <CheckCircle size={48} color="#00d084" />
+          ) : (
+            <XCircle size={48} color="#e03131" />
+          )}
+        </Group>
+        <Title order={4} style={{ textAlign: 'center' }} mb="xs">
+          {modal.title}
+        </Title>
+        <Text style={{ textAlign: 'center' }} mb="md">
+          {modal.message}
+        </Text>
+        <Button fullWidth onClick={() => setModal({ ...modal, opened: false })}>
+          Aceptar
+        </Button>
       </Modal>
     </Container>
   );
 };
 
 export const Route = createFileRoute('/Cupones/')({
-  component: CuponesView
+  component: CuponesView,
 });

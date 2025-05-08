@@ -31,28 +31,28 @@ function DestinationCard({ image, title, category, trips }: DestinationCardProps
 
 const data = [
   {
-    image: '/Buga/Basilica.webp',
+    image: 'https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/Buga.jpg',
     title: 'Basílica del Señor de los Milagros',
     category: 'Buga',
-    trips: 120,
+    trips: 10,
   },
   {
-    image: '/Cali/IglesiaSanAntonio.webp',
-    title: 'Iglesia San Antonio',
+    image: 'https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/Cristo%20Rey.jpg',
+    title: 'Cristo Rey',
     category: 'Cali',
-    trips: 35,
+    trips: 50,
   },
   {
-    image: '/Cali/Zoologico.webp',
-    title: 'Zoológico Cali',
+    image: 'https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/CAMPUS-UAO-1.jpg',
+    title: 'Las mejores Universidades de Cali',
     category: 'Cali',
-    trips: 100,
+    trips: 200,
   },
   {
-    image: '/Cali/ParqueGato.webp',
-    title: 'Parque del Gato',
+    image: 'https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/ParquePerro.jpg',
+    title: 'Parque del Perro',
     category: 'Cali',
-    trips: 35,
+    trips: 20,
   },
   // Más destinos si deseas agregarlos
 ];
