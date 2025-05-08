@@ -35,7 +35,7 @@ interface UserProfile {
   first_name: string
   last_name: string
   identification_type: string
-  identification_number: string
+  identification_number: string | null
   user_type: string
   Verification: string | null
 }

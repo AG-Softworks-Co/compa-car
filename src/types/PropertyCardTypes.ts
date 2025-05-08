@@ -15,7 +15,7 @@ export type IdentificationType = typeof IDENTIFICATION_TYPES[number]['value'];
 
 export interface PropertyCardData {
   propertyCardNumber: string;
-  identificationNumber: string;
+  identificationNumber: string | null;
   serviceType: ServiceType;
   passengerCapacity: string;
   cylinderCapacity: string;

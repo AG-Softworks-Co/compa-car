@@ -569,7 +569,7 @@ const PropertyCard: React.FC = () => {
                                 </label>
                                 <input
                                     type="text"
-                                    value={formData.identificationNumber}
+                                    value={formData.identificationNumber ?? ''} 
                                     className={styles.input}
                                     disabled
                                 />

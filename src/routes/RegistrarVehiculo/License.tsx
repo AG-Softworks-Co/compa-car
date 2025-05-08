@@ -36,8 +36,7 @@ interface ValidationErrors {
     [key: string]: string;
 }
 
-interface DriverLicenseData
-    extends Omit<DocumentFormData, 'vehicle_id' | 'documentType'> {
+interface DriverLicenseData extends Omit<DocumentFormData, 'vehicle_id' | 'documentType' | 'identificationNumber'> {
     id?: number;
     photo_front_url?: string | null;
     photo_back_url?: string | null;
@@ -47,11 +46,12 @@ interface DriverLicenseData
     frontFile?: File;
     backFile?: File;
     licenseNumber?: string;
-    identificationNumber?: string;
-}
+    identificationNumber?: string | null; // ahora es válido
+  }
+  
 
 interface UserProfileData {
-    identification_number: string;
+    identification_number: string | null;
     identification_type: string;
 }
 
@@ -596,10 +596,11 @@ const License: React.FC = () => {
                 Número de Identificación
             </label>
             <TextInput
-                value={formData.identificationNumber}
-                disabled={true}
-                className={`${styles.input} ${styles.disabledInput}`}
+              value={formData.identificationNumber ?? ''}
+              disabled={true}
+              className={`${styles.input} ${styles.disabledInput}`}
             />
+            
             <small className={styles.helperText}>
                 Este campo no es editable y se obtiene de su perfil
             </small>

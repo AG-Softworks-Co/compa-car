@@ -11,7 +11,7 @@ interface TripListProps {
 }
 
 
-const TripList: React.FC<TripListProps> = ({ trips, onEdit, onDelete }) => {
+const TripList: React.FC<TripListProps> = ({ trips,  }) => {
   if (trips.length === 0) {
     return (
         <Text className={styles.noTripsText}>
@@ -22,13 +22,11 @@ const TripList: React.FC<TripListProps> = ({ trips, onEdit, onDelete }) => {
     
   return (
     <Stack gap="lg">
-       {trips.map((trip, index) => (
+       {trips.map((trip) => (
           <TripCard
             userId={'0'}
             key={trip.id}
             trip={trip}
-            onEdit={() => onEdit(index)}
-            onDelete={() => onDelete(index)}
           />
         ))}
     </Stack>

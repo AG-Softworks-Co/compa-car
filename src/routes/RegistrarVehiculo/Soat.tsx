@@ -22,7 +22,7 @@ import { notifications } from '@mantine/notifications';
 interface SoatFormData {
   policy_number: string;
   insurance_company: string;
-  identification_number: string;
+  identification_number: string | null;
   expedition_date: string;
   expiry_date: string;
   validity_from?: string;
@@ -506,7 +506,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                                 <TextInput
                                     type="text"
                                     name="identification_number"
-                                    value={formData.identification_number}
+                                    value={formData.identification_number ?? ''}
                                     onChange={handleInputChange}
                                     className={styles.input}
                                     placeholder="Número de identificación del usuario"
