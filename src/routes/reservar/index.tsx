@@ -10,6 +10,12 @@ import { supabase } from '@/lib/supabaseClient';
 import { getFromLocalStorage, saveToLocalStorage } from '../../types/PublicarViaje/localStorageHelper';
 import styles from './reservar.module.css';
 import { TripReservationModal } from '../Reservas/TripReservationModal';
+import { useJsApiLoader } from '@react-google-maps/api';
+import type { Trip } from '@/types/Trip';
+import { Modal } from '@mantine/core';
+import { GoogleMap } from '@react-google-maps/api';
+
+
 
 interface PlaceSuggestion {
     placeId: string;
@@ -18,7 +24,7 @@ interface PlaceSuggestion {
     fullText: string;
 }
 
-import type { Trip } from '@/types/Trip';
+
 
 
 interface SearchFormData {
@@ -29,6 +35,12 @@ interface SearchFormData {
 }
 
 const ReservarView = () => {
+    const [showRouteModal, setShowRouteModal] = useState(false);
+    const [selectedRouteInfo, setSelectedRouteInfo] = useState<{ origin: string; destination: string } | null>(null);
+    const { isLoaded, loadError } = useJsApiLoader({
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+        libraries: ['places'],
+    });    
     const navigate = useNavigate();
     const [formData, setFormData] = useState<SearchFormData>(() => {
         const storedFormData = getFromLocalStorage<SearchFormData>('searchFormData');
@@ -61,11 +73,17 @@ const ReservarView = () => {
     const searchTimeout = useRef<NodeJS.Timeout>();
 
     useEffect(() => {
-        if (window.google && !autocompleteService.current) {
-            autocompleteService.current = new google.maps.places.AutocompleteService();
-            placesService.current = new google.maps.places.PlacesService(document.createElement('div'));
+        if (
+            typeof window !== 'undefined' &&
+            isLoaded &&
+            window.google?.maps?.places &&
+            !autocompleteService.current
+        ) {
+            autocompleteService.current = new window.google.maps.places.AutocompleteService();
+            placesService.current = new window.google.maps.places.PlacesService(document.createElement('div'));
         }
-    }, []);
+    }, [isLoaded]);
+    
 
     useEffect(() => {
         saveToLocalStorage('searchFormData', {
@@ -137,6 +155,8 @@ const ReservarView = () => {
         );
     };
 
+
+
     const searchTrips = async (event: React.FormEvent) => {
         event.preventDefault();
         setIsSearching(true);
@@ -153,27 +173,31 @@ const ReservarView = () => {
             const formattedDate = dayjs(formData.date).format('YYYY-MM-DD HH:mm:ss');
     
             const { data, error } = await supabase
-                .from('trips')
-                .select(`
-                  id,
-                  date_time,
-                  seats,
-                  price_per_seat,
-                  allow_pets,
-                  allow_smoking,
-                  vehicle_id,
-                  user_id,
-                  route:routes(id, start_address, end_address, duration, distance),
-                  vehicle:vehicles(
-                    brand,
-                    model,
-                    plate,
-                    color,
-                    photo_url,
-                    year
-                  )
-                `)
-                .gte('date_time', formattedDate);
+              .from('trips')
+              .select(`
+                id,
+                date_time,
+                seats,
+                price_per_seat,
+                allow_pets,
+                allow_smoking,
+                vehicle_id,
+                user_id,
+                status,
+                route:routes(id, start_address, end_address, duration, distance),
+                vehicle:vehicles(
+                  brand,
+                  model,
+                  plate,
+                  color,
+                  photo_url,
+                  year
+                )
+              `)
+              .gte('date_time', formattedDate)
+              .in('status', ['pending', 'A'])
+              .gt('seats', 0);
+          
               
               
     
@@ -211,57 +235,83 @@ const ReservarView = () => {
                 return;
             }
     
-            // Mapear los perfiles de usuario a los viajes
-            const trips = data.map((trip) => {
-              const userProfile = userProfiles.find((profile) => profile.user_id === trip.user_id);
-              const licenseRaw = licenses?.find((l) => l.user_id === trip.user_id);
 
-              const license = licenseRaw &&
-                licenseRaw.license_number &&
-                licenseRaw.license_category &&
-                licenseRaw.expiration_date &&
-                licenseRaw.user_id
-                ? {
-                    license_number: licenseRaw.license_number!,
-                    license_category: licenseRaw.license_category!,
-                    expiration_date: licenseRaw.expiration_date!,
-                    user_id: licenseRaw.user_id!,
-                  }
-                : undefined;
-              const propertyCard = propertyCards?.find((p) => p.vehicle_id === trip.vehicle_id) || null;
-              const soat = soats?.find((s) => s.vehicle_id === trip.vehicle_id) || null;
-            
-              return {
-                id: trip.id.toString(),
-                origin: {
-                  address: trip.route?.start_address || 'Origen no disponible',
-                  secondaryText: 'Información adicional no disponible',
-                },
-                destination: {
-                  address: trip.route?.end_address || 'Destino no disponible',
-                  secondaryText: 'Información adicional no disponible',
-                },
-                dateTime: trip.date_time || '',
-                seats: trip.seats || 0,
-                pricePerSeat: trip.price_per_seat || 0,
-                allowPets: trip.allow_pets === 'true',
-                allowSmoking: trip.allow_smoking === 'true',
-                selectedRoute: {
-                  duration: trip.route?.duration || 'Duración no disponible',
-                  distance: trip.route?.distance || 'Distancia no disponible',
-                },
-                driverName: userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'No disponible',
-                photo: userProfile?.photo_user || 'https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/SinFotoPerfil.png',
-                vehicle: trip.vehicle,
-                license,
-                propertyCard,
-                soat,
-              };
-            });
+            // Normalizar texto para comparar sin tildes ni mayúsculas
+            const normalize = (text: string) =>
+                text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
               
-            
+                let filteredTrips = data.filter((trip) => {
+                    const start = trip.route?.start_address || '';
+                    const end = trip.route?.end_address || '';
+                    return (
+                      normalize(start).includes(normalize(formData.origin)) &&
+                      normalize(end).includes(normalize(formData.destination))
+                    );
+                  });
+                  
+                  // Si no hay coincidencias exactas, mostrar todos los disponibles (ya filtrados por SQL)
+                  if (filteredTrips.length === 0 && data.length > 0) {
+                    filteredTrips = data;
+                  }
+                  
+              
+              // Esta lógica se moverá después del mapeo
+              const hasExactMatches = filteredTrips.length > 0;
+              if (!hasExactMatches) {
+                filteredTrips = data;
+              }
+              
+              
+              
+              const trips = filteredTrips.map((trip) => {
+                const userProfile = userProfiles.find((profile) => profile.user_id === trip.user_id);
+                const licenseRaw = licenses?.find((l) => l.user_id === trip.user_id);
+                const license = licenseRaw &&
+                  licenseRaw.license_number &&
+                  licenseRaw.license_category &&
+                  licenseRaw.expiration_date &&
+                  licenseRaw.user_id
+                  ? {
+                      license_number: licenseRaw.license_number!,
+                      license_category: licenseRaw.license_category!,
+                      expiration_date: licenseRaw.expiration_date!,
+                      user_id: licenseRaw.user_id!,
+                    }
+                  : undefined;
+                const propertyCard = propertyCards?.find((p) => p.vehicle_id === trip.vehicle_id) || null;
+                const soat = soats?.find((s) => s.vehicle_id === trip.vehicle_id) || null;
+              
+                return {
+                  id: trip.id.toString(),
+                  origin: {
+                    address: trip.route?.start_address || 'Origen no disponible',
+                    secondaryText: 'Información adicional no disponible',
+                  },
+                  destination: {
+                    address: trip.route?.end_address || 'Destino no disponible',
+                    secondaryText: 'Información adicional no disponible',
+                  },
+                  dateTime: trip.date_time || '',
+                  seats: trip.seats ?? 0,
+                  pricePerSeat: trip.price_per_seat || 0,
+                  allowPets: trip.allow_pets === 'true',
+                  allowSmoking: trip.allow_smoking === 'true',
+                  selectedRoute: {
+                    duration: trip.route?.duration || 'Duración no disponible',
+                    distance: trip.route?.distance || 'Distancia no disponible',
+                  },
+                  driverName: userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'No disponible',
+                  photo: userProfile?.photo_user || 'https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/SinFotoPerfil.png',
+                  vehicle: trip.vehicle,
+                  license,
+                  propertyCard,
+                  soat,
+                };
+            });
+
+            const availableTrips = trips.filter((trip) => trip.seats > 0);
     
-            setSearchResults(trips);
+            setSearchResults(availableTrips);
         } catch (error) {
             console.error('Error searching trips:', error);
         } finally {
@@ -290,6 +340,15 @@ const ReservarView = () => {
     const handleCloseModal = () => {
         setReservationModalOpen(false);
     };
+
+    if (loadError) {
+        return <div>Error al cargar Google Maps</div>;
+      }
+      
+      if (!isLoaded) {
+        return <div>Cargando mapa...</div>;
+      }
+      
 
     return (
         <Container fluid className={styles.container}>
@@ -501,9 +560,6 @@ const ReservarView = () => {
                                            hour12: true, // si prefieres formato 12h con AM/PM, cámbialo a false si prefieres 24h
                                          })}
                                        </Text>
-                                        <Badge className={styles.priceBadge}>
-                                            ${trip.pricePerSeat.toLocaleString()} / Cupo
-                                        </Badge>
                                     </div>
                             
                                     {/* Información del conductor */}
@@ -524,29 +580,69 @@ const ReservarView = () => {
                                     </div>
                             
                                     {/* Ruta de origen a destino */}
-                                    <div className={styles.tripRoute}>
-                                        <div className={styles.routePoint}>
-                                            <div className={styles.iconWrapper}>
-                                                <MapPin size={20} className={`${styles.routeIcon} ${styles.originIcon}`} />
-                                            </div>
-                                            <div className={styles.routeDetails}>
-                                                <Text fw={600} className={styles.routeLabel}>Origen</Text>
-                                                <Text fw={500} className={styles.routeAddress}>{trip.origin.address}</Text>
-                                            </div>
+                                    <div className={styles.tripRoute}
+                                      onClick={() => {
+                                        setSelectedRouteInfo({
+                                          origin: trip.origin.address,
+                                          destination: trip.destination.address,
+                                        });
+                                        setShowRouteModal(true);
+                                      }}
+                                      role="button"
+                                      tabIndex={0}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          setSelectedRouteInfo({
+                                            origin: trip.origin.address,
+                                            destination: trip.destination.address,
+                                          });
+                                          setShowRouteModal(true);
+                                        }
+                                      }}
+                                      style={{ cursor: 'pointer' }}
+                                    >
+                                      <div className={styles.routePoint}>
+                                        <div className={styles.iconWrapper}>
+                                          <MapPin size={20} className={`${styles.routeIcon} ${styles.originIcon}`} />
                                         </div>
-                                        <div className={styles.routeLineWrapper}>
-                                            <div className={styles.routeLine}></div>
+                                        <div className={styles.routeDetails}>
+                                          <Text fw={600} className={styles.routeLabel}>Origen</Text>
+                                          <Text fw={500} className={styles.routeAddress}>{trip.origin.address}</Text>
                                         </div>
-                                        <div className={styles.routePoint}>
-                                            <div className={styles.iconWrapper}>
-                                                <MapPin size={20} className={`${styles.routeIcon} ${styles.destinationIcon}`} />
-                                            </div>
-                                            <div className={styles.routeDetails}>
-                                                <Text fw={600} className={styles.routeLabel}>Destino</Text>
-                                                <Text fw={500} className={styles.routeAddress}>{trip.destination.address}</Text>
-                                            </div>
+                                      </div>
+                                      <div className={styles.routeLineWrapper}>
+                                        <div className={styles.routeLine}></div>
+                                      </div>
+                                      <div className={styles.routePoint}>
+                                        <div className={styles.iconWrapper}>
+                                          <MapPin size={20} className={`${styles.routeIcon} ${styles.destinationIcon}`} />
                                         </div>
+                                        <div className={styles.routeDetails}>
+                                          <Text fw={600} className={styles.routeLabel}>Destino</Text>
+                                          <Text fw={500} className={styles.routeAddress}>{trip.destination.address}</Text>
+                                        </div>
+                                      </div>
                                     </div>
+
+                                    <div className={styles.routeViewButtonWrapper}>
+                                      <Button
+                                        variant="outline"
+                                        size="xs"
+                                        className={styles.routeViewButton}
+                                        onClick={() => {
+                                          setSelectedRouteInfo({
+                                            origin: trip.origin.address,
+                                            destination: trip.destination.address,
+                                          });
+                                          setShowRouteModal(true);
+                                        }}
+                                      >
+                                        Ver ruta
+                                      </Button>
+                                    </div>
+                                    
+                                    
+                                    
 
                                      {/* Información adicional */}
                                     <div className={styles.additionalInfo}>
@@ -565,10 +661,13 @@ const ReservarView = () => {
                                         <div className={styles.infoItem}>
                                             <User size={16} className={styles.infoIcon} />
                                             <Text fw={500} size="sm" className={styles.infoText}>
-                                                {trip.seats} - Cupos disponibles
+                                              {(trip.seats ?? 0).toString()} - Cupos disponibles
                                             </Text>
                                         </div>
                                     </div>
+                                    <Badge className={styles.priceBadge}>
+                                            ${trip.pricePerSeat.toLocaleString()} cupo
+                                    </Badge>
                             
                                     {/* Botón de reservar */}
                                     <Button
@@ -599,6 +698,73 @@ const ReservarView = () => {
                         onClose={handleCloseModal}
                     />
                 )}
+                
+                {selectedRouteInfo && (
+                  <Modal
+                    opened={showRouteModal}
+                    onClose={() => setShowRouteModal(false)}
+                    title={
+                        <div className={styles.routeMapModalHeader}>
+                          <h3 className={styles.routeMapModalTitle}>Ruta del viaje</h3>
+                          <button
+                            className={styles.closeButton}
+                            onClick={() => setShowRouteModal(false)}
+                            aria-label="Cerrar"
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      }
+                      
+                    classNames={{
+                      root: styles.routeMapModal,
+                    }}
+                    size="xl"
+                    centered
+                    overlayProps={{
+                      color: '#000',
+                      opacity: 0.85,
+                      blur: 6,
+                    }}
+                    withCloseButton={false}
+                  >
+                    <div className={styles.mapContainer}>
+                      <GoogleMap
+                        mapContainerStyle={{ width: '100%', height: '100%' }}
+                        options={{
+                          zoomControl: true,
+                          fullscreenControl: true,
+                          streetViewControl: false,
+                          mapTypeControl: false,
+                          gestureHandling: 'greedy',
+                        }}
+                        onLoad={(map: google.maps.Map) => {
+                          const directionsService = new google.maps.DirectionsService();
+                          const directionsRenderer = new google.maps.DirectionsRenderer({
+                            map,
+                            suppressMarkers: false,
+                          });
+                
+                          directionsService.route(
+                            {
+                              origin: selectedRouteInfo.origin,
+                              destination: selectedRouteInfo.destination,
+                              travelMode: google.maps.TravelMode.DRIVING,
+                            },
+                            (result, status) => {
+                              if (status === google.maps.DirectionsStatus.OK && result) {
+                                directionsRenderer.setDirections(result);
+                              } else {
+                                console.error('Error al obtener ruta:', status);
+                              }
+                            }
+                          );
+                        }}
+                      />
+                    </div>
+                  </Modal>
+                )}
+
             </Container>
         </Container>
     );

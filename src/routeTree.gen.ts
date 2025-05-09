@@ -22,7 +22,6 @@ import { Route as WalletIndexImport } from './routes/Wallet/index'
 import { Route as ReservasIndexImport } from './routes/Reservas/index'
 import { Route as RegistroIndexImport } from './routes/Registro/index'
 import { Route as RegistrarVehiculoIndexImport } from './routes/RegistrarVehiculo/index'
-import { Route as RegistrarDatosIndexImport } from './routes/RegistrarDatos/index'
 import { Route as RecuperarPaswordIndexImport } from './routes/RecuperarPasword/index'
 import { Route as PerfilIndexImport } from './routes/Perfil/index'
 import { Route as ParadasIndexImport } from './routes/Paradas/index'
@@ -34,7 +33,6 @@ import { Route as DateSelectedIndexImport } from './routes/DateSelected/index'
 import { Route as CuposReservadosIndexImport } from './routes/CuposReservados/index'
 import { Route as CuposIndexImport } from './routes/Cupos/index'
 import { Route as CuponesIndexImport } from './routes/Cupones/index'
-import { Route as ConfirmarCupoIndexImport } from './routes/ConfirmarCupo/index'
 import { Route as CompletarRegistroIndexImport } from './routes/CompletarRegistro/index'
 import { Route as ChatIndexImport } from './routes/Chat/index'
 import { Route as ActividadesIndexImport } from './routes/Actividades/index'
@@ -117,12 +115,6 @@ const RegistrarVehiculoIndexRoute = RegistrarVehiculoIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const RegistrarDatosIndexRoute = RegistrarDatosIndexImport.update({
-  id: '/RegistrarDatos/',
-  path: '/RegistrarDatos/',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const RecuperarPaswordIndexRoute = RecuperarPaswordIndexImport.update({
   id: '/RecuperarPasword/',
   path: '/RecuperarPasword/',
@@ -186,12 +178,6 @@ const CuposIndexRoute = CuposIndexImport.update({
 const CuponesIndexRoute = CuponesIndexImport.update({
   id: '/Cupones/',
   path: '/Cupones/',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const ConfirmarCupoIndexRoute = ConfirmarCupoIndexImport.update({
-  id: '/ConfirmarCupo/',
-  path: '/ConfirmarCupo/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -402,13 +388,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompletarRegistroIndexImport
       parentRoute: typeof rootRoute
     }
-    '/ConfirmarCupo/': {
-      id: '/ConfirmarCupo/'
-      path: '/ConfirmarCupo'
-      fullPath: '/ConfirmarCupo'
-      preLoaderRoute: typeof ConfirmarCupoIndexImport
-      parentRoute: typeof rootRoute
-    }
     '/Cupones/': {
       id: '/Cupones/'
       path: '/Cupones'
@@ -484,13 +463,6 @@ declare module '@tanstack/react-router' {
       path: '/RecuperarPasword'
       fullPath: '/RecuperarPasword'
       preLoaderRoute: typeof RecuperarPaswordIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/RegistrarDatos/': {
-      id: '/RegistrarDatos/'
-      path: '/RegistrarDatos'
-      fullPath: '/RegistrarDatos'
-      preLoaderRoute: typeof RegistrarDatosIndexImport
       parentRoute: typeof rootRoute
     }
     '/RegistrarVehiculo/': {
@@ -584,7 +556,6 @@ export interface FileRoutesByFullPath {
   '/Actividades': typeof ActividadesIndexRoute
   '/Chat': typeof ChatIndexRoute
   '/CompletarRegistro': typeof CompletarRegistroIndexRoute
-  '/ConfirmarCupo': typeof ConfirmarCupoIndexRoute
   '/Cupones': typeof CuponesIndexRoute
   '/Cupos': typeof CuposIndexRoute
   '/CuposReservados': typeof CuposReservadosIndexRoute
@@ -596,7 +567,6 @@ export interface FileRoutesByFullPath {
   '/Paradas': typeof ParadasIndexRoute
   '/Perfil': typeof PerfilIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
-  '/RegistrarDatos': typeof RegistrarDatosIndexRoute
   '/RegistrarVehiculo': typeof RegistrarVehiculoIndexRoute
   '/Registro': typeof RegistroIndexRoute
   '/Reservas': typeof ReservasIndexRoute
@@ -625,7 +595,6 @@ export interface FileRoutesByTo {
   '/Actividades': typeof ActividadesIndexRoute
   '/Chat': typeof ChatIndexRoute
   '/CompletarRegistro': typeof CompletarRegistroIndexRoute
-  '/ConfirmarCupo': typeof ConfirmarCupoIndexRoute
   '/Cupones': typeof CuponesIndexRoute
   '/Cupos': typeof CuposIndexRoute
   '/CuposReservados': typeof CuposReservadosIndexRoute
@@ -637,7 +606,6 @@ export interface FileRoutesByTo {
   '/Paradas': typeof ParadasIndexRoute
   '/Perfil': typeof PerfilIndexRoute
   '/RecuperarPasword': typeof RecuperarPaswordIndexRoute
-  '/RegistrarDatos': typeof RegistrarDatosIndexRoute
   '/RegistrarVehiculo': typeof RegistrarVehiculoIndexRoute
   '/Registro': typeof RegistroIndexRoute
   '/Reservas': typeof ReservasIndexRoute
@@ -667,7 +635,6 @@ export interface FileRoutesById {
   '/Actividades/': typeof ActividadesIndexRoute
   '/Chat/': typeof ChatIndexRoute
   '/CompletarRegistro/': typeof CompletarRegistroIndexRoute
-  '/ConfirmarCupo/': typeof ConfirmarCupoIndexRoute
   '/Cupones/': typeof CuponesIndexRoute
   '/Cupos/': typeof CuposIndexRoute
   '/CuposReservados/': typeof CuposReservadosIndexRoute
@@ -679,7 +646,6 @@ export interface FileRoutesById {
   '/Paradas/': typeof ParadasIndexRoute
   '/Perfil/': typeof PerfilIndexRoute
   '/RecuperarPasword/': typeof RecuperarPaswordIndexRoute
-  '/RegistrarDatos/': typeof RegistrarDatosIndexRoute
   '/RegistrarVehiculo/': typeof RegistrarVehiculoIndexRoute
   '/Registro/': typeof RegistroIndexRoute
   '/Reservas/': typeof ReservasIndexRoute
@@ -710,7 +676,6 @@ export interface FileRouteTypes {
     | '/Actividades'
     | '/Chat'
     | '/CompletarRegistro'
-    | '/ConfirmarCupo'
     | '/Cupones'
     | '/Cupos'
     | '/CuposReservados'
@@ -722,7 +687,6 @@ export interface FileRouteTypes {
     | '/Paradas'
     | '/Perfil'
     | '/RecuperarPasword'
-    | '/RegistrarDatos'
     | '/RegistrarVehiculo'
     | '/Registro'
     | '/Reservas'
@@ -750,7 +714,6 @@ export interface FileRouteTypes {
     | '/Actividades'
     | '/Chat'
     | '/CompletarRegistro'
-    | '/ConfirmarCupo'
     | '/Cupones'
     | '/Cupos'
     | '/CuposReservados'
@@ -762,7 +725,6 @@ export interface FileRouteTypes {
     | '/Paradas'
     | '/Perfil'
     | '/RecuperarPasword'
-    | '/RegistrarDatos'
     | '/RegistrarVehiculo'
     | '/Registro'
     | '/Reservas'
@@ -790,7 +752,6 @@ export interface FileRouteTypes {
     | '/Actividades/'
     | '/Chat/'
     | '/CompletarRegistro/'
-    | '/ConfirmarCupo/'
     | '/Cupones/'
     | '/Cupos/'
     | '/CuposReservados/'
@@ -802,7 +763,6 @@ export interface FileRouteTypes {
     | '/Paradas/'
     | '/Perfil/'
     | '/RecuperarPasword/'
-    | '/RegistrarDatos/'
     | '/RegistrarVehiculo/'
     | '/Registro/'
     | '/Reservas/'
@@ -832,7 +792,6 @@ export interface RootRouteChildren {
   ActividadesIndexRoute: typeof ActividadesIndexRoute
   ChatIndexRoute: typeof ChatIndexRoute
   CompletarRegistroIndexRoute: typeof CompletarRegistroIndexRoute
-  ConfirmarCupoIndexRoute: typeof ConfirmarCupoIndexRoute
   CuponesIndexRoute: typeof CuponesIndexRoute
   CuposIndexRoute: typeof CuposIndexRoute
   CuposReservadosIndexRoute: typeof CuposReservadosIndexRoute
@@ -844,7 +803,6 @@ export interface RootRouteChildren {
   ParadasIndexRoute: typeof ParadasIndexRoute
   PerfilIndexRoute: typeof PerfilIndexRoute
   RecuperarPaswordIndexRoute: typeof RecuperarPaswordIndexRoute
-  RegistrarDatosIndexRoute: typeof RegistrarDatosIndexRoute
   RegistrarVehiculoIndexRoute: typeof RegistrarVehiculoIndexRoute
   RegistroIndexRoute: typeof RegistroIndexRoute
   ReservasIndexRoute: typeof ReservasIndexRoute
@@ -874,7 +832,6 @@ const rootRouteChildren: RootRouteChildren = {
   ActividadesIndexRoute: ActividadesIndexRoute,
   ChatIndexRoute: ChatIndexRoute,
   CompletarRegistroIndexRoute: CompletarRegistroIndexRoute,
-  ConfirmarCupoIndexRoute: ConfirmarCupoIndexRoute,
   CuponesIndexRoute: CuponesIndexRoute,
   CuposIndexRoute: CuposIndexRoute,
   CuposReservadosIndexRoute: CuposReservadosIndexRoute,
@@ -886,7 +843,6 @@ const rootRouteChildren: RootRouteChildren = {
   ParadasIndexRoute: ParadasIndexRoute,
   PerfilIndexRoute: PerfilIndexRoute,
   RecuperarPaswordIndexRoute: RecuperarPaswordIndexRoute,
-  RegistrarDatosIndexRoute: RegistrarDatosIndexRoute,
   RegistrarVehiculoIndexRoute: RegistrarVehiculoIndexRoute,
   RegistroIndexRoute: RegistroIndexRoute,
   ReservasIndexRoute: ReservasIndexRoute,
@@ -925,7 +881,6 @@ export const routeTree = rootRoute
         "/Actividades/",
         "/Chat/",
         "/CompletarRegistro/",
-        "/ConfirmarCupo/",
         "/Cupones/",
         "/Cupos/",
         "/CuposReservados/",
@@ -937,7 +892,6 @@ export const routeTree = rootRoute
         "/Paradas/",
         "/Perfil/",
         "/RecuperarPasword/",
-        "/RegistrarDatos/",
         "/RegistrarVehiculo/",
         "/Registro/",
         "/Reservas/",
@@ -995,9 +949,6 @@ export const routeTree = rootRoute
     "/CompletarRegistro/": {
       "filePath": "CompletarRegistro/index.tsx"
     },
-    "/ConfirmarCupo/": {
-      "filePath": "ConfirmarCupo/index.tsx"
-    },
     "/Cupones/": {
       "filePath": "Cupones/index.tsx"
     },
@@ -1030,9 +981,6 @@ export const routeTree = rootRoute
     },
     "/RecuperarPasword/": {
       "filePath": "RecuperarPasword/index.tsx"
-    },
-    "/RegistrarDatos/": {
-      "filePath": "RegistrarDatos/index.tsx"
     },
     "/RegistrarVehiculo/": {
       "filePath": "RegistrarVehiculo/index.tsx"
