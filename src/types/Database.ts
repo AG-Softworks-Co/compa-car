@@ -361,7 +361,58 @@ export type Database = {
           }
         ]
       }
-
+      califications: {
+        Row: {
+          id: number
+          trip_id: number
+          user_id: string
+          driver_id: string
+          value: number
+          report: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          trip_id: number
+          user_id?: string
+          driver_id: string
+          value: number
+          report?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          trip_id?: number
+          user_id?: string
+          driver_id?: string
+          value?: number
+          report?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "califications_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "califications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "califications_driver_user_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       driver_licenses: {
         Row: {
           blood_type: string | null

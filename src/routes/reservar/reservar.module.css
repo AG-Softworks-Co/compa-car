@@ -702,3 +702,16 @@
   justify-content: center;
   margin-top: 0.5rem;
 }
+
+.driverRating {
+  margin-top: 2px;
+}
+
+.driverRating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 4px;
+  gap: 2px;
+}
+

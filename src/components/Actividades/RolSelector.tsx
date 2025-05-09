@@ -1,7 +1,6 @@
 import type React from 'react';
 import { useState, useEffect } from 'react';
 import { Button, Group } from '@mantine/core';
-import ModalNoDriver from './ModalNoDriver';
 import styles from './SrylesComponents/RolSelector.module.css';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -10,7 +9,6 @@ interface RolSelectorProps {
 }
 
 const RolSelector: React.FC<RolSelectorProps> = ({ onSelect }) => {
-    const [showModal, setShowModal] = useState<boolean>(false);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [userType, setUserType] = useState<string | null>(null);
 
@@ -40,7 +38,6 @@ const RolSelector: React.FC<RolSelectorProps> = ({ onSelect }) => {
     const handleOptionSelect = (option: string) => {
         // Actualizando las comprobaciones para usar PASSENGER del campo status
         if (userType === 'PASSENGER' && option === 'Viajes Publicados') {
-            setShowModal(true);
             return;
         }
         if (userType === 'PASSENGER' && option === "Cupos Creados") {
@@ -51,9 +48,6 @@ const RolSelector: React.FC<RolSelectorProps> = ({ onSelect }) => {
         onSelect(option);
     };
 
-    const handleCloseModal = () => {
-        setShowModal(false);
-    };
 
     return (
         <Group gap="md" mt="md">
@@ -61,7 +55,7 @@ const RolSelector: React.FC<RolSelectorProps> = ({ onSelect }) => {
                 onClick={() => handleOptionSelect('Cupos Creados')}
                 className={`${styles.button} ${selectedOption === 'Cupos Creados' ? styles.selected : ''}`}
             >
-                Cupos Creados
+                Cupos Reservados
             </Button>
             <Button 
                 onClick={() => handleOptionSelect('Viajes Publicados')}
@@ -69,7 +63,6 @@ const RolSelector: React.FC<RolSelectorProps> = ({ onSelect }) => {
             >
                 Viajes Publicados
             </Button>
-            {showModal && <ModalNoDriver onClose={handleCloseModal} />}
         </Group>
     );
 };

@@ -13,22 +13,48 @@ import { showNotification } from '@mantine/notifications';
 import dayjs from 'dayjs';
 import styles from './index.module.css';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import type { Booking } from '../../components/Cupos/types';
 import { supabase } from '@/lib/supabaseClient';
+import { TripRating } from '@/components/Actividades/TripRating';
+
 
 interface CuposProps {
   userId: string;
 }
 
+type PassengerLite = {
+  passenger_id: number;
+  full_name: string;
+  identification_number: string;
+};
+
+type BookingConductor = {
+  booking_id: number;
+  booking_date: string | null;
+  booking_status: string | null;
+  total_price: number;
+  trip_id: number;
+  user_id: string;
+  seats_booked: number;
+  booking_qr: string;
+  driver_id: string;
+  passengers: PassengerLite[];
+};
+
+
 const Cupos: React.FC<CuposProps> = ({ userId }) => {
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<BookingConductor[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [ratingModal, setRatingModal] = useState(false);
+  const [selectedTripId, setSelectedTripId] = useState<number | null>(null);
+  const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
+
 
   useEffect(() => {
     const fetchBookings = async () => {
       setLoading(true);
       try {
+        // 1. Obtener las reservas
         const { data: bookingsData, error: bookingsError } = await supabase
           .from('bookings')
           .select(`
@@ -40,12 +66,13 @@ const Cupos: React.FC<CuposProps> = ({ userId }) => {
             user_id,
             seats_booked,
             booking_qr,
-            booking_passengers(id, full_name, identification_number)
-          `)
+            booking_passengers(id, full_name, identification_number),
+            trips(user_id)
+          `)              
           .eq('user_id', userId);
-
+    
         if (bookingsError) throw bookingsError;
-
+    
         const mappedBookings = bookingsData.map((booking) => ({
           booking_id: booking.id,
           booking_date: booking.booking_date,
@@ -55,25 +82,27 @@ const Cupos: React.FC<CuposProps> = ({ userId }) => {
           user_id: booking.user_id || '',
           seats_booked: booking.seats_booked || 0,
           booking_qr: booking.booking_qr || '',
+          driver_id: booking.trips?.user_id || '',
           passengers: (booking.booking_passengers || []).map((passenger) => ({
             passenger_id: passenger.id,
             full_name: passenger.full_name,
             identification_number: passenger.identification_number,
           })),
         }));
-
-        setBookings(mappedBookings as Booking[]);
+    
+        setBookings(mappedBookings as BookingConductor[]);
+    
       } catch (error) {
         showNotification({
-          title: 'Error al obtener las reservas',
-          message: 'Hubo un error al cargar las reservas desde Supabase.',
+          title: 'Error al obtener los datos',
+          message: 'Hubo un problema al cargar tus reservas o calificaciones.',
           color: 'red',
         });
       } finally {
         setLoading(false);
       }
     };
-
+    
     fetchBookings();
   }, [userId]);
 
@@ -86,10 +115,28 @@ const Cupos: React.FC<CuposProps> = ({ userId }) => {
       </Container>
     );
   }
+  
+
+  const openRatingModal = (tripId: number, driverId: string) => {
+    setSelectedTripId(tripId);
+    setSelectedDriverId(driverId);
+    setRatingModal(true);
+  };
+
 
   return (
     <Container className={styles.container}>
       <Title className={styles.title}>Mis Cupos Comprados</Title>
+      {selectedTripId && selectedDriverId && (
+        <TripRating
+          key={`${selectedTripId}-${selectedDriverId}`} 
+          opened={ratingModal}
+          onClose={() => setRatingModal(false)}
+          tripId={selectedTripId}
+          driverId={selectedDriverId}
+          userId={userId}
+        />
+      )}
       {bookings.length === 0 ? (
         <Text className={styles.noTripsText}>Aún no has comprado ningún cupo.</Text>
       ) : (
@@ -185,7 +232,19 @@ const Cupos: React.FC<CuposProps> = ({ userId }) => {
                   >
                     Ir al Chat
                   </Button>
-
+                  <Button
+                    size="xs"
+                    onClick={() => {
+                      if (booking.trip_id && booking.driver_id) {
+                        openRatingModal(booking.trip_id, booking.driver_id);
+                      }
+                    }}
+                    variant="filled"
+                    color="yellow"
+                  >
+                    Calificar viaje
+                  </Button>
+                        
                 </Group>
               </Stack>
             </Card>

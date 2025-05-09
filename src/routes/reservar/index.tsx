@@ -14,6 +14,7 @@ import { useJsApiLoader } from '@react-google-maps/api';
 import type { Trip } from '@/types/Trip';
 import { Modal } from '@mantine/core';
 import { GoogleMap } from '@react-google-maps/api';
+import { Rating } from '@mantine/core';
 
 
 
@@ -234,6 +235,15 @@ const ReservarView = () => {
                 setIsSearching(false);
                 return;
             }
+            // Obtener calificaciones por conductor
+            const { data: allCalifications, error: calificationsError } = await supabase
+            .from('califications')
+            .select('driver_id, value');
+            
+            if (calificationsError) {
+            console.error('Error fetching califications:', calificationsError);
+            }
+            
     
 
             // Normalizar texto para comparar sin tildes ni mayúsculas
@@ -265,6 +275,10 @@ const ReservarView = () => {
               
               const trips = filteredTrips.map((trip) => {
                 const userProfile = userProfiles.find((profile) => profile.user_id === trip.user_id);
+                const driverRatings = allCalifications?.filter(c => c.driver_id === trip.user_id);
+                const averageRating = driverRatings && driverRatings.length > 0
+                  ? driverRatings.reduce((acc, curr) => acc + (curr.value || 0), 0) / driverRatings.length
+                  : null;
                 const licenseRaw = licenses?.find((l) => l.user_id === trip.user_id);
                 const license = licenseRaw &&
                   licenseRaw.license_number &&
@@ -306,6 +320,8 @@ const ReservarView = () => {
                   license,
                   propertyCard,
                   soat,
+                  rating: averageRating !== null ? averageRating : undefined,
+
                 };
             });
 
@@ -576,6 +592,13 @@ const ReservarView = () => {
                                             <Text fw={500} size="sm" className={styles.driverName}>
                                                 {trip.driverName || 'No disponible'}
                                             </Text>
+                                            <div className={styles.driverRating}>
+                                             {trip.rating !== undefined ? (
+                                               <Rating value={trip.rating} readOnly size="xs" />
+                                             ) : (
+                                               <Text c="gray" size="xs">Nuevo</Text>
+                                             )}
+                                            </div>
                                         </div>
                                     </div>
                             

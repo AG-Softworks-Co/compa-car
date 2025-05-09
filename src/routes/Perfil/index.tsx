@@ -26,10 +26,13 @@ import {
 import type { LucideProps } from 'lucide-react'
 import styles from './index.module.css'
 import { supabase } from '@/lib/supabaseClient'
+import { Rating } from '@mantine/core';
+
 
 // Interfaces
 interface UserProfile {
   id: number
+  user_id: string;
   email: string
   phone_number: string
   first_name: string
@@ -38,6 +41,7 @@ interface UserProfile {
   identification_number: string | null
   user_type: string
   Verification: string | null
+  photo_user: string
 }
 
 interface VehicleStatus {
@@ -90,6 +94,8 @@ const ProfileView: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string>('')
   const [showVehicleMessage, setShowVehicleMessage] = useState(false)
   const [showWalletOptions, setShowWalletOptions] = useState(false)
+  const [averageRating, setAverageRating] = useState<number | null>(null);
+
 
   // Definición de items del menú
   const menuItems: MenuItem[] = [
@@ -186,6 +192,33 @@ const ProfileView: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchAverageRating = async () => {
+      if (!userProfile?.id) return;
+  
+      const { data, error } = await supabase
+        .from('califications')
+        .select('value')
+        .eq('driver_id', userProfile?.user_id);
+  
+      if (error) {
+        console.error('Error al cargar calificaciones', error);
+        return;
+      }
+  
+      if (data && data.length > 0) {
+        const total = data.reduce((sum, r) => sum + r.value, 0);
+        const average = total / data.length;
+        setAverageRating(Number(average.toFixed(1))); // Redondeo a 1 decimal
+      } else {
+        setAverageRating(null);
+      }
+    };
+  
+    fetchAverageRating();
+  }, [userProfile]);
+  
+
   // Efecto para cargar datos del usuario y documentos
   useEffect(() => {
     const loadUserData = async () => {
@@ -206,7 +239,11 @@ const ProfileView: React.FC = () => {
           { data: soat },
           { data: propertyCard }
         ] = await Promise.all([
-          supabase.from('user_profiles').select('*').eq('user_id', session.user.id).single(),
+          supabase
+            .from('user_profiles')
+            .select('id, user_id, phone_number, first_name, last_name, identification_type, identification_number, status, Verification, photo_user')
+            .eq('user_id', session.user.id)
+            .single(),
           supabase.from('vehicles').select('id').eq('user_id', session.user.id).maybeSingle(),
           supabase.from('driver_licenses').select('id').eq('user_id', session.user.id).maybeSingle(),
           supabase.from('soat_details').select('id').eq('user_id', session.user.id).maybeSingle(),
@@ -222,6 +259,7 @@ const ProfileView: React.FC = () => {
         if (profile) {
           setUserProfile({
             id: profile.id,
+            user_id: session.user.id,
             email: session.user.email ?? '',
             phone_number: profile.phone_number ?? '',
             first_name: profile.first_name,
@@ -229,8 +267,10 @@ const ProfileView: React.FC = () => {
             identification_type: profile.identification_type,
             identification_number: profile.identification_number,
             user_type: profile.status,
-            Verification: profile.Verification
+            Verification: profile.Verification,
+            photo_user: profile.photo_user || '', 
           });
+          
         }
         setVehicleStatus({
           hasVehicle: Boolean(vehicle),
@@ -254,27 +294,46 @@ const ProfileView: React.FC = () => {
   const renderUserSection = () => (
     <div className={styles.userSection}>
       <div className={styles.userAvatar}>
-        <User size={40} />
+        {userProfile?.photo_user ? (
+          <img
+            src={userProfile.photo_user}
+            alt="Foto de perfil"
+            className={styles.userPhoto}
+          />
+        ) : (
+          <User size={40} />
+        )}
       </div>
       <div className={styles.userInfo}>
         <Text className={styles.userName}>
           {userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Usuario'}
         </Text>
         <Text className={styles.userEmail}>{userProfile?.email}</Text>
-        <Text
+        <div
           className={`${styles.userType} ${
             userProfile?.user_type === 'DRIVER' ? styles.driver : ''
           }`}
         >
-          {userProfile?.user_type === 'DRIVER' ? (
-            <>
-              <CheckCircle size={16} className={styles.verifiedIcon} />
-              Conductor
-            </>
-          ) : (
-            'Pasajero'
+          <Text>
+            {userProfile?.user_type === 'DRIVER' ? (
+              <>
+                 Conductor
+              </>
+            ) : (
+              'Pasajero'
+            )}
+          </Text>
+          {userProfile?.user_type === 'DRIVER' && (
+            <div className={styles.driverRating}>
+              {averageRating !== null ? (
+                <Rating value={averageRating} readOnly size="sm" />
+              ) : (
+                <Text c="gray" size="xs"></Text>
+              )}
+            </div>
           )}
-        </Text>
+        </div>
+        
       </div>
     </div>
   );
@@ -614,7 +673,7 @@ const ProfileView: React.FC = () => {
         </Text>
       )}
 
-      <Text className={styles.version}>v2.55.8 (968)</Text>
+      <Text className={styles.version}>v3.00.0 (968)</Text>
     </Container>
   )
 }

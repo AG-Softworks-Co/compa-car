@@ -7,8 +7,6 @@ import { showNotification } from '@mantine/notifications';
 import dayjs from 'dayjs';
 import RolSelector from './RolSelector';
 import TripFilter from './TripFilter';
-import EditTripModal from './EditTripModal';
-import DeleteTripModal from './DeleteTripModal';
 import Cupos from '../../routes/Cupos';
 import styles from './index.module.css';
 import TripCard from './TripCard';
@@ -49,10 +47,6 @@ const Actividades: React.FC = () => {
   const navigate = useNavigate();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [filteredTrips, setFilteredTrips] = useState<Trip[]>([]);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedTripIndex, ] = useState<number | null>(null);
-  const [editedTrip, setEditedTrip] = useState<Trip | null>(null);
   const [filterValue, setFilterValue] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<Date | null>(null);
@@ -210,63 +204,7 @@ const Actividades: React.FC = () => {
     setFilteredTrips(filtered);
   }, [trips, filterValue, statusFilter, dateFilter]);
 
-  const handleDelete = async (tripId: number) => {
-    try {
-      const { error } = await supabase.from('trips').delete().eq('id', tripId);
-      if (error) throw error;
-      const updatedTrips = trips.filter((trip) => trip.id !== tripId);
-      setTrips(updatedTrips);
-      setFilteredTrips(updatedTrips);
-      setDeleteModalOpen(false);
-      showNotification({
-        title: 'Viaje eliminado',
-        message: 'El viaje ha sido eliminado correctamente',
-        color: 'green',
-      });
-    } catch (error) {
-      console.error('Error deleting trip:', error);
-      showNotification({
-        title: 'Error',
-        message: 'Error al eliminar el viaje',
-        color: 'red',
-      });
-    }
-  };
 
-
-  const handleEditSubmit = async () => {
-    if (!editedTrip) return;
-    try {
-      const { error } = await supabase
-        .from('trips')
-        .update({
-          description: editedTrip.description,
-          price_per_seat: editedTrip.pricePerSeat,
-          allow_pets: editedTrip.allowPets ? 'Y' : 'N',
-          allow_smoking: editedTrip.allowSmoking ? 'Y' : 'N',
-        })
-        .eq('id', editedTrip.id);
-      if (error) throw error;
-      const updatedTrips = trips.map((trip) =>
-        trip.id === editedTrip.id ? editedTrip : trip
-      );
-      setTrips(updatedTrips);
-      setFilteredTrips(updatedTrips);
-      setEditModalOpen(false);
-      showNotification({
-        title: 'Viaje actualizado',
-        message: 'El viaje ha sido actualizado correctamente',
-        color: 'green',
-      });
-    } catch (error) {
-      console.error('Error updating trip:', error);
-      showNotification({
-        title: 'Error',
-        message: 'Error al actualizar el viaje',
-        color: 'red',
-      });
-    }
-  };
 
   if (loading) {
     return (
@@ -321,24 +259,6 @@ const Actividades: React.FC = () => {
           Para publicar viajes, necesitas completar tu perfil de conductor.
         </Text>
       )}
-
-      <EditTripModal
-        opened={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        editedTrip={editedTrip}
-        onEditSubmit={handleEditSubmit}
-        onEditedTripChange={setEditedTrip}
-      />
-
-      <DeleteTripModal
-        opened={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        onDelete={() =>
-          selectedTripIndex !== null
-            ? handleDelete(trips[selectedTripIndex].id)
-            : undefined
-        }
-      />
 
       {trips.length === 0 &&
         selectedActivity === 'Viajes Publicados' &&

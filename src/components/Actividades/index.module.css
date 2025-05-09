@@ -240,3 +240,62 @@ background-size: 1000px 100%;
   font-weight: 500;
 }
 
+.modalTitle {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #e0ffe8;
+  text-align: center;
+}
+
+.modalBody {
+  background-color: #111;
+  padding: 1.75rem;
+  border-radius: 14px;
+  color: #ddd;
+}
+
+.label {
+  font-weight: 500;
+  font-size: 1.1rem;
+  color: #a2f5c8;
+  margin-bottom: 0.4rem;
+}
+
+.rating {
+  margin-bottom: 1rem;
+}
+
+.textarea {
+  background-color: #1b1b1b;
+  border-color: #2d2d2d;
+  color: #e5e5e5;
+  font-size: 0.95rem;
+}
+
+.divider {
+  border-top: 1px solid #333;
+  opacity: 0.5;
+}
+
+.closeButton {
+  background-color: transparent;
+  color: #aaa;
+  border: 1px solid #444;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  color: #f1f1f1;
+  border-color: #777;
+}
+
+.submitButton {
+  background-color: #34d399;
+  color: #0a0a0a;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.submitButton:hover {
+  background-color: #2bb386;
+}

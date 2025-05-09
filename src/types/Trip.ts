@@ -42,4 +42,5 @@ export interface Trip {
     insurance_company: string | null;
     vehicle_id: number | null;
   } | null;
+  rating?: number;
 }
