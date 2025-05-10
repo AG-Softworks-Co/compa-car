@@ -1,4 +1,4 @@
-package com.compacar.compacar;
+package com.cupo.app;
 
 import com.getcapacitor.BridgeActivity;
 

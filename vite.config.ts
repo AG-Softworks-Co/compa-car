@@ -1,13 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
+// ❌ quitamos el plugin que impone dist/client
 import { fileURLToPath } from "node:url";
 import { telefunc } from "telefunc/vite";
-// https://vitejs.dev/config/
+
 export default defineConfig({
   plugins: [
     react(),
-    TanStackRouterVite(),
     // @ts-expect-error
     telefunc({
       disableNamingConvention: true,
@@ -17,7 +16,7 @@ export default defineConfig({
     alias: [
       {
         find: "@tabler/icons-react",
-        replacement: "@tabler/icons-react/dist/esm/icons/index.mjs"
+        replacement: "@tabler/icons-react/dist/esm/icons/index.mjs",
       },
       {
         find: "@",
@@ -26,10 +25,15 @@ export default defineConfig({
       {
         find: "$",
         replacement: fileURLToPath(new URL("./server/src/functions", import.meta.url)),
-      }
+      },
     ],
   },
   server: {
-    allowedHosts: ["dev.faun-scylla.ts.net"]
-  }
+    allowedHosts: ["dev.faun-scylla.ts.net"],
+  },
+  build: {
+    outDir: "dist",        // ✅ Capacitor necesita esto
+    emptyOutDir: true,
+  },
+  base: "./",              // ✅ rutas relativas para móvil
 });
