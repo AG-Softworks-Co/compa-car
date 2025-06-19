@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   Container,
   Text,
@@ -15,10 +15,11 @@ import {
 } from '@mantine/core'
 import { showNotification } from '@mantine/notifications'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import jsQR from 'jsqr'
 import { IconAlertCircle, IconCheck, IconQrcode, IconX } from '@tabler/icons-react'
 import { supabase } from '@/lib/supabaseClient'
+import { BarcodeScanner } from '@capacitor-community/barcode-scanner'
 import styles from './ValidarCupo.module.css'
+import { Capacitor } from '@capacitor/core'
 
 const ValidarCupoComponent = () => {
   const params = Route.useParams() as { bookingId: string }
@@ -29,9 +30,10 @@ const ValidarCupoComponent = () => {
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error' | null>(null)
+  const [isScanning, setIsScanning] = useState(false)
   const navigate = useNavigate()
-  const videoRef = useRef<HTMLVideoElement>(null)
 
+  // Validar el QR contra la base de datos
   const validateQR = useCallback(async (qrData: string) => {
     setLoading(true)
     try {
@@ -80,67 +82,92 @@ const ValidarCupoComponent = () => {
     }
   }, [bookingId])
 
-  const tick = useCallback(() => {
-    if (
-      videoRef.current &&
-      videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA
-    ) {
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      const width = videoRef.current.videoWidth
-      const height = videoRef.current.videoHeight
-      canvas.width = width
-      canvas.height = height
-      ctx?.drawImage(videoRef.current, 0, 0, width, height)
-      const imageData = ctx?.getImageData(0, 0, width, height)
-      const qrCode = imageData ? jsQR(imageData.data, width, height) : null
-      if (qrCode && !scanResult) {
-        const qr = qrCode.data
-        setScanResult(qr)
-        showNotification({
-          title: 'QR Escaneado',
-          message: `Código detectado: ${qr}`,
-          color: 'blue',
-          icon: <IconQrcode size={16} />,
-        })
-        validateQR(qr)
-      }
-    }
-    if (!scanResult) requestAnimationFrame(tick)
-  }, [scanResult, validateQR])
+  // Botón para depurar permisos de cámara
+  const debugCameraPermission = async () => {
+    const status = await BarcodeScanner.checkPermission();
+    alert(JSON.stringify(status, null, 2));
+  };
 
-  const startCamera = useCallback(async () => {
+  // Iniciar escaneo de QR
+  const startQRScan = useCallback(async () => {
+    if (Capacitor.getPlatform() === 'web') {
+      // Fallback para web: pedir QR manualmente
+      const qrData = prompt('Pega el código QR aquí:');
+      if (qrData) {
+        setScanResult(qrData);
+        await validateQR(qrData);
+      }
+      return;
+    }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        videoRef.current.setAttribute('playsinline', 'true')
-        videoRef.current.play()
-        requestAnimationFrame(tick)
+      setIsScanning(true);
+      const permission = await BarcodeScanner.checkPermission({ force: true });
+      if (!permission.granted) {
+        setError('Permiso de cámara denegado.');
+        setModalType('error');
+        setIsModalOpen(true);
+        setIsScanning(false);
+        return;
       }
+      BarcodeScanner.hideBackground();
+      document.body.classList.add('scanner-active');
+      document.getElementById('root')?.classList.add('scanner-active');
+      // Oculta todo el contenido de la app mientras escaneas
+      setTimeout(async () => {
+        const result = await BarcodeScanner.startScan();
+        if (result.hasContent) {
+          const qrData = result.content;
+          setScanResult(qrData);
+          showNotification({
+            title: 'QR Escaneado',
+            message: `Código detectado: ${qrData}`,
+            color: 'blue',
+            icon: <IconQrcode size={16} />,
+          });
+          await validateQR(qrData);
+        }
+        setIsScanning(false);
+        document.body.classList.remove('scanner-active');
+        document.getElementById('root')?.classList.remove('scanner-active');
+        await BarcodeScanner.stopScan();
+      }, 300); // pequeño delay para asegurar que el DOM se actualiza
     } catch (err) {
-      setError('No se pudo acceder a la cámara. Verifica los permisos.')
+      console.error(err);
+      setError('Error al escanear el código QR.');
+      setModalType('error');
+      setIsModalOpen(true);
+      setIsScanning(false);
+      document.body.classList.remove('scanner-active');
+      document.getElementById('root')?.classList.remove('scanner-active');
+      await BarcodeScanner.stopScan();
     }
-  }, [tick])
+  }, [validateQR]);
 
+  // Limpieza al desmontar
   useEffect(() => {
-    startCamera()
     return () => {
-      if (videoRef.current?.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream
-        stream.getTracks().forEach((track) => track.stop())
-      }
+      try {
+        BarcodeScanner.stopScan()
+      } catch (e) {}
+      document.body.classList.remove('scanner-active');
+      document.getElementById('root')?.classList.remove('scanner-active');
     }
-  }, [startCamera])
+  }, [])
 
-  const handleCloseModal = () => {
+  // Cerrar modal y limpiar overlays
+  const handleCloseModal = async () => {
     setIsModalOpen(false)
+    try {
+      await BarcodeScanner.stopScan()
+    } catch (e) {}
+    document.body.classList.remove('scanner-active')
+    document.getElementById('root')?.classList.remove('scanner-active')
     navigate({ to: '/Actividades' })
   }
 
   return (
     <Container size="sm" className={styles.container}>
-      <LoadingOverlay visible={loading} />
+      <LoadingOverlay visible={loading && !isScanning} />
       <Group justify="space-between" mb="sm">
         <Title order={2} className={styles.title}>
           Validar Cupo
@@ -154,25 +181,39 @@ const ValidarCupoComponent = () => {
         Escanea el código QR del tiquete. Esto confirma la llegada del pasajero y activa el pago, descontando la comisión de la plataforma Cupo.
       </Text>
 
-      <Paper shadow="sm" radius="md" p="xl" className={styles.paper}>
-        <Stack gap="lg">
-          <Group justify="center" className={styles.qrScannerContainer}>
-            <video ref={videoRef} className={styles.video} />
-          </Group>
+      {/* OCULTA TODO EL CONTENIDO CUANDO SE ESCANEA */}
+      {!isScanning && (
+        <Paper shadow="sm" radius="md" p="xl" className={styles.paper}>
+          <Stack gap="lg">
+            <Group justify="center" className={styles.qrScannerContainer}>
+              <Button
+                onClick={startQRScan}
+                size="lg"
+                leftSection={<IconQrcode size={18} />}
+                loading={isScanning}
+                disabled={isScanning}
+              >
+                Escanear QR
+              </Button>
+              <Button onClick={debugCameraPermission} variant="outline" color="gray">
+                Debug Permiso Cámara
+              </Button>
+            </Group>
 
-          {scanResult && (
-            <Text ta="center" size="sm" className={styles.scanResult}>
-              Código detectado: {scanResult}
-            </Text>
-          )}
+            {scanResult && (
+              <Text ta="center" size="sm" className={styles.scanResult}>
+                Código detectado: {scanResult}
+              </Text>
+            )}
 
-          {error && (
-            <Alert icon={<IconAlertCircle size={16} />} color="red" variant="filled">
-              {error}
-            </Alert>
-          )}
-        </Stack>
-      </Paper>
+            {error && (
+              <Alert icon={<IconAlertCircle size={16} />} color="red" variant="filled">
+                {error}
+              </Alert>
+            )}
+          </Stack>
+        </Paper>
+      )}
 
       <Modal
         opened={isModalOpen}

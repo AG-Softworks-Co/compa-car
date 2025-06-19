@@ -9,13 +9,13 @@ import {
   Box,
   createTheme,
   Image,
-  
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import '@mantine/dates/styles.css';
 import { Search, PlusCircle, Car, User } from "lucide-react";
 import { config } from "telefunc/client";
 import styles from "./root.module.css";
+import { AuthProvider } from '@/context/AuthContext';
 
 // Configure telefunc
 config.telefuncUrl = "http://localhost:3000/_telefunc";
@@ -67,7 +67,6 @@ const noNavBarRoutes = [
   "/CompletarRegistro",
   "/PagarCupo",
   "/ConfirmarCupo",
-
 ];
 
 const RootComponent = () => {
@@ -75,73 +74,77 @@ const RootComponent = () => {
   const showNavigation = !noNavBarRoutes.includes(location.pathname);
 
   return (
-    <MantineProvider theme={theme} defaultColorScheme="dark">
-      <AppShell
-        header={{ height: showNavigation ? 60 : 0 }}
-        footer={{ height: 60 }}
-        className={styles.appShell}
-      >
-        <div className={styles.backgroundEffect} />
+    <AuthProvider>
+      <MantineProvider theme={theme} defaultColorScheme="dark">
+        <div className="safe-area">
+          <AppShell
+            header={{ height: showNavigation ? 60 : 0 }}
+            footer={{ height: 60 }}
+            className={styles.appShell}
+          >
+            <div className={styles.backgroundEffect} />
 
-        {showNavigation && (
-          <AppShell.Header className={styles.header}>
-            <Group justify="space-between" className={styles.headerContent}>
-              <Image
-                src="https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/Logo.png" 
-                alt="Logo"
-                className={styles.logoImage}
-              />
-              <Button
-                className={styles.registerButton}
-                component="a" // Cambiar a un enlace HTML
-                href="https://www.cupo.dev" // URL de destino
-                target="_blank" // Abrir en una nueva pestaña
-                rel="noopener noreferrer" // Seguridad para enlaces externos
-              >
-                <span>Más información</span>
-              </Button>
-            </Group>
-          </AppShell.Header>
-        )}
+            {showNavigation && (
+              <AppShell.Header className={styles.header}>
+                <Group justify="space-between" className={styles.headerContent}>
+                  <Image
+                    src="https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/Logo.png"
+                    alt="Logo"
+                    className={styles.logoImage}
+                  />
+                  <Button
+                    className={styles.registerButton}
+                    component="a"
+                    href="https://www.cupo.dev"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span>Más información</span>
+                  </Button>
+                </Group>
+              </AppShell.Header>
+            )}
 
-        <AppShell.Main className={styles.main}>
-          <Outlet />
-        </AppShell.Main>
+            <AppShell.Main className={styles.main}>
+              <Outlet />
+            </AppShell.Main>
 
-        {showNavigation && (
-          <AppShell.Footer className={styles.footer}>
-            <Group className={styles.navGroup}>
-              {navItems.map((item, index) => (
-                <UnstyledButton
-                  key={item.label || `nav-item-${index}`}
-                  component={Link}
-                  to={item.to}
-                  className={`${styles.navButton} ${index === 2 ? styles.centerButton : ""}`}
-                >
-                  {index === 2 ? (
-                    <Box className={styles.logoWrapper}>
-                      <Image
-                        src="https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/Logo.png" 
-                        alt="Logo"
-                        className={styles.logoImage}
-                      />
-                    </Box>
-                  ) : (
-                    <>
-                      <Box className={styles.navIcon}>
-                        <item.icon size={24} />
-                      </Box>
-                      <Text className={styles.navLabel}>{item.label}</Text>
-                    </>
-                  )}
-                </UnstyledButton>
-              ))}
-            </Group>
-          </AppShell.Footer>
-        )}
-      </AppShell>
-      <Notifications />
-    </MantineProvider>
+            {showNavigation && (
+              <AppShell.Footer className={styles.footer}>
+                <Group className={styles.navGroup}>
+                  {navItems.map((item, index) => (
+                    <UnstyledButton
+                      key={item.label || `nav-item-${index}`}
+                      component={Link}
+                      to={item.to}
+                      className={`${styles.navButton} ${index === 2 ? styles.centerButton : ""}`}
+                    >
+                      {index === 2 ? (
+                        <Box className={styles.logoWrapper}>
+                          <Image
+                            src="https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/Logo.png"
+                            alt="Logo"
+                            className={styles.logoImage}
+                          />
+                        </Box>
+                      ) : (
+                        <>
+                          <Box className={styles.navIcon}>
+                            <item.icon size={24} />
+                          </Box>
+                          <Text className={styles.navLabel}>{item.label}</Text>
+                        </>
+                      )}
+                    </UnstyledButton>
+                  ))}
+                </Group>
+              </AppShell.Footer>
+            )}
+          </AppShell>
+          <Notifications />
+        </div>
+      </MantineProvider>
+    </AuthProvider>
   );
 };
 

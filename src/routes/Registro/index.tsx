@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Box,
@@ -13,9 +13,9 @@ import {
 } from "@mantine/core";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useForm } from "@mantine/form";
-import { supabase } from "@/lib/supabaseClient";
 import styles from "./index.module.css";
 import { TermsModal } from "@/components/TermsModal";
+import { useAuth } from "@/context/AuthContext";
 
 interface RegisterFormValues {
   nombre: string;
@@ -26,13 +26,23 @@ interface RegisterFormValues {
 
 const RegisterView: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [subscribeEmails, setSubscribeEmails] = useState(true);
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [cookiesBlocked, setCookiesBlocked] = useState(false);
 
   const navigate = useNavigate();
+  const { signup, loading: authLoading } = useAuth();
+
+  // Verifica si las cookies están bloqueadas
+  useEffect(() => {
+    document.cookie = "testcookie=1; SameSite=None; Secure";
+    if (!document.cookie.includes("testcookie")) {
+      setCookiesBlocked(true);
+      setError("Tu navegador bloquea las cookies. Actívalas para continuar.");
+    }
+  }, []);
 
   const form = useForm<RegisterFormValues>({
     initialValues: {
@@ -52,52 +62,34 @@ const RegisterView: React.FC = () => {
 
   const handleRegister = async (values: RegisterFormValues) => {
     try {
-      setLoading(true);
       setError("");
 
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
-        options: {
-          data: {
-            full_name: values.nombre,
-          },
-        },
-      });
+      const success = await signup(
+        values.email,
+        values.password,
+        values.nombre,
+        acceptTerms ? "aceptado" : "rechazado",
+        subscribeEmails ? "aceptado" : "rechazado"
+      );
 
-      if (signUpError) throw signUpError;
-      if (!authData.user) throw new Error("No se pudo crear el usuario");
 
-      const { error: profileError } = await supabase.from("user_profiles").insert({
-        user_id: authData.user.id,
-        first_name: values.nombre.split(" ")[0],
-        last_name: values.nombre.split(" ").slice(1).join(" ") || "",
-        identification_type: "CC",
-        identification_number: null,
-        status: "PASSENGER",
-      });
+      if (success) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        alert("Usuario creado correctamente. Por favor, verifica tu correo electrónico.");
+        navigate({ to: "/Login" });
+      } else {
+        setError("Error al registrar usuario");
+      }
 
-      if (profileError) throw profileError;
-
-      await supabase.from("terms_condictions").insert({
-        user_id: authData.user.id,
-        verification_terms: acceptTerms ? "aceptado" : "rechazado",
-        suscriptions: subscribeEmails ? "aceptado" : "rechazado",
-      });
-
-      alert("Usuario creado correctamente. Por favor, verifica tu correo electrónico.");
-      navigate({ to: "/Login" });
     } catch (error) {
       console.error("Registration error:", error);
       setError(error instanceof Error ? error.message : "Error al crear el usuario");
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
     <Container className={styles.container}>
-      <LoadingOverlay visible={loading} />
+      <LoadingOverlay visible={authLoading} />
 
       <Group justify="flex-start" mb="xl">
         <UnstyledButton component={Link} to="/" className={styles.backButton}>
@@ -120,6 +112,10 @@ const RegisterView: React.FC = () => {
         onSubmit={form.onSubmit((values) => {
           if (!acceptTerms) {
             setError("Debes aceptar los Términos y Condiciones para continuar.");
+            return;
+          }
+          if (cookiesBlocked) {
+            setError("Tu navegador bloquea las cookies. Actívalas para continuar.");
             return;
           }
           handleRegister(values);
@@ -188,13 +184,17 @@ const RegisterView: React.FC = () => {
           label={
             <>
               Acepto los{" "}
-              <UnstyledButton
-                type="button"
+              <span
                 onClick={() => setShowTermsModal(true)}
-                style={{ color: "#00b894", textDecoration: "underline" }}
+                onMouseDown={(e) => e.preventDefault()} // <--- esto previene el conflicto con el Checkbox
+                style={{
+                  color: "#00b894",
+                  textDecoration: "underline",
+                  cursor: "pointer",
+                }}
               >
                 Términos y Condiciones
-              </UnstyledButton>
+              </span>
             </>
           }
           required
@@ -214,7 +214,15 @@ const RegisterView: React.FC = () => {
           </Text>
         )}
 
-        <Button loading={loading} fullWidth size="lg" className={styles.loginButton} type="submit" mt="xl">
+        <Button
+          loading={authLoading}
+          fullWidth
+          size="lg"
+          className={styles.loginButton}
+          type="submit"
+          mt="xl"
+          disabled={cookiesBlocked}
+        >
           Registrarse
         </Button>
       </form>

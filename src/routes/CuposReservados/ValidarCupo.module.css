@@ -57,4 +57,19 @@
     background-color: #1e293b;
     color: white;
   }
-  
+/* Estilo para la cámara nativa en app */
+/* ...otras clases... */
+.scanner-active {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: transparent !important; /* Cambia a transparente */
+  z-index: 9999;
+  pointer-events: none;
+}
+
+body.scanner-active, #root.scanner-active {
+  background: transparent !important;
+}

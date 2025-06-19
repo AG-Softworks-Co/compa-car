@@ -12,6 +12,9 @@ import {
 import { QRCodeCanvas } from 'qrcode.react';
 import { Download, ArrowLeft, AlertCircle, Navigation } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory,  } from '@capacitor/filesystem';
+import { FileOpener } from '@capacitor-community/file-opener';
 import { supabase } from '@/lib/supabaseClient';
 import dayjs from 'dayjs';
 import styles from './ViewTicket.module.css';
@@ -121,12 +124,43 @@ const ViewTicket = () => {
         backgroundColor: '#ffffff',
       });
       const url = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `ticket-${booking_id}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+
+      // Quitar el header 'data:image/png;base64,' para que sea base64 puro
+      const base64Data = url.split(',')[1];
+      const fileName = `ticket-${booking_id}.png`;
+
+      if (Capacitor.getPlatform() === 'web') {
+        // Si estamos en navegador → usar link como antes
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        console.log('Tiquete descargado en navegador.');
+      } else {
+        // Si estamos en app nativa → usar Filesystem + FileOpener
+        // Guarda en Directory.Documents para que sea accesible
+        await Filesystem.writeFile({
+          path: fileName,
+          data: base64Data,
+          directory: Directory.Documents,
+        });
+      
+        // Obtén la URI del archivo guardado
+        const fileUri = await Filesystem.getUri({
+          directory: Directory.Documents,
+          path: fileName,
+        });
+      
+        // Abre el archivo usando la URI absoluta
+        await FileOpener.open({
+          filePath: fileUri.uri,
+          contentType: 'image/png',
+        });
+      
+        console.log('Tiquete guardado y abierto en app.');
+      }
     } catch (error) {
       console.error('Error generando el ticket:', error);
     }
@@ -259,3 +293,4 @@ export const Route = createFileRoute('/Cupos/ViewTicket')({
 });
 
 export default ViewTicket;
+
