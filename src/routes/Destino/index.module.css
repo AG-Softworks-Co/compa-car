@@ -28,13 +28,42 @@
   z-index: 10;
   position: relative;
   flex-shrink: 0;
+  margin-top: calc(60px + env(safe-area-inset-top) + 40px);
+}
+
+@media (max-width: 600px) {
+  .searchSection {
+    margin-top: calc(56px + env(safe-area-inset-top) + 32px);
+    padding: 12px;
+  }
 }
 
 .header {
+  background: rgba(10, 10, 10, 0.95);
+  border-bottom: 1px solid rgba(0, 255, 157, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  padding-top: calc(env(safe-area-inset-top) + 40px);
+  height: calc(60px + env(safe-area-inset-top) + 40px);
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  box-sizing: border-box;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (max-width: 600px) {
+  .header {
+    padding-top: calc(env(safe-area-inset-top) + 32px);
+    height: calc(56px + env(safe-area-inset-top) + 32px);
+    padding-left: 8px;
+    padding-right: 8px;
+  }
 }
 
 .backButton {

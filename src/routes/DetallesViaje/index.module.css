@@ -33,16 +33,31 @@
 
 /* Header */
 .header {
-  position: sticky;
+  background: rgba(10, 10, 10, 0.95);
+  border-bottom: 1px solid rgba(0, 255, 157, 0.1);
+  position: fixed;
   top: 0;
-  z-index: 100;
-  background: rgba(10, 10, 10, 0.8);
+  left: 0;
+  width: 100%;
+  z-index: 1000;
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border-color);
-  padding: 1rem;
+  padding-top: calc(env(safe-area-inset-top) + 40px);
+  height: calc(60px + env(safe-area-inset-top) + 40px);
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 12px;
+  box-sizing: border-box;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (max-width: 600px) {
+  .header {
+    padding-top: calc(env(safe-area-inset-top) + 32px);
+    height: calc(56px + env(safe-area-inset-top) + 32px);
+    padding-left: 8px;
+    padding-right: 8px;
+  }
 }
 
 .backButton {

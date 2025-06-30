@@ -260,7 +260,7 @@
     
     .input input {
       height: 50px !important;
-      font-size: 14px !important;
+      font-size: 16px !important; /* <-- Esto SÍ */
     }
   }
 
@@ -331,18 +331,45 @@
 }
 
 /* Botón leer términos */
-.checkbox button {
+
+.termsLink {
   background: none;
   border: none;
-  padding: 0;
-  margin: 0;
+  outline: none;
+  display: inline-block;
+  padding: 8px 6px;
+  margin-left: 4px;
   color: #00ff9d !important;
   font-weight: 500;
   cursor: pointer;
   text-decoration: underline;
-  transition: color 0.3s ease;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  font: inherit;
+}
+.termsLink:active {
+  background-color: rgba(0, 255, 157, 0.1);
 }
 
-.checkbox button:hover {
-  color: #00cc7a !important;
+.cookiesBanner {
+  margin-top: 2rem;
+  padding: 1rem 1.5rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0, 255, 157, 0.1);
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  animation: fadeSlideUp 0.5s ease forwards;
+}
+
+.cookiesText {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-right: 1rem;
+  flex: 1;
 }

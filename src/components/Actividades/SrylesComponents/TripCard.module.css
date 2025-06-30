@@ -131,14 +131,28 @@
   background: transparent !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
   color: white !important;
-  padding: 0.8rem 1.5rem !important;
+  padding: 0.6rem 1.2rem !important;   /* Menos padding horizontal, más vertical */
   border-radius: 12px !important;
   transition: all 0.3s ease !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
   font-weight: 500 !important;
+  min-height: 40px !important;         /* <--- Esto asegura que el texto nunca se corta */
+  font-size: 1rem !important;          /* Asegura legibilidad en móviles */
+  line-height: 1.2 !important;         /* Corrige alineación vertical */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+@media (max-width: 768px) {
+  .tripActions button {
+    width: 100%;
+    min-height: 44px !important;       /* Un poco más alto en móviles */
+    font-size: 1.05rem !important;
+    padding: 0.7rem 1rem !important;
+  }
+}
 .tripActions button:hover {
   background: rgba(255, 255, 255, 0.05) !important;
   border-color: rgba(0, 255, 157, 0.3) !important;

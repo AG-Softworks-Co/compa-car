@@ -226,6 +226,8 @@ function FormattedNumberInput({
     );
 }
 
+import { useRef } from 'react';
+
 const DetallesViajeView = () => {
     const navigate = useNavigate();
     const [tripData, setTripData] = useState<TripData>(tripStore.getStoredData());
@@ -240,6 +242,7 @@ const DetallesViajeView = () => {
     const [dateTime, setDateTime] = useState<Date | null>(null);
     const [stopovers, setStopovers] = useState<TripStopover[]>([]);
     const [loading, setLoading] = useState(false);
+    const isSubmittingRef = useRef(false);
     const [vehicles, setVehicles] = useState<any[]>([]);
     const [vehicleId, setVehicleId] = useState<string | null>(null);
 
@@ -419,6 +422,8 @@ const DetallesViajeView = () => {
 
     const handleSubmit = async () => {
         if (!validateForm()) return;
+        if (isSubmittingRef.current) return; // evita múltiples clics
+        isSubmittingRef.current = true;
         setLoading(true);
 
         try {
@@ -625,6 +630,7 @@ const DetallesViajeView = () => {
             setFormError(error.message || 'Error al guardar el viaje');
         } finally {
             setLoading(false);
+            isSubmittingRef.current = false;
         }
     };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Box,
@@ -16,6 +16,7 @@ import { useForm } from "@mantine/form";
 import styles from "./index.module.css";
 import { TermsModal } from "@/components/TermsModal";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabaseClient";
 
 interface RegisterFormValues {
   nombre: string;
@@ -26,23 +27,17 @@ interface RegisterFormValues {
 
 const RegisterView: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [subscribeEmails, setSubscribeEmails] = useState(true);
   const [showTermsModal, setShowTermsModal] = useState(false);
-  const [cookiesBlocked, setCookiesBlocked] = useState(false);
+  const [cookiesAccepted, setCookiesAccepted] = useState(() => {
+    return localStorage.getItem("cookiesAccepted") === "true";
+  });
 
   const navigate = useNavigate();
   const { signup, loading: authLoading } = useAuth();
 
-  // Verifica si las cookies están bloqueadas
-  useEffect(() => {
-    document.cookie = "testcookie=1; SameSite=None; Secure";
-    if (!document.cookie.includes("testcookie")) {
-      setCookiesBlocked(true);
-      setError("Tu navegador bloquea las cookies. Actívalas para continuar.");
-    }
-  }, []);
 
   const form = useForm<RegisterFormValues>({
     initialValues: {
@@ -54,7 +49,12 @@ const RegisterView: React.FC = () => {
     validate: {
       nombre: (value) => (value.length < 3 ? "El nombre debe tener al menos 3 caracteres" : null),
       email: (value) => (/^\S+@\S+$/.test(value) ? null : "Correo electrónico inválido"),
-      password: (value) => (value.length < 6 ? "La contraseña debe tener al menos 6 caracteres" : null),
+      password: (value) => {
+        if (value.length < 6) return "La contraseña debe tener al menos 6 caracteres";
+        if (!/[A-Z]/.test(value)) return "La contraseña debe incluir al menos una letra mayúscula";
+        if (!/[0-9]/.test(value)) return "La contraseña debe incluir al menos un número";
+        return null;
+      },
       confirmPassword: (value, values) =>
         value !== values.password ? "Las contraseñas no coinciden" : null,
     },
@@ -62,8 +62,9 @@ const RegisterView: React.FC = () => {
 
   const handleRegister = async (values: RegisterFormValues) => {
     try {
-      setError("");
-
+      setError(null);
+  
+      // 1. Registrar usuario
       const success = await signup(
         values.email,
         values.password,
@@ -71,19 +72,46 @@ const RegisterView: React.FC = () => {
         acceptTerms ? "aceptado" : "rechazado",
         subscribeEmails ? "aceptado" : "rechazado"
       );
-
-
-      if (success) {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        alert("Usuario creado correctamente. Por favor, verifica tu correo electrónico.");
-        navigate({ to: "/Login" });
-      } else {
-        setError("Error al registrar usuario");
+  
+      if (!success) {
+        setError("Ocurrió un error al registrar el usuario. Verifica los datos e intenta nuevamente.");
+        return;
       }
-
+  
+      // 2. Iniciar sesión automáticamente
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
+  
+      if (authError || !authData.user) {
+        setError("No se pudo iniciar sesión automáticamente. Intenta ingresar manualmente.");
+        return;
+      }
+  
+      // 3. Guardar datos mínimos en localStorage
+      localStorage.setItem('userEmail', values.email);
+      localStorage.setItem('userId', authData.user.id);
+  
+      // 4. Redirigir según perfil
+      // (puedes consultar si el perfil está completo aquí si lo deseas)
+      navigate({ to: "/CompletarRegistro", replace: true });
+  
     } catch (error) {
       console.error("Registration error:", error);
-      setError(error instanceof Error ? error.message : "Error al crear el usuario");
+      let message = "Ocurrió un error al registrar el usuario. Verifica los datos e intenta nuevamente.";
+      if (
+        error instanceof Error &&
+        (
+          error.message.toLowerCase().includes("already registered") ||
+          error.message.toLowerCase().includes("already exists") ||
+          (error.message.toLowerCase().includes("email") && error.message.toLowerCase().includes("exist")) ||
+          error.message.toLowerCase().includes("correo ya registrado")
+        )
+      ) {
+        message = "Correo ya registrado";
+      }
+      setError(message);
     }
   };
 
@@ -112,10 +140,6 @@ const RegisterView: React.FC = () => {
         onSubmit={form.onSubmit((values) => {
           if (!acceptTerms) {
             setError("Debes aceptar los Términos y Condiciones para continuar.");
-            return;
-          }
-          if (cookiesBlocked) {
-            setError("Tu navegador bloquea las cookies. Actívalas para continuar.");
             return;
           }
           handleRegister(values);
@@ -177,39 +201,33 @@ const RegisterView: React.FC = () => {
             }
           />
         </Box>
-
         <Checkbox
           checked={acceptTerms}
           onChange={(e) => setAcceptTerms(e.currentTarget.checked)}
-          label={
-            <>
-              Acepto los{" "}
-              <span
-                onClick={() => setShowTermsModal(true)}
-                onMouseDown={(e) => e.preventDefault()} // <--- esto previene el conflicto con el Checkbox
-                style={{
-                  color: "#00b894",
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                }}
-              >
-                Términos y Condiciones
-              </span>
-            </>
-          }
+          label="Acepto los Términos y Condiciones"
           required
           mt="md"
         />
-
         <Checkbox
           checked={subscribeEmails}
           onChange={(e) => setSubscribeEmails(e.currentTarget.checked)}
           label="Deseo recibir correos con información y promociones"
           mt="sm"
         />
+        <div style={{ textAlign: "center", marginTop: 8 }}>
+          <button
+            type="button"
+            onClick={() => setShowTermsModal(true)}
+            className={styles.termsLink}
+            tabIndex={0}
+            style={{ textDecoration: "underline", background: "none", border: "none", color: "#00ff9d", fontWeight: 500, font: "inherit", cursor: "pointer" }}
+          >
+            Haz clic aquí para leer los Términos y Condiciones
+          </button>
+        </div>
 
         {error && (
-          <Text color="red" size="sm" className={styles.errorMessage}>
+          <Text color="red" size="sm" className={styles.errorMessage} mt="sm">
             {error}
           </Text>
         )}
@@ -221,7 +239,7 @@ const RegisterView: React.FC = () => {
           className={styles.loginButton}
           type="submit"
           mt="xl"
-          disabled={cookiesBlocked}
+          disabled={authLoading}
         >
           Registrarse
         </Button>
@@ -229,6 +247,24 @@ const RegisterView: React.FC = () => {
 
       {/* Modal profesional y reutilizable */}
       <TermsModal opened={showTermsModal} onClose={() => setShowTermsModal(false)} />
+
+      {!cookiesAccepted && (
+        <Box className={styles.cookiesBanner}>
+          <Text size="sm" className={styles.cookiesText}>
+            Usamos cookies para mejorar tu experiencia. Al continuar, aceptas su uso.
+          </Text>
+          <Button
+            size="xs"
+            color="green"
+            onClick={() => {
+              localStorage.setItem("cookiesAccepted", "true");
+              setCookiesAccepted(true);
+            }}
+          >
+            Aceptar
+          </Button>
+        </Box>
+      )}
     </Container>
   );
 };

@@ -2,10 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCameraUsageDescription</key>
+    <string>Necesitamos acceso a la cámara para escanear códigos QR.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Usamos el micrófono para ciertas funciones (si aplica).</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-    <string>cupo</string>
+	<string>cupo</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -45,19 +49,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-
-	<!-- 🚩 Permisos para Cámara -->
-	<key>NSCameraUsageDescription</key>
-	<string>Se necesita acceso a la cámara para escanear códigos QR.</string>
-
-	<!-- 🚩 Permisos para Guardar archivos -->
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Se necesita acceso para guardar archivos de tickets.</string>
-
-	<!-- 🚩 Permisos para Leer archivos -->
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Se necesita acceso para leer archivos de tickets.</string>
-
 </dict>
 </plist>
-

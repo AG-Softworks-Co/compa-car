@@ -62,6 +62,8 @@ const ReservarView: React.FC = () => {
     <Container fluid className={styles.container}>
       <div className={styles.logoOverlay} />
 
+      <div style={{height: '60px'}} />
+
       <Container size="md" className={styles.content}>
         <Box className={styles.searchSection}>
           <Title className={styles.searchTitle}>

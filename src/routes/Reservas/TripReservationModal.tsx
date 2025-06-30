@@ -35,6 +35,16 @@ interface TripReservationModalProps {
     onClose: () => void;
 }
 
+function generateShortUniqueCode(length = 6) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < length; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    
+  }
+  return code;
+}
+
 export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip, isOpen, onClose }) => {
     const [passengersCount, setPassengersCount] = React.useState(1);
     const [passengers, setPassengers] = React.useState<Passenger[]>([]);
@@ -56,7 +66,7 @@ export const TripReservationModal: React.FC<TripReservationModalProps> = ({ trip
             return;
         }
     
-        const bookingQr = `${trip.id}-${userId}-${Date.now()}`;
+        const bookingQr = generateShortUniqueCode();
         const bookingData = {
             trip_id: Number(trip.id), // Convertir a número si es string
             user_id: userId,

@@ -1,9 +1,24 @@
 .container {
   min-height: 100vh;
   background-color: #0a0a0a;
-  padding: 0;
+  color: white;
+  padding-top: calc(env(safe-area-inset-top) + 24px);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 64px);
+  padding-left: 8px;
+  padding-right: 8px;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding-top: calc(env(safe-area-inset-top) + 18px);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+    padding-left: 4px;
+    padding-right: 4px;
+  }
 }
 
 .container::before {
@@ -16,53 +31,78 @@
   pointer-events: none;
 }
 
-.header {
-  padding: 24px;
-  position: relative;
+.profileTopSpacer {
+  height: 18px;
+  width: 100%;
 }
 
-.title {
-  font-size: 28px !important;
-  font-weight: 700 !important;
-  color: white;
-  margin: 0 !important;
+@media (max-width: 600px) {
+  .profileTopSpacer {
+    height: 12vw;
+    width: 100%;
+  }
 }
 
 .userSection {
-  padding: 24px;
+  padding: 20px 12px 18px 12px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 16px;
+  gap: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 12px;
+  background: rgba(255,255,255,0.01);
+  border-radius: 18px;
+  box-shadow: 0 2px 12px #00ff9d11;
 }
 
 .userAvatar {
-  width: 60px;
-  height: 60px;
-  background: rgba(0, 255, 157, 0.1);
+  width: 64px;
+  height: 64px;
+  min-width: 64px;
+  min-height: 64px;
+  background: rgba(0, 255, 157, 0.13);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #00ff9d;
   position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px #00ff9d22;
+}
+
+.userPhoto {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1/1;
+  border: 2.5px solid #34d399;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+  display: block;
 }
 
 .userInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .userName {
   font-size: 18px !important;
   font-weight: 600 !important;
   color: white;
-  margin-bottom: 4px !important;
+  margin-bottom: 3px !important;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .userEmail {
   font-size: 14px !important;
   color: rgba(255, 255, 255, 0.6);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .userType {
@@ -70,14 +110,37 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
+.userType.driver {
+  color: #00ff9d;
+}
+
+.updateProfileBtn {
+  margin-left: 8px;
+  margin-top: 0;
+  font-size: 12px !important;
+  padding: 4px 14px !important;
+  border-radius: 12px !important;
+  border: 1.5px solid #00ff9d !important;
+  color: #00ff9d !important;
+  background: rgba(0,255,157,0.07) !important;
+  font-weight: 600 !important;
+  transition: background 0.18s, color 0.18s, border 0.18s;
+}
+
+.updateProfileBtn:hover {
+  background: #00ff9d !important;
+  color: #18181b !important;
+  border-color: #00ff9d !important;
+}
+
 .menuSection {
-  padding: 8px 16px;
+  padding: 8px 2px;
 }
 
 .menuItem {
   display: flex;
   align-items: center;
-  padding: 16px;
+  padding: 14px;
   background: rgba(255, 255, 255, 0.03);
   border-radius: 16px;
   margin-bottom: 8px;
@@ -100,11 +163,12 @@
   align-items: center;
   justify-content: center;
   color: #00ff9d;
-  margin-right: 16px;
+  margin-right: 12px;
 }
 
 .menuItemContent {
   flex: 1;
+  min-width: 0;
 }
 
 .menuItemTitle {
@@ -112,11 +176,17 @@
   font-weight: 600 !important;
   color: white;
   margin-bottom: 4px !important;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .menuItemSubtitle {
   font-size: 13px !important;
   color: rgba(255, 255, 255, 0.5);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .menuItemArrow {
@@ -131,21 +201,26 @@
 
 /* Submenu styles */
 .subMenu {
-  margin: 0 8px 12px 64px;
+  margin: 0 8px 12px 48px;
   position: relative;
   animation: slideIn 0.3s ease-out;
+  border-left: 1px solid #e0e0e0;
 }
 
 .subMenuItem {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
+  padding: 14px;
   margin: 8px 0;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
+}
+
+.subMenuItem:hover {
+  background-color: #f5f5f5;
 }
 
 .subMenuItemContent {
@@ -163,6 +238,7 @@
   align-items: center;
   justify-content: center;
   color: #00ff9d;
+  margin-right: 10px;
 }
 
 .subMenuItemText {
@@ -217,6 +293,17 @@
   text-align: center;
   color: rgba(255, 255, 255, 0.3);
   font-size: 12px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 32px);
+  box-sizing: border-box;
+}
+
+.bottomMenuPadding {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
+}
+
+.topSpacer {
+  height: 32px;
+  width: 100%;
 }
 
 @keyframes slideIn {
@@ -230,28 +317,6 @@
   }
 }
 
-/* Media queries */
-@media (max-width: 768px) {
-  .menuSection {
-    padding: 8px;
-  }
-  
-  .menuItem {
-    padding: 12px;
-  }
-  
-  .menuItemIcon {
-    width: 40px;
-    height: 40px;
-    margin-right: 12px;
-  }
-  
-  .subMenu {
-    margin-left: 48px;
-  }
-}
-
-
 /* Success Modal Styles */
 .modalContainer {
   width: auto;
@@ -259,7 +324,6 @@
   border-radius: 8px;
   background-color: #1a1a1a;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-
 }
 
 .modalTitle {
@@ -280,7 +344,7 @@
   padding: 15px 20px;
 }
 .modalContent{
-   display: flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -293,19 +357,18 @@
   color: #fff;
   text-align: center;
   margin-bottom: 0;
-
 }
 .modalIcon{
   margin-bottom: 0;
-    display: flex;
+  display: flex;
   justify-content: center;
   align-items: center;
 }
 .modalButtons {
-display: flex;
-justify-content: center;
-margin-top: 15px;
-gap: 10px;
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  gap: 10px;
 }
 .buttonModalPrimary {
   background-color: #2ecc71;
@@ -315,41 +378,40 @@ gap: 10px;
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.3s;
-    font-weight: 500;
+  font-weight: 500;
   font-size: 1rem;
-  min-width: 150px; /* Ensures button doesn't become too small */
-   &:hover {
-      background-color: #27ae60;
-  }
+  min-width: 150px;
+}
+.buttonModalPrimary:hover {
+  background-color: #27ae60;
 }
 .buttonModalSecondary{
-   background-color: #fff;
-   color: #555;
+  background-color: #fff;
+  color: #555;
   border: 1px solid #ccc;
-    padding: 12px 24px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    font-weight: 500;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-weight: 500;
   font-size: 1rem;
-   &:hover {
-      background-color: #f0f0f0;
-  }
+}
+.buttonModalSecondary:hover {
+  background-color: #f0f0f0;
 }
 .modalCloseButton {
-background: none;
-border: none;
-color: #888;
-font-size: 1.5rem;
-cursor: pointer;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.5rem;
+  cursor: pointer;
   position: absolute;
   top: 10px;
   right: 10px;
 }
 .modalCloseButton:hover {
-color: #555;
+  color: #555;
 }
-
 
 /* Vehicle Registration Complete */
 .vehicleRegistrationComplete {
@@ -359,7 +421,7 @@ color: #555;
   justify-content: center;
   margin-top: 10px;
   padding: 20px 10px;
-   background: rgba(0, 255, 157, 0.05);
+  background: rgba(0, 255, 157, 0.05);
   border-radius: 10px;
   transition: all 0.3s ease;
 }
@@ -372,125 +434,51 @@ color: #555;
 }
 
 .vehicleRegistrationSubtitle{
- color: rgba(255, 255, 255, 0.5) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
   font-size: 14px !important;
   font-weight: 500;
 }
 
-.userType.driver {
-  color: #00ff9d;
-}
-
-/* Vehicle Incomplete Message */
 .vehicleIncompleteMessage{
   display: flex;
   align-items: center;
   justify-content: center;
   margin-top: 10px;
   padding: 20px 10px;
-   background: rgba(255, 77, 77, 0.05);
+  background: rgba(255, 77, 77, 0.05);
   border-radius: 10px;
   transition: all 0.3s ease;
 }
 
 .vehicleIncompleteText{
- color: #ff4d4d !important;
+  color: #ff4d4d !important;
   font-size: 14px !important;
   font-weight: 500;
   text-align: center;
 }
 
-.subMenu {
-  margin-left: 20px;
-  border-left: 1px solid #e0e0e0;
+.verificationPendingBox {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 12px;
 }
 
-.subMenuItem {
-  padding: 10px 15px;
-  cursor: pointer;
+.verificationPendingText {
+  color: #856404;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.verificationPendingSubtitle {
+  color: #856404;
+  font-size: 14px;
+}
+
+.driverRating {
+  margin-top: 4px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  transition: background-color 0.2s;
+  gap: 4px;
 }
-
-.subMenuItem:hover {
-  background-color: #f5f5f5;
-}
-
-.subMenuItemContent {
-    display: flex;
-    align-items: center;
-  }
-
-.subMenuItemIcon {
-  margin-right: 10px;
-  display: flex;
-}
-
-.subMenuItemText {
-  font-size: 14px;
-  color: #333;
-  font-weight: 500;
-}
-
-.subMenuItemDescription {
-  font-size: 12px;
-  color: #777;
-}
-
-.subMenuItemStatus {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  
-  .statusText {
-    font-size: 12px;
-    color: #777;
-  }
-  
-  .statusIconComplete {
-    color: green;
-  }
-  
-  .statusIconRequired {
-    color: red;
-  }
-
-  .verificationPendingBox {
-    background-color: #fff3cd; /* amarillo claro */
-    border: 1px solid #ffeeba;
-    padding: 12px;
-    border-radius: 8px;
-    margin-top: 12px;
-  }
-  
-  .verificationPendingText {
-    color: #856404; /* amarillo oscuro */
-    font-weight: 600;
-    font-size: 16px;
-  }
-  
-  .verificationPendingSubtitle {
-    color: #856404;
-    font-size: 14px;
-  }
-
-  .driverRating {
-    margin-top: 4px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  
-  .userPhoto {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #34d399;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
-  }
-  
-  

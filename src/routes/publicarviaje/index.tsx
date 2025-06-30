@@ -6,7 +6,6 @@ import {
   TextInput,
   Button,
   Text,
-  UnstyledButton,
   Modal,
   Stack,
   Badge,
@@ -398,10 +397,10 @@ const destinationLng = destinationLocation.coords.lng;
   return (
     <Container fluid className={styles.container}>
       <div className={styles.header}>
-        <UnstyledButton component={Link} to="/Home" className={styles.backButton}>
+        <Link to="/home" className={styles.backButton}>
           <ArrowLeft size={24} />
-        </UnstyledButton>
-        <Title className={styles.headerTitle}>Reservar viaje</Title>
+        </Link>
+        <Title order={4} className={styles.headerTitle}>Reservar viaje</Title>
       </div>
 
       <Container size="sm" className={styles.content}>
@@ -465,11 +464,9 @@ const destinationLng = destinationLocation.coords.lng;
         <Modal
           opened={showRouteMap}
           onClose={() => setShowRouteMap(false)}
-          title="Ruta del viaje"
           fullScreen
           classNames={{
             root: styles.routeModal,
-            header: styles.routeModalHeader,
             body: styles.routeModalBody
           }}
         >
@@ -523,7 +520,7 @@ const destinationLng = destinationLocation.coords.lng;
                 </Popover>
               </div>
             </div>
-
+        
             <div className={styles.mapSection}>
               {isLoading && (
                 <div className={styles.mapLoading}>
@@ -531,116 +528,106 @@ const destinationLng = destinationLocation.coords.lng;
                 </div>
               )}
               <GoogleMap
-  mapContainerStyle={{ width: '100%', height: '100%' }}
-  options={{
-    ...mapOptions,
-    gestureHandling: 'greedy',
-    disableDoubleClickZoom: true, // Desactiva el zoom al doble clic
-    zoomControl: true,
-    fullscreenControl: true,
-    streetViewControl: false,
-    mapTypeControl: true,
-    styles: [
-      {
-        featureType: "administrative",
-        elementType: "geometry",
-        stylers: [{ visibility: "true" }],
-      },
-      {
-        featureType: "poi",
-        stylers: [{ visibility: "true" }],
-      },
-      {
-        featureType: "transit",
-        stylers: [{ visibility: "true" }],
-      },
-      {
-        featureType: "road",
-        elementType: "geometry",
-        stylers: [{ color: "#FFBE00" }], // Color blanco para las carreteras
-      },
-      {
-        featureType: "landscape",
-        stylers: [{ color: "#f5f5f5" }], // Fondo gris claro
-      },
-      {
-        featureType: "water",
-        stylers: [{ color: "#c9e7ff" }], // Agua azul clara
-      },
-    ]
-  }}
-  onLoad={(map) => {
-    setMapInstance(map);
-    mapRef.current = map;
-  }}
->
-  {originMarker && destinationMarker && (
-    <>
-      <Marker
-        position={originMarker.getPosition() as google.maps.LatLng}
-        icon={MARKER_ICONS.origin}
-      />
-      <Marker
-        position={destinationMarker.getPosition() as google.maps.LatLng}
-        icon={MARKER_ICONS.destination}
-      />
-    </>
-  )}
-</GoogleMap>
-</div>
-
-<div className={styles.routesSection}>
-  <div className={styles.routesList}>
-    <Text className={styles.routesTitle}>Rutas disponibles</Text>
-    {routes.map((route) => (
-      <div
-        key={route.index}
-        className={`${styles.routeOption} ${
-          route.index === selectedRouteIndex ? styles.routeOptionSelected : ''
-        }`}
-        onClick={() => handleRouteSelect(route.index)}
-      >
-        <Stack gap="xs">
-          <div className={styles.routeInfo}>
-            <div className={styles.routeTime}>
-              <Clock size={16} />
-              <Text fw={500}>{route.duration}</Text>
+                mapContainerStyle={{ width: '100%', height: '100%' }}
+                options={{
+                  ...mapOptions,
+                  gestureHandling: 'greedy',
+                  disableDoubleClickZoom: true,
+                  zoomControl: true,
+                  fullscreenControl: true,
+                  streetViewControl: false,
+                  mapTypeControl: true,
+                  styles: [
+                    { featureType: "administrative", elementType: "geometry", stylers: [{ visibility: "true" }] },
+                    { featureType: "poi", stylers: [{ visibility: "true" }] },
+                    { featureType: "transit", stylers: [{ visibility: "true" }] },
+                    { featureType: "road", elementType: "geometry", stylers: [{ color: "#FFBE00" }] },
+                    { featureType: "landscape", stylers: [{ color: "#f5f5f5" }] },
+                    { featureType: "water", stylers: [{ color: "#c9e7ff" }] },
+                  ]
+                }}
+                onLoad={(map) => {
+                  setMapInstance(map);
+                  mapRef.current = map;
+                }}
+              >
+                {originMarker && destinationMarker && (
+                  <>
+                    <Marker
+                      position={originMarker.getPosition() as google.maps.LatLng}
+                      icon={MARKER_ICONS.origin}
+                    />
+                    <Marker
+                      position={destinationMarker.getPosition() as google.maps.LatLng}
+                      icon={MARKER_ICONS.destination}
+                    />
+                  </>
+                )}
+              </GoogleMap>
             </div>
-            <div className={styles.routeDistance}>
-              <Navigation size={16} />
-              <Text>{route.distance}</Text>
+        
+            <div className={styles.routesSection}>
+              <div className={styles.routesList}>
+                <Text className={styles.routesTitle}>Rutas disponibles</Text>
+                {routes.map((route) => (
+                  <div
+                    key={route.index}
+                    className={`${styles.routeOption} ${
+                      route.index === selectedRouteIndex ? styles.routeOptionSelected : ''
+                    }`}
+                    onClick={() => handleRouteSelect(route.index)}
+                  >
+                    <Stack gap="xs">
+                      <div className={styles.routeInfo}>
+                        <div className={styles.routeTime}>
+                          <Clock size={16} />
+                          <Text fw={500}>{route.duration}</Text>
+                        </div>
+                        <div className={styles.routeDistance}>
+                          <Navigation size={16} />
+                          <Text>{route.distance}</Text>
+                        </div>
+                      </div>
+                      <Text size="sm" color="dimmed">
+                        Vía {route.summary}
+                      </Text>
+                      {route.warnings?.map((warning: string, i: number) => (
+                        <Badge key={i} color="yellow" size="sm">
+                          {warning}
+                        </Badge>
+                      ))}
+                    </Stack>
+                  </div>
+                ))}
+              </div>
+        
+              {routes.length > 0 && (
+                <div className={styles.routeActionsRow}>
+                  <Button
+                    className={styles.cancelButton}
+                    onClick={() => setShowRouteMap(false)}
+                    size="lg"
+                    color="red"
+                    variant="outline"
+                    style={{ flex: 1 }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    className={styles.selectRouteButton}
+                    onClick={handleRouteConfirm}
+                    size="lg"
+                    leftSection={<MapPin size={18} />}
+                    loading={isLoading}
+                    style={{ flex: 1 }}
+                  >
+                    Confirmar ruta
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
-          <Text size="sm" color="dimmed">
-            Vía {route.summary}
-          </Text>
-          {route.warnings?.map((warning: string, i: number) => (
-            <Badge key={i} color="yellow" size="sm">
-              {warning}
-            </Badge>
-          ))}
-        </Stack>
-      </div>
-    ))}
-  </div>
-
-  {routes.length > 0 && (
-    <div className={styles.routeActions}>
-      <Button
-        className={styles.selectRouteButton}
-        onClick={handleRouteConfirm}
-        fullWidth
-        size="lg"
-        leftSection={<MapPin size={18} />}
-        loading={isLoading}
-      >
-        Confirmar ruta
-      </Button>
-    </div>
-  )}
-</div>
-</div>
-</Modal>
+        </Modal>
 </Container>
 </Container>
 );

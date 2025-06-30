@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   Container,
-  Title,
   Text,
   LoadingOverlay,
   Modal,
@@ -22,12 +21,12 @@ import {
   AlertCircle,
   Wallet,
   MessageCircle,
+  Gift,
 } from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
 import styles from './index.module.css'
 import { supabase } from '@/lib/supabaseClient'
 import { Rating } from '@mantine/core';
-
 
 // Interfaces
 interface UserProfile {
@@ -73,12 +72,11 @@ interface MenuItem {
 interface SubMenuItem {
   id: string;
   title: string;
-  path?: string; // Hacer que path sea opcional
-  onClick?: () => void; // Agregar onClick como opcional
+  path?: string;
+  onClick?: () => void;
 }
 
 const ProfileView: React.FC = () => {
-  // Estados
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
@@ -96,15 +94,19 @@ const ProfileView: React.FC = () => {
   const [showWalletOptions, setShowWalletOptions] = useState(false)
   const [averageRating, setAverageRating] = useState<number | null>(null);
 
+  // Nuevo: Botón de actualizar perfil
+  const handleUpdateProfile = () => {
+    navigate({ to: '/CompletarRegistro' })
+  }
 
-  // Definición de items del menú
+  // Nuevo orden y cambios en el menú
   const menuItems: MenuItem[] = [
     {
-      id: 'profile',
+      id: 'Acount',
       icon: User,
-      title: 'Mi perfil',
-      subtitle: 'Información personal y preferencias',
-      path: '/CompletarRegistro',
+      title: 'Cuenta',
+      subtitle: 'Wallet, UniCoins, Puntos y Rachas',
+      path: '/account',
     },
     {
       id: 'vehicle',
@@ -116,8 +118,8 @@ const ProfileView: React.FC = () => {
     {
       id: 'wallet',
       icon: Wallet,
-      title: 'Wallet Virtual',
-      subtitle: 'Gestiona tu billetera virtual',
+      title: 'Saldo',
+      subtitle: 'Gestiona los saldos de tu billetera real para Viajar',
       expandable: true,
       subMenuItems: [
         {
@@ -129,7 +131,7 @@ const ProfileView: React.FC = () => {
           id: 'wallet-reload',
           title: 'Recargar billetera',
           onClick: () => {
-            window.location.href = 'https://www.cupo.dev/login'; // Redirigir a la URL externa
+            window.location.href = 'https://www.cupo.dev/login';
           },
         },
       ],
@@ -137,9 +139,16 @@ const ProfileView: React.FC = () => {
     {
       id: 'coupons',
       icon: Ticket,
-      title: 'Cupones',
-      subtitle: 'Descuentos y promociones disponibles',
+      title: 'Codigos',
+      subtitle: 'Codigos de descuento, cupones  y referidos',
       path: '/Cupones',
+    },
+    {
+      id: 'change',
+      icon: Gift, 
+      title: 'Compras',
+      subtitle: 'Tienda de UniCoins - Productos y servicios',
+      path: '/change', 
     },
     {
       id: 'support',
@@ -152,10 +161,9 @@ const ProfileView: React.FC = () => {
       id: 'chats',
       icon: MessageCircle,
       title: 'Chats',
-      subtitle: 'Salas de Comunicacion',
+      subtitle: 'Salas de Comunicación',
       path: '/Chat',
     }
-    
   ]
 
   const checkAndUpdateUserRole = async (userId: string, hasAllDocs: boolean) => {
@@ -167,7 +175,6 @@ const ProfileView: React.FC = () => {
         .single();
 
       if (userProfile?.status === 'PASSENGER' && hasAllDocs) {
-        // Actualizar a DRIVER
         const { error: updateError } = await supabase
           .from('user_profiles')
           .update({ status: 'DRIVER' })
@@ -175,13 +182,11 @@ const ProfileView: React.FC = () => {
 
         if (updateError) throw updateError;
 
-        // Actualizar estado local
         setUserProfile(prev => prev ? {
           ...prev,
           user_type: 'DRIVER'
         } : null);
 
-        // Mostrar notificación
         setSuccessMessage(
           `¡Felicitaciones! Has completado todos los documentos requeridos. Ahora eres conductor verificado.`
         );
@@ -209,7 +214,7 @@ const ProfileView: React.FC = () => {
       if (data && data.length > 0) {
         const total = data.reduce((sum, r) => sum + r.value, 0);
         const average = total / data.length;
-        setAverageRating(Number(average.toFixed(1))); // Redondeo a 1 decimal
+        setAverageRating(Number(average.toFixed(1)));
       } else {
         setAverageRating(null);
       }
@@ -219,7 +224,6 @@ const ProfileView: React.FC = () => {
   }, [userProfile]);
   
 
-  // Efecto para cargar datos del usuario y documentos
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -231,7 +235,6 @@ const ProfileView: React.FC = () => {
           return;
         }
 
-        // Cargar todos los documentos y perfil en paralelo
         const [
           { data: profile },
           { data: vehicle },
@@ -252,10 +255,8 @@ const ProfileView: React.FC = () => {
 
         const hasAllDocuments = Boolean(vehicle && license && soat && propertyCard);
         
-        // Verificar y actualizar rol si es necesario
         await checkAndUpdateUserRole(session.user.id, hasAllDocuments);
 
-        // Actualizar estados
         if (profile) {
           setUserProfile({
             id: profile.id,
@@ -270,7 +271,6 @@ const ProfileView: React.FC = () => {
             Verification: profile.Verification,
             photo_user: profile.photo_user || '', 
           });
-          
         }
         setVehicleStatus({
           hasVehicle: Boolean(vehicle),
@@ -290,7 +290,6 @@ const ProfileView: React.FC = () => {
     loadUserData();
   }, [navigate]);
 
-  // Modificar la sección de renderizado del usuario
   const renderUserSection = () => (
     <div className={styles.userSection}>
       <div className={styles.userAvatar}>
@@ -316,9 +315,7 @@ const ProfileView: React.FC = () => {
         >
           <Text>
             {userProfile?.user_type === 'DRIVER' ? (
-              <>
-                 Conductor
-              </>
+              <>Conductor</>
             ) : (
               'Pasajero'
             )}
@@ -333,22 +330,27 @@ const ProfileView: React.FC = () => {
             </div>
           )}
         </div>
-        
       </div>
+      <Button
+        className={styles.updateProfileBtn}
+        variant="outline"
+        size="xs"
+        onClick={handleUpdateProfile}
+      >
+        Actualizar perfil
+      </Button>
     </div>
   );
 
   useEffect(() => {
     const checkDocumentCompletion = async () => {
       if (userProfile) {
-        // Verificar que todos los documentos estén completos
         const allDocumentsComplete =
           vehicleStatus.hasVehicle &&
           vehicleStatus.hasLicense &&
           vehicleStatus.hasSoat &&
           vehicleStatus.hasPropertyCard;
 
-        // Solo proceder si tiene todos los documentos y NO es conductor aún
         if (userProfile.user_type === 'PASSENGER' && allDocumentsComplete) {
           try {
             setLoading(true);
@@ -359,7 +361,6 @@ const ProfileView: React.FC = () => {
               return;
             }
 
-            // Actualizar el rol a DRIVER
             const { error: updateError } = await supabase
               .from('user_profiles')
               .update({ status: 'DRIVER' })
@@ -367,13 +368,11 @@ const ProfileView: React.FC = () => {
 
             if (updateError) throw updateError;
 
-            // Actualizar el estado local
             setUserProfile(prev => ({
               ...(prev as UserProfile),
               user_type: 'DRIVER'
             }));
 
-            // Mostrar mensaje de felicitación
             setSuccessMessage(
               `¡Felicitaciones ${userProfile.first_name}! Ya eres conductor en Cupo. Ahora puedes publicar viajes.`
             );
@@ -386,7 +385,6 @@ const ProfileView: React.FC = () => {
             setLoading(false);
           }
         } else if (!allDocumentsComplete && userProfile.user_type === 'PASSENGER') {
-          // Mostrar mensaje solo si aún es pasajero y le faltan documentos
           setShowVehicleMessage(true);
         }
       }
@@ -395,7 +393,6 @@ const ProfileView: React.FC = () => {
     checkDocumentCompletion();
   }, [vehicleStatus, userProfile]);
 
-  // Helpers y manejadores
   const handleLogout = async () => {
     try {
       const { error } = await supabase.auth.signOut()
@@ -407,8 +404,7 @@ const ProfileView: React.FC = () => {
     }
   }
 
-   const handleNavigation = (path: string) => {
-    console.log('Navegando a:', path)
+  const handleNavigation = (path: string) => {
     navigate({ to: path });
   };
 
@@ -496,7 +492,6 @@ const ProfileView: React.FC = () => {
           </div>
         </div>
       ))}
-      {/* Mensajes actualizados */}
       {showVehicleMessage && userProfile?.user_type === 'PASSENGER' && (
         <div className={styles.vehicleIncompleteMessage}>
           <Text className={styles.vehicleIncompleteText}>
@@ -539,9 +534,9 @@ const ProfileView: React.FC = () => {
             className={styles.subMenuItem}
             onClick={() => {
               if (subItem.onClick) {
-                subItem.onClick(); // Ejecutar onClick si está definido
+                subItem.onClick();
               } else if (subItem.path) {
-                handleNavigation(subItem.path); // Navegar al path si está definido
+                handleNavigation(subItem.path);
               }
             }}
           >
@@ -555,9 +550,7 @@ const ProfileView: React.FC = () => {
       </div>
     );
   };
-  
 
-  // Loading state
   if (loading) {
     return (
       <Container fluid className={styles.container}>
@@ -566,10 +559,8 @@ const ProfileView: React.FC = () => {
     )
   }
 
-  // Render principal
   return (
     <Container fluid className={styles.container}>
-      {/* Confirmation Modal */}
       <Modal
         opened={isSuccessModalOpen}
         onClose={handleSuccessModalClose}
@@ -597,13 +588,13 @@ const ProfileView: React.FC = () => {
           </Button>
         </div>
       </Modal>
-      <div className={styles.header}>
-        <Title className={styles.title}>Menú</Title>
-      </div>
+
+      {/* Espaciado superior extra para que el perfil no quede pegado arriba */}
+      <div className={styles.profileTopSpacer} />
 
       {renderUserSection()}
 
-       <div className={styles.menuSection}>
+      <div className={styles.menuSection}>
         {menuItems.map((item) => (
           <div key={item.id}>
             <div
@@ -622,7 +613,7 @@ const ProfileView: React.FC = () => {
                     toggleWalletOptions();
                   }
                 } else if (item.path) {
-                   handleNavigation(item.path)
+                  handleNavigation(item.path)
                 }
               }}
               data-type={item.id}

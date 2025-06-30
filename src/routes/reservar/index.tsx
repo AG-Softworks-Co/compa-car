@@ -370,6 +370,7 @@ const ReservarView = () => {
         <Container fluid className={styles.container}>
             <div className={styles.logoOverlay}></div>
             <Container size="md" className={styles.content}>
+                <div style={{height: '30px'}} />
                 {/* Search Section */}
                 <Box className={styles.searchSection}>
                     <Title className={styles.searchTitle}>
@@ -398,6 +399,7 @@ const ReservarView = () => {
                                             onBlur={handleInputBlur}
                                             variant="unstyled"
                                             required
+                                            size="md"
                                         />
                                     </div>
                                     {focusedInput === 'origin' && originSuggestions.length > 0 && (
@@ -443,6 +445,7 @@ const ReservarView = () => {
                                             onBlur={handleInputBlur}
                                             variant="unstyled"
                                             required
+                                            size="md"
                                         />
                                     </div>
                                     {focusedInput === 'destination' && destinationSuggestions.length > 0 && (
@@ -488,6 +491,7 @@ const ReservarView = () => {
                                             weekday: styles.dateWeekday,
                                             month: styles.dateMonth,
                                         }}
+                                        size="md"
                                     />
                                 </div>
 
@@ -723,34 +727,33 @@ const ReservarView = () => {
                 )}
                 
                 {selectedRouteInfo && (
-                  <Modal
-                    opened={showRouteModal}
-                    onClose={() => setShowRouteModal(false)}
-                    title={
-                        <div className={styles.routeMapModalHeader}>
-                          <h3 className={styles.routeMapModalTitle}>Ruta del viaje</h3>
-                          <button
-                            className={styles.closeButton}
-                            onClick={() => setShowRouteModal(false)}
-                            aria-label="Cerrar"
-                          >
-                            &times;
-                          </button>
-                        </div>
-                      }
-                      
-                    classNames={{
-                      root: styles.routeMapModal,
-                    }}
-                    size="xl"
-                    centered
-                    overlayProps={{
-                      color: '#000',
-                      opacity: 0.85,
-                      blur: 6,
-                    }}
-                    withCloseButton={false}
-                  >
+                <Modal
+                  opened={showRouteModal}
+                  onClose={() => setShowRouteModal(false)}
+                  title={
+                    <div className={styles.routeMapModalHeader}>
+                      <h3 className={styles.routeMapModalTitle}>Ruta del viaje</h3>
+                      <button
+                        className={styles.closeButton}
+                        onClick={() => setShowRouteModal(false)}
+                        aria-label="Cerrar"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  }
+                  classNames={{
+                    root: styles.routeMapModal,
+                  }}
+                  size="xl"
+                  yOffset="calc(env(safe-area-inset-top, 0px) + 40px)"
+                  overlayProps={{
+                    color: '#000',
+                    opacity: 0.85,
+                    blur: 6,
+                  }}
+                  withCloseButton={false}
+                >
                     <div className={styles.mapContainer}>
                       <GoogleMap
                         mapContainerStyle={{ width: '100%', height: '100%' }}

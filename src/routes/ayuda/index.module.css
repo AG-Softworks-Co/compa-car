@@ -1,11 +1,17 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  background-color: #0a0a0a;
-  color: white;
-  height: 100vh;
-  max-width: 480px;
-  margin: 0 auto;
+  padding-top: calc(24px + env(safe-area-inset-top));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding-top: calc(12px + env(safe-area-inset-top));
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    padding-left: 8px;
+    padding-right: 8px;
+  }
 }
 
 .inner {

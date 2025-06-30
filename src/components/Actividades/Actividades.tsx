@@ -218,6 +218,7 @@ const Actividades: React.FC = () => {
 
   return (
     <Container className={styles.container}>
+      <div style={{height: '30px'}} />
       <div className={styles.headerContainer}>
         <Title className={styles.title}>
           {selectedActivity === 'Viajes Publicados' && userProfile?.user_type === 'DRIVER'

@@ -1,9 +1,21 @@
       /* MyTrips.module.css */
 
       .container {
-          padding: 16px;
+        padding-top: calc(24px + env(safe-area-inset-top));
+        padding-bottom: calc(24px + env(safe-area-inset-bottom));
+        padding-left: 16px;
+        padding-right: 16px;
       }
       
+      @media (max-width: 600px) {
+        .container {
+          padding-top: calc(12px + env(safe-area-inset-top));
+          padding-bottom: calc(12px + env(safe-area-inset-bottom));
+          padding-left: 8px;
+          padding-right: 8px;
+        }
+      }
+            
       .title {
           font-size: 24px;
           font-weight: bold;

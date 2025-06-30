@@ -80,6 +80,7 @@ const WalletDetailView: React.FC = () => {
 
   return (
     <Container fluid className={styles.container}>
+      <div style={{height: '20px'}} />
       <div className={styles.walletHeader}>
         <ArrowLeft size={24} onClick={() => navigate({ to: '/Perfil' })} className={styles.backButton} />
         <Title className={styles.walletTitle}>Detalle de Billetera</Title>

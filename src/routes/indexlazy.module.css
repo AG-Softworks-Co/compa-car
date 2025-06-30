@@ -1,9 +1,11 @@
 .container {
-    min-height: 100vh;
+    min-height: 85vh;
     background-color: #121212;
     color: white;
     position: relative;
     overflow: hidden;
+    padding-top: env(safe-area-inset-top, 20px);
+    padding-bottom: env(safe-area-inset-bottom, 20px);
   }
   
   .backgroundEffect {
@@ -75,9 +77,9 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    height: calc(100vh - 100px);
-    padding: 2rem;
+    justify-content: center;
+    height: calc(90dvh - 80px);
+    padding: env(safe-area-inset-top, 20px) 1rem env(safe-area-inset-bottom, 20px);
     z-index: 1;
   }
   
@@ -140,8 +142,9 @@
     flex-direction: column;
     gap: 1rem;
     width: 100%;
-    max-width: 320px;
+    max-width: 200px;
     margin: 0 auto;
+    margin-bottom: 1rem;
   }
   
   .registerButton, .loginButton {
@@ -264,4 +267,3 @@
     text-align: center;
     margin-top: 0.5rem;
   }
-  

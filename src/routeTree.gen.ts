@@ -10,535 +10,239 @@
 
 import { createFileRoute } from '@tanstack/react-router'
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as ReservarIndexRouteImport } from './routes/reservar/index'
+import { Route as PublicarviajeIndexRouteImport } from './routes/publicarviaje/index'
+import { Route as HomeIndexRouteImport } from './routes/home/index'
+import { Route as ChangeIndexRouteImport } from './routes/change/index'
+import { Route as AyudaIndexRouteImport } from './routes/ayuda/index'
+import { Route as AccountIndexRouteImport } from './routes/account/index'
+import { Route as WalletIndexRouteImport } from './routes/Wallet/index'
+import { Route as ReservasIndexRouteImport } from './routes/Reservas/index'
+import { Route as RegistroIndexRouteImport } from './routes/Registro/index'
+import { Route as RegistrarVehiculoIndexRouteImport } from './routes/RegistrarVehiculo/index'
+import { Route as RecuperarPaswordIndexRouteImport } from './routes/RecuperarPasword/index'
+import { Route as PerfilIndexRouteImport } from './routes/Perfil/index'
+import { Route as ParadasIndexRouteImport } from './routes/Paradas/index'
+import { Route as OrigenIndexRouteImport } from './routes/Origen/index'
+import { Route as LoginIndexRouteImport } from './routes/Login/index'
+import { Route as DetallesViajeIndexRouteImport } from './routes/DetallesViaje/index'
+import { Route as DestinoIndexRouteImport } from './routes/Destino/index'
+import { Route as DateSelectedIndexRouteImport } from './routes/DateSelected/index'
+import { Route as CuposReservadosIndexRouteImport } from './routes/CuposReservados/index'
+import { Route as CuposIndexRouteImport } from './routes/Cupos/index'
+import { Route as CuponesIndexRouteImport } from './routes/Cupones/index'
+import { Route as CompletarRegistroIndexRouteImport } from './routes/CompletarRegistro/index'
+import { Route as ChatIndexRouteImport } from './routes/Chat/index'
+import { Route as ActividadesIndexRouteImport } from './routes/Actividades/index'
+import { Route as ReservasTripReservationModalRouteImport } from './routes/Reservas/TripReservationModal'
+import { Route as RegistrarVehiculoSoatRouteImport } from './routes/RegistrarVehiculo/Soat'
+import { Route as RegistrarVehiculoPropertyCardRouteImport } from './routes/RegistrarVehiculo/PropertyCard'
+import { Route as RegistrarVehiculoLicenseRouteImport } from './routes/RegistrarVehiculo/License'
+import { Route as RegistrarVehiculoDocumentsRequiredRouteImport } from './routes/RegistrarVehiculo/DocumentsRequired'
+import { Route as RegistrarVehiculoDocumentFormRouteImport } from './routes/RegistrarVehiculo/DocumentForm'
+import { Route as RecuperarPaswordForgotPasswordRouteImport } from './routes/RecuperarPasword/ForgotPassword'
+import { Route as CuposViewTicketRouteImport } from './routes/Cupos/ViewTicket'
+import { Route as CuposViewPassengersRouteImport } from './routes/Cupos/ViewPassengers'
+import { Route as CuposViewBookingDetailsRouteImport } from './routes/Cupos/ViewBookingDetails'
+import { Route as ActividadesActividadesPageRouteImport } from './routes/Actividades/ActividadesPage'
+import { Route as CuposReservadosValidarCupoBookingIdRouteImport } from './routes/CuposReservados/ValidarCupo.$bookingId'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as ReservarIndexImport } from './routes/reservar/index'
-import { Route as PublicarviajeIndexImport } from './routes/publicarviaje/index'
-import { Route as HomeIndexImport } from './routes/home/index'
-import { Route as AyudaIndexImport } from './routes/ayuda/index'
-import { Route as AccountIndexImport } from './routes/account/index'
-import { Route as WalletIndexImport } from './routes/Wallet/index'
-import { Route as ReservasIndexImport } from './routes/Reservas/index'
-import { Route as RegistroIndexImport } from './routes/Registro/index'
-import { Route as RegistrarVehiculoIndexImport } from './routes/RegistrarVehiculo/index'
-import { Route as RecuperarPaswordIndexImport } from './routes/RecuperarPasword/index'
-import { Route as PerfilIndexImport } from './routes/Perfil/index'
-import { Route as ParadasIndexImport } from './routes/Paradas/index'
-import { Route as OrigenIndexImport } from './routes/Origen/index'
-import { Route as LoginIndexImport } from './routes/Login/index'
-import { Route as DetallesViajeIndexImport } from './routes/DetallesViaje/index'
-import { Route as DestinoIndexImport } from './routes/Destino/index'
-import { Route as DateSelectedIndexImport } from './routes/DateSelected/index'
-import { Route as CuposReservadosIndexImport } from './routes/CuposReservados/index'
-import { Route as CuposIndexImport } from './routes/Cupos/index'
-import { Route as CuponesIndexImport } from './routes/Cupones/index'
-import { Route as CompletarRegistroIndexImport } from './routes/CompletarRegistro/index'
-import { Route as ChatIndexImport } from './routes/Chat/index'
-import { Route as ActividadesIndexImport } from './routes/Actividades/index'
-import { Route as ReservasTripReservationModalImport } from './routes/Reservas/TripReservationModal'
-import { Route as RegistrarVehiculoSoatImport } from './routes/RegistrarVehiculo/Soat'
-import { Route as RegistrarVehiculoPropertyCardImport } from './routes/RegistrarVehiculo/PropertyCard'
-import { Route as RegistrarVehiculoLicenseImport } from './routes/RegistrarVehiculo/License'
-import { Route as RegistrarVehiculoDocumentsRequiredImport } from './routes/RegistrarVehiculo/DocumentsRequired'
-import { Route as RegistrarVehiculoDocumentFormImport } from './routes/RegistrarVehiculo/DocumentForm'
-import { Route as RecuperarPaswordForgotPasswordImport } from './routes/RecuperarPasword/ForgotPassword'
-import { Route as CuposViewTicketImport } from './routes/Cupos/ViewTicket'
-import { Route as CuposViewPassengersImport } from './routes/Cupos/ViewPassengers'
-import { Route as CuposViewBookingDetailsImport } from './routes/Cupos/ViewBookingDetails'
-import { Route as ActividadesActividadesPageImport } from './routes/Actividades/ActividadesPage'
-import { Route as CuposReservadosValidarCupoBookingIdImport } from './routes/CuposReservados/ValidarCupo.$bookingId'
+const IndexLazyRouteImport = createFileRoute('/')()
 
-// Create Virtual Routes
-
-const IndexLazyImport = createFileRoute('/')()
-
-// Create/Update Routes
-
-const IndexLazyRoute = IndexLazyImport.update({
+const IndexLazyRoute = IndexLazyRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
-
-const ReservarIndexRoute = ReservarIndexImport.update({
+const ReservarIndexRoute = ReservarIndexRouteImport.update({
   id: '/reservar/',
   path: '/reservar/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const PublicarviajeIndexRoute = PublicarviajeIndexImport.update({
+const PublicarviajeIndexRoute = PublicarviajeIndexRouteImport.update({
   id: '/publicarviaje/',
   path: '/publicarviaje/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const HomeIndexRoute = HomeIndexImport.update({
+const HomeIndexRoute = HomeIndexRouteImport.update({
   id: '/home/',
   path: '/home/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AyudaIndexRoute = AyudaIndexImport.update({
+const ChangeIndexRoute = ChangeIndexRouteImport.update({
+  id: '/change/',
+  path: '/change/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AyudaIndexRoute = AyudaIndexRouteImport.update({
   id: '/ayuda/',
   path: '/ayuda/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AccountIndexRoute = AccountIndexImport.update({
+const AccountIndexRoute = AccountIndexRouteImport.update({
   id: '/account/',
   path: '/account/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const WalletIndexRoute = WalletIndexImport.update({
+const WalletIndexRoute = WalletIndexRouteImport.update({
   id: '/Wallet/',
   path: '/Wallet/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const ReservasIndexRoute = ReservasIndexImport.update({
+const ReservasIndexRoute = ReservasIndexRouteImport.update({
   id: '/Reservas/',
   path: '/Reservas/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const RegistroIndexRoute = RegistroIndexImport.update({
+const RegistroIndexRoute = RegistroIndexRouteImport.update({
   id: '/Registro/',
   path: '/Registro/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const RegistrarVehiculoIndexRoute = RegistrarVehiculoIndexImport.update({
+const RegistrarVehiculoIndexRoute = RegistrarVehiculoIndexRouteImport.update({
   id: '/RegistrarVehiculo/',
   path: '/RegistrarVehiculo/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const RecuperarPaswordIndexRoute = RecuperarPaswordIndexImport.update({
+const RecuperarPaswordIndexRoute = RecuperarPaswordIndexRouteImport.update({
   id: '/RecuperarPasword/',
   path: '/RecuperarPasword/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const PerfilIndexRoute = PerfilIndexImport.update({
+const PerfilIndexRoute = PerfilIndexRouteImport.update({
   id: '/Perfil/',
   path: '/Perfil/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const ParadasIndexRoute = ParadasIndexImport.update({
+const ParadasIndexRoute = ParadasIndexRouteImport.update({
   id: '/Paradas/',
   path: '/Paradas/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const OrigenIndexRoute = OrigenIndexImport.update({
+const OrigenIndexRoute = OrigenIndexRouteImport.update({
   id: '/Origen/',
   path: '/Origen/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const LoginIndexRoute = LoginIndexImport.update({
+const LoginIndexRoute = LoginIndexRouteImport.update({
   id: '/Login/',
   path: '/Login/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const DetallesViajeIndexRoute = DetallesViajeIndexImport.update({
+const DetallesViajeIndexRoute = DetallesViajeIndexRouteImport.update({
   id: '/DetallesViaje/',
   path: '/DetallesViaje/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const DestinoIndexRoute = DestinoIndexImport.update({
+const DestinoIndexRoute = DestinoIndexRouteImport.update({
   id: '/Destino/',
   path: '/Destino/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const DateSelectedIndexRoute = DateSelectedIndexImport.update({
+const DateSelectedIndexRoute = DateSelectedIndexRouteImport.update({
   id: '/DateSelected/',
   path: '/DateSelected/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const CuposReservadosIndexRoute = CuposReservadosIndexImport.update({
+const CuposReservadosIndexRoute = CuposReservadosIndexRouteImport.update({
   id: '/CuposReservados/',
   path: '/CuposReservados/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const CuposIndexRoute = CuposIndexImport.update({
+const CuposIndexRoute = CuposIndexRouteImport.update({
   id: '/Cupos/',
   path: '/Cupos/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const CuponesIndexRoute = CuponesIndexImport.update({
+const CuponesIndexRoute = CuponesIndexRouteImport.update({
   id: '/Cupones/',
   path: '/Cupones/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const CompletarRegistroIndexRoute = CompletarRegistroIndexImport.update({
+const CompletarRegistroIndexRoute = CompletarRegistroIndexRouteImport.update({
   id: '/CompletarRegistro/',
   path: '/CompletarRegistro/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const ChatIndexRoute = ChatIndexImport.update({
+const ChatIndexRoute = ChatIndexRouteImport.update({
   id: '/Chat/',
   path: '/Chat/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const ActividadesIndexRoute = ActividadesIndexImport.update({
+const ActividadesIndexRoute = ActividadesIndexRouteImport.update({
   id: '/Actividades/',
   path: '/Actividades/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
 const ReservasTripReservationModalRoute =
-  ReservasTripReservationModalImport.update({
+  ReservasTripReservationModalRouteImport.update({
     id: '/Reservas/TripReservationModal',
     path: '/Reservas/TripReservationModal',
-    getParentRoute: () => rootRoute,
+    getParentRoute: () => rootRouteImport,
   } as any)
-
-const RegistrarVehiculoSoatRoute = RegistrarVehiculoSoatImport.update({
+const RegistrarVehiculoSoatRoute = RegistrarVehiculoSoatRouteImport.update({
   id: '/RegistrarVehiculo/Soat',
   path: '/RegistrarVehiculo/Soat',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
 const RegistrarVehiculoPropertyCardRoute =
-  RegistrarVehiculoPropertyCardImport.update({
+  RegistrarVehiculoPropertyCardRouteImport.update({
     id: '/RegistrarVehiculo/PropertyCard',
     path: '/RegistrarVehiculo/PropertyCard',
-    getParentRoute: () => rootRoute,
+    getParentRoute: () => rootRouteImport,
   } as any)
-
-const RegistrarVehiculoLicenseRoute = RegistrarVehiculoLicenseImport.update({
-  id: '/RegistrarVehiculo/License',
-  path: '/RegistrarVehiculo/License',
-  getParentRoute: () => rootRoute,
-} as any)
-
+const RegistrarVehiculoLicenseRoute =
+  RegistrarVehiculoLicenseRouteImport.update({
+    id: '/RegistrarVehiculo/License',
+    path: '/RegistrarVehiculo/License',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const RegistrarVehiculoDocumentsRequiredRoute =
-  RegistrarVehiculoDocumentsRequiredImport.update({
+  RegistrarVehiculoDocumentsRequiredRouteImport.update({
     id: '/RegistrarVehiculo/DocumentsRequired',
     path: '/RegistrarVehiculo/DocumentsRequired',
-    getParentRoute: () => rootRoute,
+    getParentRoute: () => rootRouteImport,
   } as any)
-
 const RegistrarVehiculoDocumentFormRoute =
-  RegistrarVehiculoDocumentFormImport.update({
+  RegistrarVehiculoDocumentFormRouteImport.update({
     id: '/RegistrarVehiculo/DocumentForm',
     path: '/RegistrarVehiculo/DocumentForm',
-    getParentRoute: () => rootRoute,
+    getParentRoute: () => rootRouteImport,
   } as any)
-
 const RecuperarPaswordForgotPasswordRoute =
-  RecuperarPaswordForgotPasswordImport.update({
+  RecuperarPaswordForgotPasswordRouteImport.update({
     id: '/RecuperarPasword/ForgotPassword',
     path: '/RecuperarPasword/ForgotPassword',
-    getParentRoute: () => rootRoute,
+    getParentRoute: () => rootRouteImport,
   } as any)
-
-const CuposViewTicketRoute = CuposViewTicketImport.update({
+const CuposViewTicketRoute = CuposViewTicketRouteImport.update({
   id: '/Cupos/ViewTicket',
   path: '/Cupos/ViewTicket',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const CuposViewPassengersRoute = CuposViewPassengersImport.update({
+const CuposViewPassengersRoute = CuposViewPassengersRouteImport.update({
   id: '/Cupos/ViewPassengers',
   path: '/Cupos/ViewPassengers',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const CuposViewBookingDetailsRoute = CuposViewBookingDetailsImport.update({
+const CuposViewBookingDetailsRoute = CuposViewBookingDetailsRouteImport.update({
   id: '/Cupos/ViewBookingDetails',
   path: '/Cupos/ViewBookingDetails',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const ActividadesActividadesPageRoute = ActividadesActividadesPageImport.update(
-  {
+const ActividadesActividadesPageRoute =
+  ActividadesActividadesPageRouteImport.update({
     id: '/Actividades/ActividadesPage',
     path: '/Actividades/ActividadesPage',
-    getParentRoute: () => rootRoute,
-  } as any,
-)
-
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const CuposReservadosValidarCupoBookingIdRoute =
-  CuposReservadosValidarCupoBookingIdImport.update({
+  CuposReservadosValidarCupoBookingIdRouteImport.update({
     id: '/CuposReservados/ValidarCupo/$bookingId',
     path: '/CuposReservados/ValidarCupo/$bookingId',
-    getParentRoute: () => rootRoute,
+    getParentRoute: () => rootRouteImport,
   } as any)
-
-// Populate the FileRoutesByPath interface
-
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/Actividades/ActividadesPage': {
-      id: '/Actividades/ActividadesPage'
-      path: '/Actividades/ActividadesPage'
-      fullPath: '/Actividades/ActividadesPage'
-      preLoaderRoute: typeof ActividadesActividadesPageImport
-      parentRoute: typeof rootRoute
-    }
-    '/Cupos/ViewBookingDetails': {
-      id: '/Cupos/ViewBookingDetails'
-      path: '/Cupos/ViewBookingDetails'
-      fullPath: '/Cupos/ViewBookingDetails'
-      preLoaderRoute: typeof CuposViewBookingDetailsImport
-      parentRoute: typeof rootRoute
-    }
-    '/Cupos/ViewPassengers': {
-      id: '/Cupos/ViewPassengers'
-      path: '/Cupos/ViewPassengers'
-      fullPath: '/Cupos/ViewPassengers'
-      preLoaderRoute: typeof CuposViewPassengersImport
-      parentRoute: typeof rootRoute
-    }
-    '/Cupos/ViewTicket': {
-      id: '/Cupos/ViewTicket'
-      path: '/Cupos/ViewTicket'
-      fullPath: '/Cupos/ViewTicket'
-      preLoaderRoute: typeof CuposViewTicketImport
-      parentRoute: typeof rootRoute
-    }
-    '/RecuperarPasword/ForgotPassword': {
-      id: '/RecuperarPasword/ForgotPassword'
-      path: '/RecuperarPasword/ForgotPassword'
-      fullPath: '/RecuperarPasword/ForgotPassword'
-      preLoaderRoute: typeof RecuperarPaswordForgotPasswordImport
-      parentRoute: typeof rootRoute
-    }
-    '/RegistrarVehiculo/DocumentForm': {
-      id: '/RegistrarVehiculo/DocumentForm'
-      path: '/RegistrarVehiculo/DocumentForm'
-      fullPath: '/RegistrarVehiculo/DocumentForm'
-      preLoaderRoute: typeof RegistrarVehiculoDocumentFormImport
-      parentRoute: typeof rootRoute
-    }
-    '/RegistrarVehiculo/DocumentsRequired': {
-      id: '/RegistrarVehiculo/DocumentsRequired'
-      path: '/RegistrarVehiculo/DocumentsRequired'
-      fullPath: '/RegistrarVehiculo/DocumentsRequired'
-      preLoaderRoute: typeof RegistrarVehiculoDocumentsRequiredImport
-      parentRoute: typeof rootRoute
-    }
-    '/RegistrarVehiculo/License': {
-      id: '/RegistrarVehiculo/License'
-      path: '/RegistrarVehiculo/License'
-      fullPath: '/RegistrarVehiculo/License'
-      preLoaderRoute: typeof RegistrarVehiculoLicenseImport
-      parentRoute: typeof rootRoute
-    }
-    '/RegistrarVehiculo/PropertyCard': {
-      id: '/RegistrarVehiculo/PropertyCard'
-      path: '/RegistrarVehiculo/PropertyCard'
-      fullPath: '/RegistrarVehiculo/PropertyCard'
-      preLoaderRoute: typeof RegistrarVehiculoPropertyCardImport
-      parentRoute: typeof rootRoute
-    }
-    '/RegistrarVehiculo/Soat': {
-      id: '/RegistrarVehiculo/Soat'
-      path: '/RegistrarVehiculo/Soat'
-      fullPath: '/RegistrarVehiculo/Soat'
-      preLoaderRoute: typeof RegistrarVehiculoSoatImport
-      parentRoute: typeof rootRoute
-    }
-    '/Reservas/TripReservationModal': {
-      id: '/Reservas/TripReservationModal'
-      path: '/Reservas/TripReservationModal'
-      fullPath: '/Reservas/TripReservationModal'
-      preLoaderRoute: typeof ReservasTripReservationModalImport
-      parentRoute: typeof rootRoute
-    }
-    '/Actividades/': {
-      id: '/Actividades/'
-      path: '/Actividades'
-      fullPath: '/Actividades'
-      preLoaderRoute: typeof ActividadesIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/Chat/': {
-      id: '/Chat/'
-      path: '/Chat'
-      fullPath: '/Chat'
-      preLoaderRoute: typeof ChatIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/CompletarRegistro/': {
-      id: '/CompletarRegistro/'
-      path: '/CompletarRegistro'
-      fullPath: '/CompletarRegistro'
-      preLoaderRoute: typeof CompletarRegistroIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/Cupones/': {
-      id: '/Cupones/'
-      path: '/Cupones'
-      fullPath: '/Cupones'
-      preLoaderRoute: typeof CuponesIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/Cupos/': {
-      id: '/Cupos/'
-      path: '/Cupos'
-      fullPath: '/Cupos'
-      preLoaderRoute: typeof CuposIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/CuposReservados/': {
-      id: '/CuposReservados/'
-      path: '/CuposReservados'
-      fullPath: '/CuposReservados'
-      preLoaderRoute: typeof CuposReservadosIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/DateSelected/': {
-      id: '/DateSelected/'
-      path: '/DateSelected'
-      fullPath: '/DateSelected'
-      preLoaderRoute: typeof DateSelectedIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/Destino/': {
-      id: '/Destino/'
-      path: '/Destino'
-      fullPath: '/Destino'
-      preLoaderRoute: typeof DestinoIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/DetallesViaje/': {
-      id: '/DetallesViaje/'
-      path: '/DetallesViaje'
-      fullPath: '/DetallesViaje'
-      preLoaderRoute: typeof DetallesViajeIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/Login/': {
-      id: '/Login/'
-      path: '/Login'
-      fullPath: '/Login'
-      preLoaderRoute: typeof LoginIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/Origen/': {
-      id: '/Origen/'
-      path: '/Origen'
-      fullPath: '/Origen'
-      preLoaderRoute: typeof OrigenIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/Paradas/': {
-      id: '/Paradas/'
-      path: '/Paradas'
-      fullPath: '/Paradas'
-      preLoaderRoute: typeof ParadasIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/Perfil/': {
-      id: '/Perfil/'
-      path: '/Perfil'
-      fullPath: '/Perfil'
-      preLoaderRoute: typeof PerfilIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/RecuperarPasword/': {
-      id: '/RecuperarPasword/'
-      path: '/RecuperarPasword'
-      fullPath: '/RecuperarPasword'
-      preLoaderRoute: typeof RecuperarPaswordIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/RegistrarVehiculo/': {
-      id: '/RegistrarVehiculo/'
-      path: '/RegistrarVehiculo'
-      fullPath: '/RegistrarVehiculo'
-      preLoaderRoute: typeof RegistrarVehiculoIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/Registro/': {
-      id: '/Registro/'
-      path: '/Registro'
-      fullPath: '/Registro'
-      preLoaderRoute: typeof RegistroIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/Reservas/': {
-      id: '/Reservas/'
-      path: '/Reservas'
-      fullPath: '/Reservas'
-      preLoaderRoute: typeof ReservasIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/Wallet/': {
-      id: '/Wallet/'
-      path: '/Wallet'
-      fullPath: '/Wallet'
-      preLoaderRoute: typeof WalletIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/account/': {
-      id: '/account/'
-      path: '/account'
-      fullPath: '/account'
-      preLoaderRoute: typeof AccountIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/ayuda/': {
-      id: '/ayuda/'
-      path: '/ayuda'
-      fullPath: '/ayuda'
-      preLoaderRoute: typeof AyudaIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/home/': {
-      id: '/home/'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/publicarviaje/': {
-      id: '/publicarviaje/'
-      path: '/publicarviaje'
-      fullPath: '/publicarviaje'
-      preLoaderRoute: typeof PublicarviajeIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/reservar/': {
-      id: '/reservar/'
-      path: '/reservar'
-      fullPath: '/reservar'
-      preLoaderRoute: typeof ReservarIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/CuposReservados/ValidarCupo/$bookingId': {
-      id: '/CuposReservados/ValidarCupo/$bookingId'
-      path: '/CuposReservados/ValidarCupo/$bookingId'
-      fullPath: '/CuposReservados/ValidarCupo/$bookingId'
-      preLoaderRoute: typeof CuposReservadosValidarCupoBookingIdImport
-      parentRoute: typeof rootRoute
-    }
-  }
-}
-
-// Create and export the route tree
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
@@ -573,12 +277,12 @@ export interface FileRoutesByFullPath {
   '/Wallet': typeof WalletIndexRoute
   '/account': typeof AccountIndexRoute
   '/ayuda': typeof AyudaIndexRoute
+  '/change': typeof ChangeIndexRoute
   '/home': typeof HomeIndexRoute
   '/publicarviaje': typeof PublicarviajeIndexRoute
   '/reservar': typeof ReservarIndexRoute
   '/CuposReservados/ValidarCupo/$bookingId': typeof CuposReservadosValidarCupoBookingIdRoute
 }
-
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/Actividades/ActividadesPage': typeof ActividadesActividadesPageRoute
@@ -612,14 +316,14 @@ export interface FileRoutesByTo {
   '/Wallet': typeof WalletIndexRoute
   '/account': typeof AccountIndexRoute
   '/ayuda': typeof AyudaIndexRoute
+  '/change': typeof ChangeIndexRoute
   '/home': typeof HomeIndexRoute
   '/publicarviaje': typeof PublicarviajeIndexRoute
   '/reservar': typeof ReservarIndexRoute
   '/CuposReservados/ValidarCupo/$bookingId': typeof CuposReservadosValidarCupoBookingIdRoute
 }
-
 export interface FileRoutesById {
-  __root__: typeof rootRoute
+  __root__: typeof rootRouteImport
   '/': typeof IndexLazyRoute
   '/Actividades/ActividadesPage': typeof ActividadesActividadesPageRoute
   '/Cupos/ViewBookingDetails': typeof CuposViewBookingDetailsRoute
@@ -652,12 +356,12 @@ export interface FileRoutesById {
   '/Wallet/': typeof WalletIndexRoute
   '/account/': typeof AccountIndexRoute
   '/ayuda/': typeof AyudaIndexRoute
+  '/change/': typeof ChangeIndexRoute
   '/home/': typeof HomeIndexRoute
   '/publicarviaje/': typeof PublicarviajeIndexRoute
   '/reservar/': typeof ReservarIndexRoute
   '/CuposReservados/ValidarCupo/$bookingId': typeof CuposReservadosValidarCupoBookingIdRoute
 }
-
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
@@ -693,6 +397,7 @@ export interface FileRouteTypes {
     | '/Wallet'
     | '/account'
     | '/ayuda'
+    | '/change'
     | '/home'
     | '/publicarviaje'
     | '/reservar'
@@ -731,6 +436,7 @@ export interface FileRouteTypes {
     | '/Wallet'
     | '/account'
     | '/ayuda'
+    | '/change'
     | '/home'
     | '/publicarviaje'
     | '/reservar'
@@ -769,13 +475,13 @@ export interface FileRouteTypes {
     | '/Wallet/'
     | '/account/'
     | '/ayuda/'
+    | '/change/'
     | '/home/'
     | '/publicarviaje/'
     | '/reservar/'
     | '/CuposReservados/ValidarCupo/$bookingId'
   fileRoutesById: FileRoutesById
 }
-
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   ActividadesActividadesPageRoute: typeof ActividadesActividadesPageRoute
@@ -809,10 +515,275 @@ export interface RootRouteChildren {
   WalletIndexRoute: typeof WalletIndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
   AyudaIndexRoute: typeof AyudaIndexRoute
+  ChangeIndexRoute: typeof ChangeIndexRoute
   HomeIndexRoute: typeof HomeIndexRoute
   PublicarviajeIndexRoute: typeof PublicarviajeIndexRoute
   ReservarIndexRoute: typeof ReservarIndexRoute
   CuposReservadosValidarCupoBookingIdRoute: typeof CuposReservadosValidarCupoBookingIdRoute
+}
+
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reservar/': {
+      id: '/reservar/'
+      path: '/reservar'
+      fullPath: '/reservar'
+      preLoaderRoute: typeof ReservarIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/publicarviaje/': {
+      id: '/publicarviaje/'
+      path: '/publicarviaje'
+      fullPath: '/publicarviaje'
+      preLoaderRoute: typeof PublicarviajeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home/': {
+      id: '/home/'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/change/': {
+      id: '/change/'
+      path: '/change'
+      fullPath: '/change'
+      preLoaderRoute: typeof ChangeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ayuda/': {
+      id: '/ayuda/'
+      path: '/ayuda'
+      fullPath: '/ayuda'
+      preLoaderRoute: typeof AyudaIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/': {
+      id: '/account/'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Wallet/': {
+      id: '/Wallet/'
+      path: '/Wallet'
+      fullPath: '/Wallet'
+      preLoaderRoute: typeof WalletIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Reservas/': {
+      id: '/Reservas/'
+      path: '/Reservas'
+      fullPath: '/Reservas'
+      preLoaderRoute: typeof ReservasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Registro/': {
+      id: '/Registro/'
+      path: '/Registro'
+      fullPath: '/Registro'
+      preLoaderRoute: typeof RegistroIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/RegistrarVehiculo/': {
+      id: '/RegistrarVehiculo/'
+      path: '/RegistrarVehiculo'
+      fullPath: '/RegistrarVehiculo'
+      preLoaderRoute: typeof RegistrarVehiculoIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/RecuperarPasword/': {
+      id: '/RecuperarPasword/'
+      path: '/RecuperarPasword'
+      fullPath: '/RecuperarPasword'
+      preLoaderRoute: typeof RecuperarPaswordIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Perfil/': {
+      id: '/Perfil/'
+      path: '/Perfil'
+      fullPath: '/Perfil'
+      preLoaderRoute: typeof PerfilIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Paradas/': {
+      id: '/Paradas/'
+      path: '/Paradas'
+      fullPath: '/Paradas'
+      preLoaderRoute: typeof ParadasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Origen/': {
+      id: '/Origen/'
+      path: '/Origen'
+      fullPath: '/Origen'
+      preLoaderRoute: typeof OrigenIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Login/': {
+      id: '/Login/'
+      path: '/Login'
+      fullPath: '/Login'
+      preLoaderRoute: typeof LoginIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/DetallesViaje/': {
+      id: '/DetallesViaje/'
+      path: '/DetallesViaje'
+      fullPath: '/DetallesViaje'
+      preLoaderRoute: typeof DetallesViajeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Destino/': {
+      id: '/Destino/'
+      path: '/Destino'
+      fullPath: '/Destino'
+      preLoaderRoute: typeof DestinoIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/DateSelected/': {
+      id: '/DateSelected/'
+      path: '/DateSelected'
+      fullPath: '/DateSelected'
+      preLoaderRoute: typeof DateSelectedIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/CuposReservados/': {
+      id: '/CuposReservados/'
+      path: '/CuposReservados'
+      fullPath: '/CuposReservados'
+      preLoaderRoute: typeof CuposReservadosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Cupos/': {
+      id: '/Cupos/'
+      path: '/Cupos'
+      fullPath: '/Cupos'
+      preLoaderRoute: typeof CuposIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Cupones/': {
+      id: '/Cupones/'
+      path: '/Cupones'
+      fullPath: '/Cupones'
+      preLoaderRoute: typeof CuponesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/CompletarRegistro/': {
+      id: '/CompletarRegistro/'
+      path: '/CompletarRegistro'
+      fullPath: '/CompletarRegistro'
+      preLoaderRoute: typeof CompletarRegistroIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Chat/': {
+      id: '/Chat/'
+      path: '/Chat'
+      fullPath: '/Chat'
+      preLoaderRoute: typeof ChatIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Actividades/': {
+      id: '/Actividades/'
+      path: '/Actividades'
+      fullPath: '/Actividades'
+      preLoaderRoute: typeof ActividadesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Reservas/TripReservationModal': {
+      id: '/Reservas/TripReservationModal'
+      path: '/Reservas/TripReservationModal'
+      fullPath: '/Reservas/TripReservationModal'
+      preLoaderRoute: typeof ReservasTripReservationModalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/RegistrarVehiculo/Soat': {
+      id: '/RegistrarVehiculo/Soat'
+      path: '/RegistrarVehiculo/Soat'
+      fullPath: '/RegistrarVehiculo/Soat'
+      preLoaderRoute: typeof RegistrarVehiculoSoatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/RegistrarVehiculo/PropertyCard': {
+      id: '/RegistrarVehiculo/PropertyCard'
+      path: '/RegistrarVehiculo/PropertyCard'
+      fullPath: '/RegistrarVehiculo/PropertyCard'
+      preLoaderRoute: typeof RegistrarVehiculoPropertyCardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/RegistrarVehiculo/License': {
+      id: '/RegistrarVehiculo/License'
+      path: '/RegistrarVehiculo/License'
+      fullPath: '/RegistrarVehiculo/License'
+      preLoaderRoute: typeof RegistrarVehiculoLicenseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/RegistrarVehiculo/DocumentsRequired': {
+      id: '/RegistrarVehiculo/DocumentsRequired'
+      path: '/RegistrarVehiculo/DocumentsRequired'
+      fullPath: '/RegistrarVehiculo/DocumentsRequired'
+      preLoaderRoute: typeof RegistrarVehiculoDocumentsRequiredRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/RegistrarVehiculo/DocumentForm': {
+      id: '/RegistrarVehiculo/DocumentForm'
+      path: '/RegistrarVehiculo/DocumentForm'
+      fullPath: '/RegistrarVehiculo/DocumentForm'
+      preLoaderRoute: typeof RegistrarVehiculoDocumentFormRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/RecuperarPasword/ForgotPassword': {
+      id: '/RecuperarPasword/ForgotPassword'
+      path: '/RecuperarPasword/ForgotPassword'
+      fullPath: '/RecuperarPasword/ForgotPassword'
+      preLoaderRoute: typeof RecuperarPaswordForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Cupos/ViewTicket': {
+      id: '/Cupos/ViewTicket'
+      path: '/Cupos/ViewTicket'
+      fullPath: '/Cupos/ViewTicket'
+      preLoaderRoute: typeof CuposViewTicketRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Cupos/ViewPassengers': {
+      id: '/Cupos/ViewPassengers'
+      path: '/Cupos/ViewPassengers'
+      fullPath: '/Cupos/ViewPassengers'
+      preLoaderRoute: typeof CuposViewPassengersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Cupos/ViewBookingDetails': {
+      id: '/Cupos/ViewBookingDetails'
+      path: '/Cupos/ViewBookingDetails'
+      fullPath: '/Cupos/ViewBookingDetails'
+      preLoaderRoute: typeof CuposViewBookingDetailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/Actividades/ActividadesPage': {
+      id: '/Actividades/ActividadesPage'
+      path: '/Actividades/ActividadesPage'
+      fullPath: '/Actividades/ActividadesPage'
+      preLoaderRoute: typeof ActividadesActividadesPageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/CuposReservados/ValidarCupo/$bookingId': {
+      id: '/CuposReservados/ValidarCupo/$bookingId'
+      path: '/CuposReservados/ValidarCupo/$bookingId'
+      fullPath: '/CuposReservados/ValidarCupo/$bookingId'
+      preLoaderRoute: typeof CuposReservadosValidarCupoBookingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+  }
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -849,169 +820,13 @@ const rootRouteChildren: RootRouteChildren = {
   WalletIndexRoute: WalletIndexRoute,
   AccountIndexRoute: AccountIndexRoute,
   AyudaIndexRoute: AyudaIndexRoute,
+  ChangeIndexRoute: ChangeIndexRoute,
   HomeIndexRoute: HomeIndexRoute,
   PublicarviajeIndexRoute: PublicarviajeIndexRoute,
   ReservarIndexRoute: ReservarIndexRoute,
   CuposReservadosValidarCupoBookingIdRoute:
     CuposReservadosValidarCupoBookingIdRoute,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/",
-        "/Actividades/ActividadesPage",
-        "/Cupos/ViewBookingDetails",
-        "/Cupos/ViewPassengers",
-        "/Cupos/ViewTicket",
-        "/RecuperarPasword/ForgotPassword",
-        "/RegistrarVehiculo/DocumentForm",
-        "/RegistrarVehiculo/DocumentsRequired",
-        "/RegistrarVehiculo/License",
-        "/RegistrarVehiculo/PropertyCard",
-        "/RegistrarVehiculo/Soat",
-        "/Reservas/TripReservationModal",
-        "/Actividades/",
-        "/Chat/",
-        "/CompletarRegistro/",
-        "/Cupones/",
-        "/Cupos/",
-        "/CuposReservados/",
-        "/DateSelected/",
-        "/Destino/",
-        "/DetallesViaje/",
-        "/Login/",
-        "/Origen/",
-        "/Paradas/",
-        "/Perfil/",
-        "/RecuperarPasword/",
-        "/RegistrarVehiculo/",
-        "/Registro/",
-        "/Reservas/",
-        "/Wallet/",
-        "/account/",
-        "/ayuda/",
-        "/home/",
-        "/publicarviaje/",
-        "/reservar/",
-        "/CuposReservados/ValidarCupo/$bookingId"
-      ]
-    },
-    "/": {
-      "filePath": "index.lazy.tsx"
-    },
-    "/Actividades/ActividadesPage": {
-      "filePath": "Actividades/ActividadesPage.tsx"
-    },
-    "/Cupos/ViewBookingDetails": {
-      "filePath": "Cupos/ViewBookingDetails.tsx"
-    },
-    "/Cupos/ViewPassengers": {
-      "filePath": "Cupos/ViewPassengers.tsx"
-    },
-    "/Cupos/ViewTicket": {
-      "filePath": "Cupos/ViewTicket.tsx"
-    },
-    "/RecuperarPasword/ForgotPassword": {
-      "filePath": "RecuperarPasword/ForgotPassword.tsx"
-    },
-    "/RegistrarVehiculo/DocumentForm": {
-      "filePath": "RegistrarVehiculo/DocumentForm.tsx"
-    },
-    "/RegistrarVehiculo/DocumentsRequired": {
-      "filePath": "RegistrarVehiculo/DocumentsRequired.tsx"
-    },
-    "/RegistrarVehiculo/License": {
-      "filePath": "RegistrarVehiculo/License.tsx"
-    },
-    "/RegistrarVehiculo/PropertyCard": {
-      "filePath": "RegistrarVehiculo/PropertyCard.tsx"
-    },
-    "/RegistrarVehiculo/Soat": {
-      "filePath": "RegistrarVehiculo/Soat.tsx"
-    },
-    "/Reservas/TripReservationModal": {
-      "filePath": "Reservas/TripReservationModal.tsx"
-    },
-    "/Actividades/": {
-      "filePath": "Actividades/index.tsx"
-    },
-    "/Chat/": {
-      "filePath": "Chat/index.tsx"
-    },
-    "/CompletarRegistro/": {
-      "filePath": "CompletarRegistro/index.tsx"
-    },
-    "/Cupones/": {
-      "filePath": "Cupones/index.tsx"
-    },
-    "/Cupos/": {
-      "filePath": "Cupos/index.tsx"
-    },
-    "/CuposReservados/": {
-      "filePath": "CuposReservados/index.tsx"
-    },
-    "/DateSelected/": {
-      "filePath": "DateSelected/index.tsx"
-    },
-    "/Destino/": {
-      "filePath": "Destino/index.tsx"
-    },
-    "/DetallesViaje/": {
-      "filePath": "DetallesViaje/index.tsx"
-    },
-    "/Login/": {
-      "filePath": "Login/index.tsx"
-    },
-    "/Origen/": {
-      "filePath": "Origen/index.tsx"
-    },
-    "/Paradas/": {
-      "filePath": "Paradas/index.tsx"
-    },
-    "/Perfil/": {
-      "filePath": "Perfil/index.tsx"
-    },
-    "/RecuperarPasword/": {
-      "filePath": "RecuperarPasword/index.tsx"
-    },
-    "/RegistrarVehiculo/": {
-      "filePath": "RegistrarVehiculo/index.tsx"
-    },
-    "/Registro/": {
-      "filePath": "Registro/index.tsx"
-    },
-    "/Reservas/": {
-      "filePath": "Reservas/index.tsx"
-    },
-    "/Wallet/": {
-      "filePath": "Wallet/index.tsx"
-    },
-    "/account/": {
-      "filePath": "account/index.tsx"
-    },
-    "/ayuda/": {
-      "filePath": "ayuda/index.tsx"
-    },
-    "/home/": {
-      "filePath": "home/index.tsx"
-    },
-    "/publicarviaje/": {
-      "filePath": "publicarviaje/index.tsx"
-    },
-    "/reservar/": {
-      "filePath": "reservar/index.tsx"
-    },
-    "/CuposReservados/ValidarCupo/$bookingId": {
-      "filePath": "CuposReservados/ValidarCupo.$bookingId.tsx"
-    }
-  }
-}
-ROUTE_MANIFEST_END */

@@ -177,6 +177,7 @@ function AssistantChat() {
 
   return (
     <div className={styles.container}>
+      <div style={{height: '30px'}} />
       <div className={styles.inner}>
         <Group mb="sm">
           <ActionIcon variant="light" color="gray" onClick={() => navigate({ to: '/Perfil' })}>

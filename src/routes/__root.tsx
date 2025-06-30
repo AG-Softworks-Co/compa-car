@@ -47,7 +47,7 @@ const navItems = [
   { icon: PlusCircle, label: "Publicar", to: "/publicarviaje" },
   { icon: "logo", label: "", to: "/home" },
   { icon: Car, label: "Actividades", to: "/Actividades" },
-  { icon: User, label: "Mi Cuenta", to: "/perfil" },
+  { icon: User, label: "Menú", to: "/perfil" },
 ];
 
 // Routes that shouldn't show the navigation bar
@@ -76,10 +76,9 @@ const RootComponent = () => {
   return (
     <AuthProvider>
       <MantineProvider theme={theme} defaultColorScheme="dark">
-        <div className="safe-area">
           <AppShell
             header={{ height: showNavigation ? 60 : 0 }}
-            footer={{ height: 60 }}
+            footer={{ height: 72 }}
             className={styles.appShell}
           >
             <div className={styles.backgroundEffect} />
@@ -124,13 +123,14 @@ const RootComponent = () => {
                           <Image
                             src="https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/Logo.png"
                             alt="Logo"
-                            className={styles.logoImage}
+                            style={{ width: 60, height: 60 }}
                           />
                         </Box>
                       ) : (
                         <>
                           <Box className={styles.navIcon}>
-                            <item.icon size={24} />
+                            {/* @ts-ignore */}
+                            <item.icon size={30} />
                           </Box>
                           <Text className={styles.navLabel}>{item.label}</Text>
                         </>
@@ -138,11 +138,12 @@ const RootComponent = () => {
                     </UnstyledButton>
                   ))}
                 </Group>
+                <Box style={{ height: '16px' }} />
+                <Box style={{ height: 'env(safe-area-inset-bottom)' }} />
               </AppShell.Footer>
             )}
           </AppShell>
           <Notifications />
-        </div>
       </MantineProvider>
     </AuthProvider>
   );

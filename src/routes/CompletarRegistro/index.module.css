@@ -1,10 +1,17 @@
 .container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 2rem 1rem;
+  padding-top: calc(24px + env(safe-area-inset-top));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding-top: calc(12px + env(safe-area-inset-top));
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    padding-left: 8px;
+    padding-right: 8px;
+  }
 }
 
 .backButton {
@@ -117,13 +124,6 @@
   background-color: rgba(255, 255, 255, 0.07);
 }
 
-.input label {
-  display: block;
-  color: #d0d0d0;
-  margin-bottom: 0.5rem;
-  font-size: 0.95rem;
-}
-
 .submitButton {
   background-color: #00f2a9;
   color: #000;
@@ -142,4 +142,90 @@
   background-color: #00ddb0;
   box-shadow: 0 8px 20px rgba(0, 242, 169, 0.25);
   transform: translateY(-1px);
+}
+
+/* --- PHONE INPUT STYLES --- */
+.phoneInputContainer {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Input de teléfono igual a los demás */
+.phoneInputContainer .form-control,
+.phoneInputContainer input[type="tel"] {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  border-radius: 0.75rem !important;
+  height: 48px !important;
+  padding: 0 1rem 0 3.2rem !important; /* aumento padding izquierdo */
+  font-size: 16px !important;
+  transition: all 0.2s ease !important;
+  width: 100% !important;
+  box-shadow: none !important;
+  outline: none !important;
+  line-height: 1.2 !important;
+  font-family: inherit !important;
+  caret-color: #00f2a9 !important;
+}
+
+.phoneInputContainer .form-control:focus,
+.phoneInputContainer input[type="tel"]:focus {
+  border-color: #00f2a9 !important;
+  box-shadow: 0 0 0 2px rgba(0, 242, 169, 0.15) !important;
+  background-color: rgba(255, 255, 255, 0.07) !important;
+  color: #fff !important;
+}
+
+/* Bandera y dropdown */
+.phoneInputContainer .flag-dropdown {
+  background: transparent !important;
+  border: none !important;
+}
+
+.phoneInputContainer .selected-flag {
+  background: transparent !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.phoneInputContainer .selected-flag .flag {
+  filter: none !important;
+  background: none !important;
+}
+
+.phoneInputContainer .selected-flag .arrow {
+  border-top: 4px solid #00f2a9 !important;
+}
+
+.phoneInputContainer .country-list {
+  background-color: #151515 !important;
+  color: #fff !important;
+}
+
+.phoneInputContainer .country-list .country {
+  color: #fff !important;
+}
+
+.phoneInputContainer .country-list .country.highlight {
+  background: #00f2a9 !important;
+  color: #000 !important;
+}
+
+/* Label igual a todos */
+.phoneInputContainer label,
+.phoneInputContainer .label,
+.label,
+.input label {
+  color: #d0d0d0;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  display: block;
+  font-weight: 400;
+}
+@media (max-width: 600px) {
+  .phoneInputContainer .form-control,
+  .phoneInputContainer input[type="tel"] {
+    font-size: 16px !important;
+  }
 }

@@ -17,6 +17,8 @@ import { useNavigate, createFileRoute } from '@tanstack/react-router';
 import { notifications } from '@mantine/notifications';
 import { supabase } from '@/lib/supabaseClient';
 import styles from './index.module.css';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 interface ProfileFormData {
   id: number;
@@ -52,7 +54,7 @@ const CompleteProfileView: React.FC = () => {
       file: undefined,
     },
     validate: {
-      phone_number: (v) => (!v ? 'Requerido' : /^\d{10}$/.test(v) ? null : 'Debe tener 10 dígitos'),
+      phone_number: (v) => (!v || v.length < 10 ? 'Número inválido' : null),
       first_name: (v) => (!v ? 'Requerido' : v.length < 3 ? 'Muy corto' : null),
       last_name: (v) => (!v ? 'Requerido' : v.length < 3 ? 'Muy corto' : null),
       identification_number: (v) => (!v ? 'Requerido' : v.length < 6 ? 'Muy corto' : null),
@@ -99,6 +101,7 @@ const CompleteProfileView: React.FC = () => {
     };
 
     loadProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,7 +156,7 @@ const CompleteProfileView: React.FC = () => {
         identification_type: values.identification_type,
         identification_number: values.identification_number.trim(),
         status: values.user_type,
-        "Verification": 'SIN VERIFICAR',
+        Verification: 'SIN VERIFICAR',
         photo_user: photoUrl,
       };
 
@@ -169,7 +172,7 @@ const CompleteProfileView: React.FC = () => {
         color: 'green',
       });
 
-      navigate({ to: values.user_type === 'DRIVER' ? '/RegistrarVehiculo' : '/' });
+      navigate({ to: values.user_type === 'DRIVER' ? '/RegistrarVehiculo' : '/home' });
     } catch (err: any) {
       console.error('Save error:', err);
       notifications.show({
@@ -192,7 +195,7 @@ const CompleteProfileView: React.FC = () => {
             if (isEditing) {
               navigate({ to: '/Perfil' });
             } else {
-              window.history.back(); // volver atrás sin importar la ruta actual
+              window.history.back();
             }
           }}
           className={styles.backButton}
@@ -204,7 +207,10 @@ const CompleteProfileView: React.FC = () => {
         <Box className={styles.header}>
           <div className={styles.avatarContainer}>
             <Image
-              src={previewUrl || 'https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/SinFotoPerfil.png'}
+              src={
+                previewUrl ||
+                'https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/SinFotoPerfil.png'
+              }
               alt=""
               className={styles.previewImage}
             />
@@ -241,7 +247,32 @@ const CompleteProfileView: React.FC = () => {
             {...form.getInputProps('identification_type')}
           />
           <TextInput label="Número de identificación" required {...form.getInputProps('identification_number')} />
-          <TextInput label="Teléfono" required {...form.getInputProps('phone_number')} />
+          <div className={styles.phoneInputContainer}>
+            <label className={styles.label} htmlFor="phone_number">
+              Teléfono
+            </label>
+            <PhoneInput
+              country="co"
+              preferredCountries={['co', 'mx', 'us', 'es']}
+              enableSearch={true}
+              value={form.values.phone_number}
+              onChange={(value: string) => form.setFieldValue('phone_number', value)}
+              inputProps={{
+                name: 'phone_number',
+                id: 'phone_number',
+                required: true,
+                autoComplete: 'tel',
+                className: 'form-control', // para que el CSS lo tome
+              }}
+              containerClass={styles.phoneInputInner}
+              buttonClass={styles.phoneInputButton}
+            />
+            {form.errors.phone_number && (
+              <Text color="red" size="xs" mt={5}>
+                {form.errors.phone_number}
+              </Text>
+            )}
+          </div>
           <Select
             label="Tipo de usuario"
             data={[

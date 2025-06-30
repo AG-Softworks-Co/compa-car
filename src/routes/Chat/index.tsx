@@ -101,6 +101,7 @@ export default function ChatPage() {
 
   return (
     <div className={styles.chatContainer}>
+      <div style={{height: '30px'}} />
       {/* Lista de chats */}
       <aside
         className={`${styles.chatSidebar} ${isMobileChatOpen ? styles.hideMobile : ''}`}

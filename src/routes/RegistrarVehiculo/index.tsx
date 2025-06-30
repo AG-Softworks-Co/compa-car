@@ -509,6 +509,7 @@ const VehicleRegistration: React.FC = () => {
 
             <Paper className={styles.formWrapper}>
                 <Box className={styles.header}>
+                    <div style={{height: '10px'}} />
                     <Group gap="apart" align="center">
                         <Text className={styles.title}>
                             {hasVehicle ? 'Información del Vehículo' : 'Registrar Vehículo'}

@@ -215,7 +215,7 @@ const TripCard: React.FC<TripCardProps> = ({ trip, userId }) => {
         {trip.date} {trip.time}
       </Badge>
 
-      <Group gap="xs" className={styles.tripInfoGroup}>
+      <Group gap="sm" className={styles.tripInfoGroup}>
         <Badge leftSection={<Clock size={14} />}>{trip.duration}</Badge>
         <Badge leftSection={<Navigation size={14} />}>{trip.distance}</Badge>
         <Badge leftSection={<Users size={14} />}>{totalSeats} Asientos</Badge>
@@ -229,12 +229,12 @@ const TripCard: React.FC<TripCardProps> = ({ trip, userId }) => {
       <Group gap="sm" className={styles.tripActions}>
         {!isCanceled && (
           <Button
-            size="xs"
+            size="sm"
             variant="outline"
             color="blue"
             onClick={handleCuposClick}
             leftSection={<Bell size={16} />}
-            rightSection={passengerCount > 0 && <Badge color="blue" size="xs">{passengerCount}</Badge>}
+            rightSection={passengerCount > 0 && <Badge color="blue" size="sm">{passengerCount}</Badge>}
           >
             Cupos Comprados
           </Button>
@@ -243,17 +243,17 @@ const TripCard: React.FC<TripCardProps> = ({ trip, userId }) => {
         {!isFinished && !isCanceled && (
           <>
             {isProgress ? (
-              <Button size="xs" variant="filled" color="red" onClick={() => setModalAction('finish')} leftSection={<Flag size={14} />} loading={loading}>Finalizar Viaje</Button>
+              <Button size="sm" variant="filled" color="red" onClick={() => setModalAction('finish')} leftSection={<Flag size={14} />} loading={loading}>Finalizar Viaje</Button>
             ) : (
-              <Button size="xs" variant="outline" color="green" onClick={() => setModalAction('start')} loading={loading}>Iniciar Viaje</Button>
+              <Button size="sm" variant="outline" color="green" onClick={() => setModalAction('start')} loading={loading}>Iniciar Viaje</Button>
             )}
-            <Button size="xs" variant="filled" color="red" onClick={() => setModalAction('cancel')} leftSection={<Trash size={14} />} loading={loading}>Cancelar Viaje</Button>
+            <Button size="sm" variant="filled" color="red" onClick={() => setModalAction('cancel')} leftSection={<Trash size={14} />} loading={loading}>Cancelar Viaje</Button>
           </>
         )}
 
         {!isCanceled && (
           <Button
-            size="xs"
+            size="sm"
             variant="outline"
             color="gray"
             onClick={() => navigate({ to: '/Chat', search: { trip_id: trip.id.toString() } })}

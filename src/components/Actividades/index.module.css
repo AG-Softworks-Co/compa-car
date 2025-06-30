@@ -1,9 +1,14 @@
 /* General Styles */
-.container {
-  max-width: 1200px;
-  margin: 0 auto; /* Center the container */
-  padding: 20px;
-  box-sizing: border-box; /* Include padding in width calculation */
+container {
+  padding-top: calc(24px + env(safe-area-inset-top));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.topSpacer {
+  height: env(safe-area-inset-top);
+  background: transparent;
 }
 
 .title {
@@ -220,15 +225,21 @@ background-size: 1000px 100%;
 }
 
 /* Mobile Styles */
-@media (max-width: 768px) {
-  .filterContainer {
-      flex-direction: column; /* Stack filters vertically */
+@media (max-width: 600px) {
+  .container {
+    padding-top: calc(16px + env(safe-area-inset-top));
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    padding-left: 12px;
+    padding-right: 12px;
   }
 }
 
 
 .container {
-  padding: 20px;
+  padding-top: calc(24px + env(safe-area-inset-top));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  padding-left: 16px;
+  padding-right: 16px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -298,4 +309,17 @@ background-size: 1000px 100%;
 
 .submitButton:hover {
   background-color: #2bb386;
+}
+
+.footer-icons {
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 20px;
+}
+
+.footer-icons img {
+  width: 32px;
+  height: 32px;
 }

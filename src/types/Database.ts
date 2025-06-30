@@ -43,7 +43,82 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      } 
+      user_cards: {
+        Row: {
+          id: number
+          user_id: string
+          card_code: string
+          unicoins: number
+          card_type: string | null
+          card_level: number
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          user_id: string
+          card_code: string
+          unicoins?: number
+          card_type?: string | null
+          card_level?: number
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          card_code?: string
+          unicoins?: number
+          card_type?: string | null
+          card_level?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_cards_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          }
+        ]
       }
+      user_referrals: {
+        Row: {
+          id: number
+          referred_user_id: string
+          promoter_card_code: string | null
+          referred_at: string
+        }
+        Insert: {
+          id?: number
+          referred_user_id: string
+          promoter_card_code?: string | null
+          referred_at?: string
+        }
+        Update: {
+          id?: number
+          referred_user_id?: string
+          promoter_card_code?: string | null
+          referred_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_referrals_referred_user_id_fkey"
+            columns: ["referred_user_id"]
+            isOneToOne: true
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_referrals_promoter_card_code_fkey"
+            columns: ["promoter_card_code"]
+            isOneToOne: false
+            referencedRelation: "user_cards"
+            referencedColumns: ["card_code"]
+          }
+        ]
+      }
+      
       bookings: {
         Row: {
           booking_date: string | null
@@ -116,7 +191,147 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }    
+      goal_definitions: {
+        Row: {
+          id: number
+          type: 'referral' | 'streak_total' | 'streak_passenger' | 'streak_driver'
+          name: string
+          goal: number
+          reward_unicoins: number
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          type: 'referral' | 'streak_total' | 'streak_passenger' | 'streak_driver'
+          name: string
+          goal: number
+          reward_unicoins: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          type?: 'referral' | 'streak_total' | 'streak_passenger' | 'streak_driver'
+          name?: string
+          goal?: number
+          reward_unicoins?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }  
+
+      goal_claims: {
+        Row: {
+          id: number
+          user_id: string
+          goal_id: number
+          claimed_at: string
+        }
+        Insert: {
+          id?: number
+          user_id: string
+          goal_id: number
+          claimed_at?: string
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          goal_id?: number
+          claimed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_claims_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users" // o "auth.users" si usas Supabase Auth
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_claims_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goal_definitions"
+            referencedColumns: ["id"]
+          }
+        ]
+      }      
+      redeem_items: {
+        Row: {
+          id: number
+          name: string
+          description: string | null
+          image_url: string | null
+          value_unicoins: number
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          name: string
+          description?: string | null
+          image_url?: string | null
+          value_unicoins: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          name?: string
+          description?: string | null
+          image_url?: string | null
+          value_unicoins?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: []
       }
+
+      redeem_requests: {
+        Row: {
+          id: number
+          user_id: string
+          item_id: number
+          status: 'requested' | 'delivered' | 'cancelled'
+          requested_at: string
+          delivered_at: string | null
+        }
+        Insert: {
+          id?: number
+          user_id: string
+          item_id: number
+          status?: 'requested' | 'delivered' | 'cancelled'
+          requested_at?: string
+          delivered_at?: string | null
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          item_id?: number
+          status?: 'requested' | 'delivered' | 'cancelled'
+          requested_at?: string
+          delivered_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redeem_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users" // o "auth.users" si usas Supabase Auth
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "redeem_requests_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "redeem_items"
+            referencedColumns: ["id"]
+          }
+        ]
+      }    
       chat_participants: {
         Row: {
           chat_id: number | null

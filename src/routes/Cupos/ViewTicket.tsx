@@ -13,7 +13,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { Download, ArrowLeft, AlertCircle, Navigation } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { Capacitor } from '@capacitor/core';
-import { Filesystem, Directory,  } from '@capacitor/filesystem';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileOpener } from '@capacitor-community/file-opener';
 import { supabase } from '@/lib/supabaseClient';
 import dayjs from 'dayjs';
@@ -29,6 +29,16 @@ interface PassengerData {
 interface TripLocation {
   origin: { address: string };
   destination: { address: string };
+}
+
+// Generador de código corto, único y alfanumérico
+function generateShortCode(length = 7) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 }
 
 const ViewTicket = () => {
@@ -52,7 +62,7 @@ const ViewTicket = () => {
         // 1. Obtener booking
         const { data: bookingData, error: bookingError } = await supabase
           .from('bookings')
-          .select('trip_id, booking_qr')
+          .select('id, trip_id, booking_qr')
           .eq('id', Number(booking_id))
           .single();
 
@@ -61,7 +71,29 @@ const ViewTicket = () => {
         }
 
         const tripId = bookingData.trip_id;
-        setBookingQr(bookingData.booking_qr || '');
+        let qr = bookingData.booking_qr;
+
+        // Si no hay código QR, genera uno único y guárdalo
+        if (!qr) {
+          let unique = false;
+          let newCode = '';
+          while (!unique) {
+            newCode = generateShortCode(7);
+            // Verifica que no exista en la base de datos
+            const { data: exists } = await supabase
+              .from('bookings')
+              .select('id')
+              .eq('booking_qr', newCode)
+              .maybeSingle();
+            if (!exists) unique = true;
+          }
+          await supabase
+            .from('bookings')
+            .update({ booking_qr: newCode })
+            .eq('id', Number(booking_id));
+          qr = newCode;
+        }
+        setBookingQr(qr);
 
         // 2. Obtener pasajeros asociados a ese booking
         const { data: passengersData, error: passengersError } = await supabase
@@ -114,51 +146,105 @@ const ViewTicket = () => {
     fetchData();
   }, [navigate, booking_id]);
 
+  // --- NUEVO: Ticket compacto solo para descarga ---
+  const renderDownloadTicket = () => {
+    if (!passengers.length || !tripLocations) return null;
+    return (
+      <div
+        id={`ticket-download-${booking_id}`}
+        className={`${styles.ticketDownloadOnly} ticketDownloadOnly`}
+        style={{ display: 'none', maxWidth: 320, padding: 12, boxSizing: 'border-box' }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: 12 }}>
+          <div style={{ fontWeight: 700, fontSize: 18, color: '#34D399' }}>Tiquete Digital</div>
+        </div>
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ fontSize: 13, color: '#888' }}>Pasajero</div>
+          <div style={{ fontWeight: 600, fontSize: 16 }}>{passengers[0]?.full_name}</div>
+          <div style={{ fontSize: 12, color: '#888' }}>Identificación: {passengers[0]?.identification_number}</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '12px 0' }}>
+          <div style={{ fontSize: 14, wordBreak: 'break-word' }}>
+            <div style={{ fontSize: 12, color: '#888' }}>Origen</div>
+            {tripLocations.origin.address}
+          </div>
+          <div style={{ fontSize: 14, wordBreak: 'break-word' }}>
+            <div style={{ fontSize: 12, color: '#888' }}>Destino</div>
+            {tripLocations.destination.address}
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', margin: '16px 0 8px 0' }}>
+          <QRCodeCanvas
+            value={bookingQr}
+            size={140}
+            level="H"
+            includeMargin={true}
+            style={{
+              backgroundColor: '#fff',
+              padding: '6px',
+              borderRadius: '10px',
+            }}
+          />
+        </div>
+        <div style={{ textAlign: 'center', marginTop: 8 }}>
+          <div style={{ color: '#34D399', fontWeight: 700, fontSize: 13, letterSpacing: 2 }}>PIN</div>
+          <div style={{ fontWeight: 800, fontSize: 22, letterSpacing: 6, color: '#222' }}>{bookingQr}</div>
+        </div>
+      </div>
+    );
+  };
+
+  // --- FIN NUEVO ---
+
   const handleDownload = async () => {
-    const ticketElement = document.getElementById(`ticket-${booking_id}`);
-    if (!ticketElement) return;
-
     try {
-      const canvas = await html2canvas(ticketElement, {
-        scale: 2,
-        backgroundColor: '#ffffff',
-      });
-      const url = canvas.toDataURL('image/png');
+      // 1. Muestra el bloque de descarga compacto
+      const downloadDiv = document.getElementById(`ticket-download-${booking_id}`);
+      if (!downloadDiv) return;
+      downloadDiv.style.display = 'block';
 
-      // Quitar el header 'data:image/png;base64,' para que sea base64 puro
-      const base64Data = url.split(',')[1];
+      // 2. Espera un frame para que se renderice
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // 3. Captura la imagen
+      const canvas = await html2canvas(downloadDiv, {
+        scale: 4,
+        useCORS: true,
+        backgroundColor: '#fff',
+        logging: true,
+      });
+
+      // 4. Oculta el bloque de descarga
+      downloadDiv.style.display = 'none';
+
+      const base64Image = canvas.toDataURL('image/png').split(',')[1];
       const fileName = `ticket-${booking_id}.png`;
 
       if (Capacitor.getPlatform() === 'web') {
-        // Si estamos en navegador → usar link como antes
         const link = document.createElement('a');
-        link.href = url;
+        link.href = canvas.toDataURL('image/png');
         link.download = fileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         console.log('Tiquete descargado en navegador.');
       } else {
-        // Si estamos en app nativa → usar Filesystem + FileOpener
-        // Guarda en Directory.Documents para que sea accesible
         await Filesystem.writeFile({
           path: fileName,
-          data: base64Data,
+          data: base64Image,
           directory: Directory.Documents,
         });
-      
-        // Obtén la URI del archivo guardado
+
         const fileUri = await Filesystem.getUri({
           directory: Directory.Documents,
           path: fileName,
         });
-      
-        // Abre el archivo usando la URI absoluta
+
         await FileOpener.open({
           filePath: fileUri.uri,
           contentType: 'image/png',
         });
-      
+
         console.log('Tiquete guardado y abierto en app.');
       }
     } catch (error) {
@@ -200,15 +286,16 @@ const ViewTicket = () => {
         Volver
       </button>
 
-      <Card
-        id={`ticket-${booking_id}`}
-        shadow="xl"
-        radius="xl"
-        padding="xl"
-        className={styles.ticketCard}
-      >
+      {/* Ticket visible en pantalla */}
+      <div id={`ticket-${booking_id}`} className={styles.ticketDownloadWrapper}>
+        <Card
+          shadow="xl"
+          radius="xl"
+          padding="xl"
+          className={`${styles.ticketCard} downloadableTicket`}
+        >
         <div className={styles.logoWrapper}>
-          <img src="https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/Logo.png" alt="Cupo" className={styles.logo} /> 
+          <img src="https://mqwvbnktcokcccidfgcu.supabase.co/storage/v1/object/public/Resources/Home/Logo.png" alt="Cupo" className={styles.logo} />
           <span className={styles.brandName}>Cupo</span>
         </div>
 
@@ -259,7 +346,10 @@ const ViewTicket = () => {
               boxShadow: '0 0 12px rgba(0,0,0,0.25)',
             }}
           />
-
+          <div className={styles.pinSection}>
+            <Text className={styles.pinLabel}>PIN</Text>
+            <Text className={styles.pinValue}>{bookingQr}</Text>
+          </div>
           <Divider my="sm" color="gray" />
 
           <Text size="xs" color="dimmed" ta="center">
@@ -270,9 +360,9 @@ const ViewTicket = () => {
           <Button
             onClick={handleDownload}
             leftSection={<Download size={16} />}
-            radius="xl"
+            radius="md"
             fullWidth
-            mt="sm"
+            mt="lg"
             color="teal"
             variant="gradient"
             gradient={{ from: 'teal', to: 'green', deg: 90 }}
@@ -280,7 +370,11 @@ const ViewTicket = () => {
             Descargar Tiquete
           </Button>
         </Stack>
-      </Card>
+        </Card>
+      </div>
+
+      {/* Ticket compacto solo para descarga */}
+      {renderDownloadTicket()}
     </Container>
   );
 };
@@ -291,6 +385,3 @@ export const Route = createFileRoute('/Cupos/ViewTicket')({
     booking_id: String(search.booking_id ?? ''),
   }),
 });
-
-export default ViewTicket;
-

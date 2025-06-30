@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@capacitor-community/barcode-scanner": "^4.0.1",
+    "@capacitor-community/camera-preview": "^6.0.1",
     "@capacitor-community/file-opener": "^6.0.0",
     "@capacitor/android": "^6.2.0",
     "@capacitor/camera": "6",
@@ -65,6 +66,7 @@
     "qrcode.react": "^4.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-phone-input-2": "^2.15.1",
     "react-qr-scanner": "^1.0.0-alpha.11",
     "recharts": "^2.15.0",
     "supabase": "^2.19.5",
@@ -78,6 +80,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@eslint/js": "^9.18.0",
+    "@tanstack/router-cli": "^1.122.0",
     "@tanstack/router-devtools": "^1.97.14",
     "@tanstack/router-plugin": "^1.97.14",
     "@types/google.maps": "^3.58.1",
